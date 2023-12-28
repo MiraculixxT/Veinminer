@@ -1,0 +1,1 @@
+All files inside are shared resources for the project.

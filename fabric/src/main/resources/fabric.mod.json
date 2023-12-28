@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "id": "${modid}",
+  "version": "${version}",
+  "name": "${name}",
+  "description": "${description}",
+  "author": "${author}",
+  "license": "${license}",
+  "icon": "assets/template/icon.png",
+  "contact": {
+    "homepage": "https://modrinth.com/mod/${modrinth}",
+    "issues": "https://dc.mutils.net"
+  },
+  "environment": "${environment}",
+  "entrypoints": {
+    "server": [
+      "de.miraculixx.template.server.TemplateServer"
+    ],
+    "client": [
+      "de.miraculixx.template.client.TemplateClient"
+    ],
+    "modmenu": [
+      "de.miraculixx.template.config.ModMenuIntegration"
+    ]
+  },
+  "mixins": [
+    "template.mixins.json"
+  ],
+  "suggests": {
+    "modmenu":"*"
+  },
+  "depends": {
+    "fabricloader": ">=0.15.0",
+    "minecraft": "${mcversion}",
+    "java": ">=17",
+    "fabric-api": "*",
+    "fabric-language-kotlin": "*",
+
+    "cloth-config": "*",
+    "silk": "*"
+  }
+}

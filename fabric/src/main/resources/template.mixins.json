@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "de.miraculixx.template.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "MixinExample"
+  ],
+  "client": [],
+  "server": [],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
