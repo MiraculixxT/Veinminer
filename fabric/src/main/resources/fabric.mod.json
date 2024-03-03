@@ -6,21 +6,15 @@
   "description": "${description}",
   "author": "${author}",
   "license": "${license}",
-  "icon": "assets/template/icon.png",
+  "icon": "assets/veinminer/icon.png",
   "contact": {
     "homepage": "https://modrinth.com/mod/${modrinth}",
     "issues": "https://dc.mutils.net"
   },
   "environment": "${environment}",
   "entrypoints": {
-    "server": [
-      "de.miraculixx.template.server.TemplateServer"
-    ],
-    "client": [
-      "de.miraculixx.template.client.TemplateClient"
-    ],
-    "modmenu": [
-      "de.miraculixx.template.config.ModMenuIntegration"
+    "main": [
+      "de.miraculixx.veinminer.Veinminer"
     ]
   },
   "mixins": [
@@ -36,7 +30,6 @@
     "fabric-api": "*",
     "fabric-language-kotlin": "*",
 
-    "cloth-config": "*",
     "silk": "*"
   }
 }

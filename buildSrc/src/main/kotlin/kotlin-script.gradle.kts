@@ -12,6 +12,12 @@ dependencies {
     implementation("org.jetbrains.kotlinx", "kotlinx-coroutines-core", "1.+")
 }
 
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
+
 tasks {
     compileJava {
         options.encoding = "UTF-8"

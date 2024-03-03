@@ -8,7 +8,7 @@ tasks {
     shadowJar {
         dependencies {
             include {
-                it.moduleGroup == group
+                it.moduleGroup == properties["group"] as String
             }
         }
     }

@@ -12,7 +12,7 @@ description = properties["description"] as String
 
 val gameVersion by properties
 val foliaSupport = properties["foliaSupport"] as String == "true"
-val projectName = properties["name"] as String
+val projectName = properties["projectName"] as String
 
 repositories {
     mavenCentral()
@@ -29,8 +29,8 @@ dependencies {
     // Utility libraries (optional)
     val useBrigadier = properties["useBrigadier"] as String == "true"
     if (useBrigadier) {
-        library("dev.jorel:commandapi-bukkit-shade:9.+")
-        library("dev.jorel:commandapi-bukkit-kotlin:9.+")
+        library("dev.jorel:commandapi-bukkit-shade:9.3.+")
+        library("dev.jorel:commandapi-bukkit-kotlin:9.3.+")
     }
 
     library("de.miraculixx:kpaper:1.+")
@@ -46,6 +46,8 @@ bukkit {
     main = "$group.${projectName.lowercase()}.${projectName}"
     apiVersion = "1.16"
     foliaSupported = foliaSupport
+    name = projectName
+    println(name + projectName)
 
     // Optionals
     load = BukkitPluginDescription.PluginLoadOrder.STARTUP

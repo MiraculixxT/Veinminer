@@ -76,18 +76,20 @@ dependencies {
 }
 
 tasks.processResources {
+    println("-----" + outlet.mcVersionRange)
     filesMatching("fabric.mod.json") {
         val modrinthSlug = properties["modrinthProjectId"] as? String ?: properties["modid"] as String
         expand(
             mapOf(
                 "modid" to properties["modid"] as String,
                 "version" to version,
-                "name" to properties["name"] as String,
+                "name" to properties["projectName"] as String,
                 "description" to description,
-                "author" to properties["authors"] as String,
-                "license" to properties["license"] as String,
+                "author" to properties["author"] as String,
+                "license" to properties["licence"] as String,
                 "modrinth" to modrinthSlug,
                 "environment" to properties["environment"] as String,
+                "mcversion" to outlet.mcVersionRange,
             )
         )
     }
