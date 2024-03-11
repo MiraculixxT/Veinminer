@@ -1,26 +1,109 @@
 package de.miraculixx.veinminer
 
 import de.miraculixx.veinminer.command.VeinminerCommand
+import de.miraculixx.veinminer.config.ConfigManager
 import net.fabricmc.api.ModInitializer
+import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.api.ModContainer
+import net.minecraft.core.BlockPos
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.Level
+import net.minecraft.world.level.block.state.BlockState
+import net.silkmc.silk.core.kotlin.ticks
+import net.silkmc.silk.core.task.mcCoroutineTask
+import java.util.*
 import java.util.logging.Logger
 
 
-object Veinminer : ModInitializer {
-    const val MOD_ID = "veinminer"
-    lateinit var INSTANCE: ModContainer
-    lateinit var FABRIC: FabricLoader
+class Veinminer : ModInitializer {
+    companion object {
+        const val MOD_ID = "veinminer"
+        lateinit var INSTANCE: ModContainer
+    }
+
+    private lateinit var fabricLoader: FabricLoader
+
+    private val cooldown = mutableSetOf<UUID>()
 
     override fun onInitialize() {
-        FABRIC = FabricLoader.getInstance()
-        INSTANCE = FABRIC.getModContainer(MOD_ID).get()
+        fabricLoader = FabricLoader.getInstance()
+        INSTANCE = fabricLoader.getModContainer(MOD_ID).get()
         LOGGER.info("Veinminer Version: ${INSTANCE.metadata.version} (fabric)")
 
         VeinminerCommand
+
+        PlayerBlockBreakEvents.BEFORE.register { world, player, pos, state, _ ->
+            val material = state.block.descriptionId
+
+            val settings = ConfigManager.settings
+            if (ConfigManager.veinBlocks.contains(material)) {
+                // Check for sneak config
+                if (settings.mustSneak && !player.isCrouching) return@register true
+                // Check for cooldown
+                if (cooldown.contains(player.uuid)) return@register true
+
+                // Check for correct tool
+                val mainHandItem = player.mainHandItem
+                if (settings.needCorrectTool && (state.requiresCorrectToolForDrops() && !mainHandItem.isCorrectToolForDrops(state))) return@register true
+
+                // Perform veinminer
+                val blocks = breakAdjusted(state, material, mainHandItem, settings.delay, settings.maxChain, mutableSetOf(), world, pos)
+                if (blocks > 1) damageItem(mainHandItem, blocks - 1)
+
+                // Check for cooldown config
+                val cooldownTime = settings.cooldown
+                if (cooldownTime > 0) {
+                    cooldown.add(player.uuid)
+
+                    mcCoroutineTask(delay = cooldownTime.ticks) {
+                        cooldown.remove(player.uuid)
+                    }
+                }
+            }
+            return@register true
+        }
     }
 
+    /**
+     * Recursively break blocks around the source block until vein stops
+     * @return the number of blocks broken
+     */
+    private fun breakAdjusted(
+        source: BlockState,
+        target: String,
+        item: ItemStack,
+        delay: Int,
+        max: Int,
+        processedBlocks: MutableSet<BlockPos>,
+        world: Level,
+        position: BlockPos
+    ): Int {
+        if (source.block.descriptionId != target || processedBlocks.contains(position)) return 0
+        val size = processedBlocks.size
+        if (size >= max) return 0
+        if (size != 0) world.destroyBlock(position, true)
+        processedBlocks.add(position)
+        (-1..1).forEach { x ->
+            (-1..1).forEach { y ->
+                (-1..1).forEach z@{ z ->
+                    if (x == 0 && y == 0 && z == 0) return@z
+                    val newPos = BlockPos(position.x + x, position.y + y, position.z + z)
+                    val block = world.getBlockState(newPos)
+                    if (delay == 0) breakAdjusted(block, target, item, delay, max, processedBlocks, world, newPos)
+                    else mcCoroutineTask(delay = delay.ticks) {
+                        if (breakAdjusted(block, target, item, delay, max, processedBlocks, world, newPos) == 0) return@mcCoroutineTask
+                        damageItem(item, 1)
+                    }
+                }
+            }
+        }
+        return processedBlocks.size
+    }
 
+    private fun damageItem(item: ItemStack, amount: Int) {
+        item.damageValue += amount
+    }
 }
 
 val LOGGER: Logger = Logger.getLogger(Veinminer.MOD_ID)
