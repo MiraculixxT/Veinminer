@@ -1,6 +1,7 @@
 package de.miraculixx.veinminer.command
 
 import de.miraculixx.kpaper.extensions.bukkit.cmp
+import de.miraculixx.kpaper.extensions.bukkit.plus
 import de.miraculixx.kpaper.extensions.kotlin.enumOf
 import de.miraculixx.veinminer.INSTANCE
 import de.miraculixx.veinminer.VeinMinerEvent
@@ -15,10 +16,10 @@ import org.bukkit.block.data.BlockData
 object VeinminerCommand {
     private val command = commandTree("veinminer") {
         anyExecutor { sender, _ ->
-            sender.sendMessage(
-                "Veinminer Version: ${INSTANCE.description.version} (paper)\n" +
-                        "Game Version: ${INSTANCE.server.version}"
-            )
+            sender.sendMessage(cmp("Veinminer Version: ${INSTANCE.description.version} (paper)\n" +
+                        "Game Version: ${INSTANCE.server.version}" +
+                        "Download: "
+            ) + cmp("modrinth.com/project/veinminer"))
         }
 
         literalArgument("blocks") {
@@ -77,21 +78,21 @@ object VeinminerCommand {
         literalArgument("settings") {
             withPermission(permissionSettings)
             val settings = ConfigManager.settings
-            applySetting("mustSneak", settings.mustSneak) { settings.mustSneak = it }
-            applySetting("cooldown", settings.cooldown) { settings.cooldown = it }
-            applySetting("delay", settings.delay) { settings.delay = it }
-            applySetting("maxChain", settings.maxChain) { settings.maxChain = it }
-            applySetting("needCorrectTool", settings.needCorrectTool) { settings.needCorrectTool = it }
+            applySetting("mustSneak", { settings.mustSneak }) { settings.mustSneak = it }
+            applySetting("cooldown", { settings.cooldown }) { settings.cooldown = it }
+            applySetting("delay", { settings.delay }) { settings.delay = it }
+            applySetting("maxChain", { settings.maxChain }) { settings.maxChain = it }
+            applySetting("needCorrectTool", { settings.needCorrectTool }) { settings.needCorrectTool = it }
         }
     }
 
-    private fun <T> Argument<*>.applySetting(name: String, current: T, consumer: (T) -> Unit) {
+    private fun <T> Argument<*>.applySetting(name: String, currentConsumer: () -> T, consumer: (T) -> Unit) {
         literalArgument(name) {
             anyExecutor { sender, _ ->
-                sender.sendMessage(cmp("$name is currently set to $current"))
+                sender.sendMessage(cmp("$name is currently set to ${currentConsumer.invoke()}"))
             }
 
-            when (current) {
+            when (currentConsumer.invoke()) {
                 is Boolean -> booleanArgument("new") {
                     applyValue(name, consumer)
                 }
