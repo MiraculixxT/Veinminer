@@ -1,9 +1,9 @@
 import dex.plugins.outlet.v2.util.ReleaseType
+import org.jetbrains.kotlin.gradle.plugin.mpp.pm20.util.archivesName
 
 plugins {
     `kotlin-script`
     `fabric-script`
-    `adventure-script`
     `publish-script`
 }
 
@@ -42,4 +42,9 @@ sourceSets {
     main {
         resources.srcDirs("$rootDir/commons/")
     }
+}
+
+tasks.jar {
+    archivesName = "${properties["projectName"]}"
+//    archiveBaseName = "${properties["projectName"]}.$version"
 }
