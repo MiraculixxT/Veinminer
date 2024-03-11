@@ -4,7 +4,9 @@
   "version": "${version}",
   "name": "${name}",
   "description": "${description}",
-  "author": "${author}",
+  "authors": [
+    "${author}"
+  ],
   "license": "${license}",
   "icon": "assets/veinminer/icon.png",
   "contact": {
@@ -17,19 +19,17 @@
       "de.miraculixx.veinminer.Veinminer"
     ]
   },
-  "mixins": [
-    "template.mixins.json"
-  ],
+  "mixins": [],
   "suggests": {
     "modmenu":"*"
   },
   "depends": {
     "fabricloader": ">=0.15.0",
-    "minecraft": "${mcversion}",
+    "minecraft": ">=1.19",
     "java": ">=17",
     "fabric-api": "*",
     "fabric-language-kotlin": "*",
 
-    "silk": "*"
+    "silk-all": "*"
   }
 }

@@ -27,7 +27,6 @@ dependencies {
     mappings(loom.officialMojangMappings())
     modImplementation("net.fabricmc", "fabric-loader", outlet.loaderVersion())
     modImplementation("net.fabricmc.fabric-api", "fabric-api", outlet.fapiVersion())
-    modImplementation(include("net.kyori", "adventure-platform-fabric", properties["adventureVersion"] as String))
 
     //
     // Kotlin libraries
@@ -84,7 +83,7 @@ tasks.processResources {
                 "modid" to properties["modid"] as String,
                 "version" to version,
                 "name" to properties["projectName"] as String,
-                "description" to description,
+                "description" to properties["description"],
                 "author" to properties["author"] as String,
                 "license" to properties["licence"] as String,
                 "modrinth" to modrinthSlug,

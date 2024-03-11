@@ -6,6 +6,8 @@ import me.lucko.fabric.api.permissions.v0.Permissions
 import net.minecraft.DetectedVersion
 import net.minecraft.commands.CommandSourceStack
 import net.minecraft.commands.arguments.blocks.BlockInput
+import net.minecraft.resources.ResourceKey
+import net.minecraft.world.level.block.Block
 import net.silkmc.silk.commands.LiteralCommandBuilder
 import net.silkmc.silk.commands.command
 import net.silkmc.silk.core.text.literal
@@ -59,7 +61,7 @@ object VeinminerCommand {
 
     private val command = command("veinminer") {
         runs {
-            source.sendMessage(
+            source.sendSystemMessage(
                 ("Veinminer Version: ${Veinminer.INSTANCE.metadata.version} (fabric)\n" +
                         "Game Version: ${DetectedVersion.tryDetectVersion().name}").literal
             )
@@ -70,31 +72,28 @@ object VeinminerCommand {
             literal("add") {
                 argument<BlockInput>("block") { block ->
                     runs {
-                        val state = block().state.block
-                        val name = state.name
-                        println(state.descriptionId)
-                        if (ConfigManager.veinBlocks.add(state.descriptionId)) {
-                            source.sendMessage("Added $name to veinminer blocks".literal.withColor(cGreen))
+                        val id = block().state.block.descriptionId
+                        if (ConfigManager.veinBlocks.add(id)) {
+                            source.sendSystemMessage("Added $id to veinminer blocks".literal.withColor(cGreen))
                             ConfigManager.save()
                         } else {
-                            source.sendMessage("$name is already a veinminer block".literal.withColor(cRed))
+                            source.sendSystemMessage("$id is already a veinminer block".literal.withColor(cRed))
                         }
                     }
                 }
             }
-        }
 
-        literal("remove") {
-            argument<String>("block") { block ->
-                suggestList { ConfigManager.veinBlocks.toList() }
-                runs {
-                    val string = block()
-                    val name = string.lowercase().replace("_", " ")
-                    if (ConfigManager.veinBlocks.remove(string)) {
-                        source.sendMessage("Removed $name from veinminer blocks".literal.withColor(cGreen))
-                        ConfigManager.save()
-                    } else {
-                        source.sendMessage("$name is not a veinminer block".literal.withColor(cRed))
+            literal("remove") {
+                argument<String>("block") { block ->
+                    suggestList { ConfigManager.veinBlocks.toList() }
+                    runs {
+                        val string = block()
+                        if (ConfigManager.veinBlocks.remove(string)) {
+                            source.sendSystemMessage("Removed $string from veinminer blocks".literal.withColor(cGreen))
+                            ConfigManager.save()
+                        } else {
+                            source.sendSystemMessage("$string is not a veinminer block".literal.withColor(cRed))
+                        }
                     }
                 }
             }
@@ -103,26 +102,26 @@ object VeinminerCommand {
         literal("settings") {
             requires { Permissions.require(permissionSettings, 3).test(it) }
             val settings = ConfigManager.settings
-            applySetting("mustSneak", settings.mustSneak) { settings.mustSneak = it }
-            applySetting("cooldown", settings.cooldown) { settings.cooldown = it }
-            applySetting("delay", settings.delay) { settings.delay = it }
-            applySetting("maxChain", settings.maxChain) { settings.maxChain = it }
-            applySetting("needCorrectTool", settings.needCorrectTool) { settings.needCorrectTool = it }
+            applySetting("mustSneak", { settings.mustSneak }) { settings.mustSneak = it }
+            applySetting("cooldown", { settings.cooldown }) { settings.cooldown = it }
+            applySetting("delay", { settings.delay }) { settings.delay = it }
+            applySetting("maxChain", { settings.maxChain }) { settings.maxChain = it }
+            applySetting("needCorrectTool", { settings.needCorrectTool }) { settings.needCorrectTool = it }
         }
     }
 
-    private fun <T> LiteralCommandBuilder<CommandSourceStack>.applySetting(name: String, current: T, consumer: (T) -> Unit) {
+    private fun <T> LiteralCommandBuilder<CommandSourceStack>.applySetting(name: String, currentConsumer: () -> T, consumer: (T) -> Unit) {
         literal(name) {
             runs {
-                source.sendMessage("$name is currently set to $current".literal.withColor(cBase))
+                source.sendSystemMessage("$name is currently set to ${currentConsumer.invoke()}".literal.withColor(cBase))
             }
 
-            when (current) {
+            when (currentConsumer.invoke()) {
                 is Boolean -> argument<Boolean>("new") { new ->
                     runs {
                         val value = new() as T
                         consumer.invoke(value)
-                        source.sendMessage("$name set to $value".literal.withColor(cGreen))
+                        source.sendSystemMessage("$name set to $value".literal.withColor(cGreen))
                         ConfigManager.save()
                     }
                 }
@@ -131,7 +130,7 @@ object VeinminerCommand {
                     runs {
                         val value = new() as T
                         consumer.invoke(value)
-                        source.sendMessage("$name set to $value".literal.withColor(cGreen))
+                        source.sendSystemMessage("$name set to $value".literal.withColor(cGreen))
                         ConfigManager.save()
                     }
                 }
