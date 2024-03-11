@@ -25,7 +25,7 @@ class VeinMinerEvent {
             // Check for cooldown
             if (cooldown.contains(player.uniqueId)) return@listen
             // Check for correct tool
-            if (settings.needCorrectTool && !it.isDropItems) return@listen
+            if (settings.needCorrectTool && it.block.getDrops(it.player.inventory.itemInMainHand).isEmpty()) return@listen
 
             // Perform veinminer
             val item = player.inventory.itemInMainHand
