@@ -6,8 +6,6 @@ import me.lucko.fabric.api.permissions.v0.Permissions
 import net.minecraft.DetectedVersion
 import net.minecraft.commands.CommandSourceStack
 import net.minecraft.commands.arguments.blocks.BlockInput
-import net.minecraft.resources.ResourceKey
-import net.minecraft.world.level.block.Block
 import net.silkmc.silk.commands.LiteralCommandBuilder
 import net.silkmc.silk.commands.command
 import net.silkmc.silk.core.text.literal
