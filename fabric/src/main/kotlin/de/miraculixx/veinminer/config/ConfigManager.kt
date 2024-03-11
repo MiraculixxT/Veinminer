@@ -7,7 +7,14 @@ object ConfigManager {
     private val blocksFile = File("config/Veinminer/blocks.json")
     private val settingsFile = File("config/Veinminer/settings.json")
 
-    val veinBlocks = blocksFile.loadFile<MutableSet<String>>(mutableSetOf())
+    val veinBlocks = blocksFile.loadFile<MutableSet<String>>(buildSet {
+        setOf("coal", "iron", "copper", "gold", "redstone", "lapis", "diamond", "emerald").forEach {
+            add("block.minecraft.${it}_ore")
+            add("block.minecraft.deepslate_${it}_ore")
+        }
+        add("block.minecraft.nether_gold_ore")
+        add("block.minecraft.nether_quartz_ore")
+    }.toMutableSet())
     val settings = settingsFile.loadFile<VeinminerSettings>(VeinminerSettings())
 
     fun save() {

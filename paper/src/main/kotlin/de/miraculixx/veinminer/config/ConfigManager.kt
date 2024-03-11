@@ -8,7 +8,7 @@ object ConfigManager {
     private val blocksFile = File("plugins/Veinminer/blocks.json")
     private val settingsFile = File("plugins/Veinminer/settings.json")
 
-    val veinBlocks = blocksFile.loadFile<MutableSet<Material>>(mutableSetOf())
+    val veinBlocks = blocksFile.loadFile<MutableSet<Material>>(Material.entries.filter { it.name.endsWith("_ORE") }.toMutableSet())
     val settings = settingsFile.loadFile<VeinminerSettings>(VeinminerSettings())
 
     fun save() {
