@@ -7,8 +7,12 @@ import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.api.ModContainer
 import net.minecraft.core.BlockPos
+import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.Level
+import net.minecraft.world.level.block.BaseFireBlock
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.state.BlockState
 import net.silkmc.silk.core.kotlin.ticks
 import net.silkmc.silk.core.task.mcCoroutineTask
@@ -48,7 +52,7 @@ class Veinminer : ModInitializer {
                 if (settings.needCorrectTool && (state.requiresCorrectToolForDrops() && !mainHandItem.isCorrectToolForDrops(state))) return@register true
 
                 // Perform veinminer
-                val blocks = breakAdjusted(state, material, mainHandItem, settings.delay, settings.maxChain, mutableSetOf(), world, pos)
+                val blocks = breakAdjusted(state, material, mainHandItem, settings.delay, settings.maxChain, mutableSetOf(), world, pos, player)
                 if (blocks > 1) damageItem(mainHandItem, blocks - 1)
 
                 // Check for cooldown config
@@ -77,12 +81,13 @@ class Veinminer : ModInitializer {
         max: Int,
         processedBlocks: MutableSet<BlockPos>,
         world: Level,
-        position: BlockPos
+        position: BlockPos,
+        player: Player
     ): Int {
         if (source.block.descriptionId != target || processedBlocks.contains(position)) return 0
         val size = processedBlocks.size
         if (size >= max) return 0
-        if (size != 0) world.destroyBlock(position, true)
+        if (size != 0) source.destroyBlock(item, world, position, player)
         processedBlocks.add(position)
         (-1..1).forEach { x ->
             (-1..1).forEach { y ->
@@ -90,15 +95,33 @@ class Veinminer : ModInitializer {
                     if (x == 0 && y == 0 && z == 0) return@z
                     val newPos = BlockPos(position.x + x, position.y + y, position.z + z)
                     val block = world.getBlockState(newPos)
-                    if (delay == 0) breakAdjusted(block, target, item, delay, max, processedBlocks, world, newPos)
+                    if (delay == 0) breakAdjusted(block, target, item, delay, max, processedBlocks, world, newPos, player)
                     else mcCoroutineTask(delay = delay.ticks) {
-                        if (breakAdjusted(block, target, item, delay, max, processedBlocks, world, newPos) == 0) return@mcCoroutineTask
+                        if (breakAdjusted(block, target, item, delay, max, processedBlocks, world, newPos, player) == 0) return@mcCoroutineTask
                         damageItem(item, 1)
                     }
                 }
             }
         }
         return processedBlocks.size
+    }
+
+    private fun BlockState.destroyBlock(item: ItemStack, world: Level, position: BlockPos, player: Player) {
+        val block = block
+        if (block !== Blocks.AIR && (!requiresCorrectToolForDrops() || item.isCorrectToolForDrops(this))) {
+            Block.dropResources(this, world, position, world.getBlockEntity(position), player, item)
+
+            if (block is BaseFireBlock) {
+                world.levelEvent(1009, position, 0)
+            } else {
+                world.levelEvent(2001, position, Block.getId(this))
+            }
+        }
+
+        val destroyed = world.removeBlock(position, false)
+        if (destroyed) {
+            block.destroy(world, position, this)
+        }
     }
 
     private fun damageItem(item: ItemStack, amount: Int) {
