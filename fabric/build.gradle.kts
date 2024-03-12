@@ -46,5 +46,4 @@ sourceSets {
 
 tasks.jar {
     archivesName = "${properties["projectName"]}"
-//    archiveBaseName = "${properties["projectName"]}.$version"
 }

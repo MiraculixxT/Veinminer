@@ -1,4 +1,5 @@
 import dex.plugins.outlet.v2.util.ReleaseType
+import org.jetbrains.kotlin.gradle.plugin.mpp.pm20.util.archivesName
 
 plugins {
     `kotlin-script`
@@ -35,4 +36,8 @@ modrinth {
         // The type can either be `project` or `version`
 //        required.project("fabric-api")
     }
+}
+
+tasks.jar {
+    archivesName = "${properties["projectName"]}"
 }
