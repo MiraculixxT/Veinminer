@@ -32,11 +32,12 @@ The Fabric & Paper (V2) version is a more advanced version that is only usable w
 |  /veinminer **blocks**  |  `veinminer.blocks`  |         Edit blocks that are veinmineable         |
 |  /veinminer **toggle**  |  `veinminer.toggle`  |            Completely toggle Veinminer            |
 | /veinminer **settings** | `veinminer.settings` | Change settings like cooldown, max chain and more |
+
 OP players will have all permissions. To manually grant permissions see [Luckperms](https://luckperms.net/)
 
 ## Some Advice
 - To veinmine, your pickaxe must be able to mine the ore in normal conditions (unless disabled in V2)
-- While Veinminer is running very lightweight, mining unnatural big veins can lag the client and the server through the amount of items
+- While Veinminer is running very lightweight, mining unnatural big veins can lag the client and the server through the amount of items (you can avoid this by lowering the maxChain value in the config)
 
 
 If you need any help or want to share some ideas to add, just hop on our Discord ([dc.mutils.net](https://dc.mutils.net))
