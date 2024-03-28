@@ -1,5 +1,7 @@
 package de.miraculixx.veinminer.command
 
+import com.mojang.brigadier.context.CommandContext
+import de.miraculixx.veinminer.LOGGER
 import de.miraculixx.veinminer.Veinminer
 import de.miraculixx.veinminer.config.*
 import me.lucko.fabric.api.permissions.v0.Permissions
@@ -59,10 +61,8 @@ object VeinminerCommand {
 
     private val command = command("veinminer") {
         runs {
-            source.sendSystemMessage(
-                ("Veinminer Version: ${Veinminer.INSTANCE.metadata.version} (fabric)\n" +
-                        "Game Version: ${DetectedVersion.tryDetectVersion().name}").literal
-            )
+            source.msg("Veinminer Version: ${Veinminer.INSTANCE.metadata.version} (fabric)\n" +
+                    "Game Version: ${DetectedVersion.tryDetectVersion().name}", cBase)
         }
 
         literal("blocks") {
@@ -72,10 +72,10 @@ object VeinminerCommand {
                     runs {
                         val id = block().state.block.descriptionId
                         if (ConfigManager.veinBlocks.add(id)) {
-                            source.sendSystemMessage("Added $id to veinminer blocks".literal.withColor(cGreen))
                             ConfigManager.save()
+                            source.msg("Added $id to veinminer blocks", cGreen)
                         } else {
-                            source.sendSystemMessage("$id is already a veinminer block".literal.withColor(cRed))
+                            source.msg("$id is already a veinminer block", cRed)
                         }
                     }
                 }
@@ -87,10 +87,10 @@ object VeinminerCommand {
                     runs {
                         val string = block()
                         if (ConfigManager.veinBlocks.remove(string)) {
-                            source.sendSystemMessage("Removed $string from veinminer blocks".literal.withColor(cGreen))
                             ConfigManager.save()
+                            source.msg("Removed $string from veinminer blocks", cGreen)
                         } else {
-                            source.sendSystemMessage("$string is not a veinminer block".literal.withColor(cRed))
+                            source.msg("$string is not a veinminer block", cRed)
                         }
                     }
                 }
@@ -111,7 +111,7 @@ object VeinminerCommand {
     private fun <T> LiteralCommandBuilder<CommandSourceStack>.applySetting(name: String, currentConsumer: () -> T, consumer: (T) -> Unit) {
         literal(name) {
             runs {
-                source.sendSystemMessage("$name is currently set to ${currentConsumer.invoke()}".literal.withColor(cBase))
+                source.msg("$name is currently set to ${currentConsumer.invoke()}", cBase)
             }
 
             when (currentConsumer.invoke()) {
@@ -119,8 +119,8 @@ object VeinminerCommand {
                     runs {
                         val value = new() as T
                         consumer.invoke(value)
-                        source.sendSystemMessage("$name set to $value".literal.withColor(cGreen))
                         ConfigManager.save()
+                        source.msg("$name set to $value", cGreen)
                     }
                 }
 
@@ -128,11 +128,21 @@ object VeinminerCommand {
                     runs {
                         val value = new() as T
                         consumer.invoke(value)
-                        source.sendSystemMessage("$name set to $value".literal.withColor(cGreen))
                         ConfigManager.save()
+                        source.msg("$name set to $value", cGreen)
                     }
                 }
             }
+        }
+    }
+
+    private fun CommandSourceStack.msg(message: String, color: Int) {
+        try {
+            sendSystemMessage(message.literal.withColor(color))
+        } catch (_: Exception) {
+            sendSystemMessage(message.literal)
+        } catch (_: Exception) {
+            LOGGER.info("Messages cannot be sent in this version")
         }
     }
 }

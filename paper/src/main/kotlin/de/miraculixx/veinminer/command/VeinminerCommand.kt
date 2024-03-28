@@ -1,5 +1,6 @@
 package de.miraculixx.veinminer.command
 
+import de.miraculixx.kpaper.extensions.bukkit.addUrl
 import de.miraculixx.kpaper.extensions.bukkit.cmp
 import de.miraculixx.kpaper.extensions.bukkit.plus
 import de.miraculixx.kpaper.extensions.kotlin.enumOf
@@ -19,7 +20,7 @@ object VeinminerCommand {
             sender.sendMessage(cmp("Veinminer Version: ${INSTANCE.description.version} (paper)\n" +
                         "Game Version: ${INSTANCE.server.version}" +
                         "Download: "
-            ) + cmp("modrinth.com/project/veinminer"))
+            ) + cmp("modrinth.com/project/veinminer").addUrl("https://modrinth.com/project/veinminer"))
         }
 
         literalArgument("blocks") {

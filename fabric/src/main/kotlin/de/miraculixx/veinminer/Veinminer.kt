@@ -7,6 +7,7 @@ import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.api.ModContainer
 import net.minecraft.core.BlockPos
+import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.Level
@@ -52,8 +53,7 @@ class Veinminer : ModInitializer {
                 if (settings.needCorrectTool && (state.requiresCorrectToolForDrops() && !mainHandItem.isCorrectToolForDrops(state))) return@register true
 
                 // Perform veinminer
-                val blocks = breakAdjusted(state, material, mainHandItem, settings.delay, settings.maxChain, mutableSetOf(), world, pos, player)
-                if (blocks > 1) damageItem(mainHandItem, blocks - 1)
+                breakAdjusted(state, material, mainHandItem, settings.delay, settings.maxChain, mutableSetOf(), world, pos, player)
 
                 // Check for cooldown config
                 val cooldownTime = settings.cooldown
@@ -87,7 +87,11 @@ class Veinminer : ModInitializer {
         if (source.block.descriptionId != target || processedBlocks.contains(position)) return 0
         val size = processedBlocks.size
         if (size >= max) return 0
-        if (size != 0) source.destroyBlock(item, world, position, player)
+        if (item.isEmpty) return 0
+        if (size != 0) {
+            source.destroyBlock(item, world, position, player)
+            damageItem(item, player)
+        }
         processedBlocks.add(position)
         (-1..1).forEach { x ->
             (-1..1).forEach { y ->
@@ -98,7 +102,6 @@ class Veinminer : ModInitializer {
                     if (delay == 0) breakAdjusted(block, target, item, delay, max, processedBlocks, world, newPos, player)
                     else mcCoroutineTask(delay = delay.ticks) {
                         if (breakAdjusted(block, target, item, delay, max, processedBlocks, world, newPos, player) == 0) return@mcCoroutineTask
-                        damageItem(item, 1)
                     }
                 }
             }
@@ -124,8 +127,8 @@ class Veinminer : ModInitializer {
         }
     }
 
-    private fun damageItem(item: ItemStack, amount: Int) {
-        item.damageValue += amount
+    private fun damageItem(item: ItemStack, player: Player) {
+        item.hurtAndBreak<LivingEntity>(1, player) { }
     }
 }
 
