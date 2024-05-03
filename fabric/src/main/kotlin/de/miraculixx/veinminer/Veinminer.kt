@@ -25,6 +25,7 @@ class Veinminer : ModInitializer {
     companion object {
         const val MOD_ID = "veinminer"
         lateinit var INSTANCE: ModContainer
+        var active = true
     }
 
     private lateinit var fabricLoader: FabricLoader
@@ -39,6 +40,7 @@ class Veinminer : ModInitializer {
         VeinminerCommand
 
         PlayerBlockBreakEvents.BEFORE.register { world, player, pos, state, _ ->
+            if (!active) return@register true
             val material = state.block.descriptionId
 
             val settings = ConfigManager.settings

@@ -23,10 +23,10 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.+")
 
     // Fabric implementation
-    implementation("net.fabricmc:fabric-loom:1.5-SNAPSHOT")
+    implementation("net.fabricmc:fabric-loom:1.6-SNAPSHOT")
 
     // Paper implementation
-    implementation("io.papermc.paperweight.userdev:io.papermc.paperweight.userdev.gradle.plugin:1.5.+")
+    implementation("io.papermc.paperweight.userdev:io.papermc.paperweight.userdev.gradle.plugin:1.7.0")
     implementation(pluginDep("xyz.jpenilla.run-paper", "2.+"))
     implementation(pluginDep("net.minecrell.plugin-yml.bukkit", "0.6.+"))
 

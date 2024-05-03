@@ -97,6 +97,15 @@ object VeinminerCommand {
             }
         }
 
+        literal("toggle") {
+            requires { Permissions.require(permissionToggle, 3).test(it) }
+            runs {
+                if (Veinminer.active) source.msg("Veinminer functions disabled", cGreen)
+                else source.msg("Veinminer functions enabled", cRed)
+                Veinminer.active = !Veinminer.active
+            }
+        }
+
         literal("settings") {
             requires { Permissions.require(permissionSettings, 3).test(it) }
             val settings = ConfigManager.settings

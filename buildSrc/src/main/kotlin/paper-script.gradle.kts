@@ -16,7 +16,11 @@ val projectName = properties["projectName"] as String
 
 repositories {
     mavenCentral()
+    maven("https://papermc.io/repo/repository/maven-public/")
+    maven("https://s01.oss.sonatype.org/content/repositories/snapshots/")
 }
+
+paperweight.reobfArtifactConfiguration = io.papermc.paperweight.userdev.ReobfArtifactConfiguration.REOBF_PRODUCTION
 
 dependencies {
     paperweight.paperDevBundle("${gameVersion}-R0.1-SNAPSHOT")
@@ -29,8 +33,8 @@ dependencies {
     // Utility libraries (optional)
     val useBrigadier = properties["useBrigadier"] as String == "true"
     if (useBrigadier) {
-        library("dev.jorel:commandapi-bukkit-shade:9.3.+")
-        library("dev.jorel:commandapi-bukkit-kotlin:9.3.+")
+        library("dev.jorel:commandapi-bukkit-shade:9.4.+")
+        library("dev.jorel:commandapi-bukkit-kotlin:9.4.+")
     }
 
     library("de.miraculixx:kpaper:1.+")
@@ -53,4 +57,10 @@ bukkit {
     load = BukkitPluginDescription.PluginLoadOrder.STARTUP
     depend = listOf()
     softDepend = listOf()
+}
+
+tasks {
+    runServer {
+
+    }
 }
