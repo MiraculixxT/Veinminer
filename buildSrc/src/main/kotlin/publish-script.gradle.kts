@@ -7,7 +7,6 @@ modrinth {
     projectId.set(properties["modrinthProjectId"] as? String ?: properties["name"] as String)
     versionNumber.set(version as String)
     versionType.set(properties["publishState"] as String)
-    versionName = properties["projectName"] as String + " $versionNumber"
 
     // Project sync
     syncBodyFrom = rootProject.file("README.md").readText()

@@ -1,6 +1,6 @@
 plugins {
     `kotlin-dsl`
-    kotlin("plugin.serialization") version "1.9.22"
+    kotlin("plugin.serialization") version "1.9.23"
 }
 
 repositories {
@@ -14,7 +14,7 @@ repositories {
 
 dependencies {
     fun pluginDep(id: String, version: String) = "${id}:${id}.gradle.plugin:${version}"
-    val kotlinVersion = "1.9.22"
+    val kotlinVersion = "1.9.23"
 
     compileOnly(kotlin("gradle-plugin", kotlinVersion))
     runtimeOnly(kotlin("gradle-plugin", kotlinVersion))
@@ -26,12 +26,12 @@ dependencies {
     implementation("net.fabricmc:fabric-loom:1.6-SNAPSHOT")
 
     // Paper implementation
-    implementation("io.papermc.paperweight.userdev:io.papermc.paperweight.userdev.gradle.plugin:1.7.0")
-    implementation(pluginDep("xyz.jpenilla.run-paper", "2.+"))
+    implementation("io.papermc.paperweight.userdev:io.papermc.paperweight.userdev.gradle.plugin:1.7.1")
+    implementation(pluginDep("xyz.jpenilla.run-paper", "2.2.4"))
     implementation(pluginDep("net.minecrell.plugin-yml.bukkit", "0.6.+"))
 
     // Project configuration
-    implementation("gradle.plugin.com.github.johnrengelman:shadow:8.+")
+    implementation(pluginDep("com.github.johnrengelman.shadow", "8.1.1"))
     implementation(pluginDep("com.modrinth.minotaur", "2.+"))
     implementation(pluginDep("io.github.dexman545.outlet", "1.6.+"))
 }

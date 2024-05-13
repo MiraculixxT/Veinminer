@@ -1,3 +1,5 @@
+import gradle.kotlin.dsl.accessors._13adc61d9a4d59088516023f91c15173.modrinth
+
 plugins {
     id("fabric-loom")
     id("io.github.dexman545.outlet")
@@ -75,13 +77,13 @@ dependencies {
 }
 
 tasks.processResources {
-    println("-----" + outlet.mcVersionRange)
+    println("-----" + outlet.mcVersionRange + " - ${properties["version"]}")
     filesMatching("fabric.mod.json") {
         val modrinthSlug = properties["modrinthProjectId"] as? String ?: properties["modid"] as String
         expand(
             mapOf(
                 "modid" to properties["modid"] as String,
-                "version" to version,
+                "version" to properties["version"] as String,
                 "name" to properties["projectName"] as String,
                 "description" to properties["description"],
                 "author" to properties["author"] as String,

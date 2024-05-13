@@ -23,7 +23,7 @@ repositories {
 //paperweight.reobfArtifactConfiguration = io.papermc.paperweight.userdev.ReobfArtifactConfiguration.REOBF_PRODUCTION
 
 dependencies {
-    paperweight.paperDevBundle("${gameVersion}-R0.1-SNAPSHOT")
+    paperweight.paperDevBundle("1.20.6-R0.1-SNAPSHOT")
 
     // Kotlin libraries
     library(kotlin("stdlib"))
@@ -33,8 +33,8 @@ dependencies {
     // Utility libraries (optional)
     val useBrigadier = properties["useBrigadier"] as String == "true"
     if (useBrigadier) {
-        library("dev.jorel:commandapi-bukkit-shade:9.4.0")
-        library("dev.jorel:commandapi-bukkit-kotlin:9.4.0")
+        implementation("dev.jorel:commandapi-bukkit-shade:9.5.0-SNAPSHOT")
+        implementation("dev.jorel:commandapi-bukkit-kotlin:9.5.0-SNAPSHOT")
     }
 
     library("de.miraculixx:kpaper:1.+")
