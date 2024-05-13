@@ -1,6 +1,5 @@
 package de.miraculixx.veinminer.command
 
-import com.mojang.brigadier.context.CommandContext
 import de.miraculixx.veinminer.LOGGER
 import de.miraculixx.veinminer.Veinminer
 import de.miraculixx.veinminer.config.*
@@ -61,8 +60,10 @@ object VeinminerCommand {
 
     private val command = command("veinminer") {
         runs {
-            source.msg("Veinminer Version: ${Veinminer.INSTANCE.metadata.version} (fabric)\n" +
-                    "Game Version: ${DetectedVersion.tryDetectVersion().name}", cBase)
+            source.msg(
+                "Veinminer Version: ${Veinminer.INSTANCE.metadata.version} (fabric)\n" +
+                        "Game Version: ${DetectedVersion.tryDetectVersion().name}", cBase
+            )
         }
 
         literal("blocks") {

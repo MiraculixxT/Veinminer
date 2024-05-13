@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "${modid}",
-  "version": "${version}",
+  "version": "2.0.5",
   "name": "${name}",
   "description": "${description}",
   "authors": [
@@ -25,7 +25,7 @@
   },
   "depends": {
     "fabricloader": ">=0.15.0",
-    "minecraft": ">=1.19",
+    "minecraft": ">=1.20.5",
     "java": ">=17",
     "fabric-api": "*",
     "fabric-language-kotlin": "*",

@@ -7,6 +7,7 @@ import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.api.ModContainer
 import net.minecraft.core.BlockPos
+import net.minecraft.world.entity.EquipmentSlot
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
@@ -130,7 +131,7 @@ class Veinminer : ModInitializer {
     }
 
     private fun damageItem(item: ItemStack, player: Player) {
-        item.hurtAndBreak<LivingEntity>(1, player) { }
+        item.hurtAndBreak(1, player, EquipmentSlot.MAINHAND)
     }
 }
 
