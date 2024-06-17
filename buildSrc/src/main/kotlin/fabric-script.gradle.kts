@@ -1,4 +1,3 @@
-import gradle.kotlin.dsl.accessors._13adc61d9a4d59088516023f91c15173.modrinth
 
 plugins {
     id("fabric-loom")
