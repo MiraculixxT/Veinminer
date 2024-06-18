@@ -131,7 +131,7 @@ class Veinminer : ModInitializer {
     }
 
     private fun damageItem(item: ItemStack, player: Player) {
-        item.hurtAndBreak(1, player, EquipmentSlot.MAINHAND)
+        item.hurtAndBreak(1, player) { entity -> entity.broadcastBreakEvent(EquipmentSlot.MAINHAND) }
     }
 }
 

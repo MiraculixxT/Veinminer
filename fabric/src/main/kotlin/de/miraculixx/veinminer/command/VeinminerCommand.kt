@@ -4,12 +4,15 @@ import de.miraculixx.veinminer.LOGGER
 import de.miraculixx.veinminer.Veinminer
 import de.miraculixx.veinminer.config.*
 import me.lucko.fabric.api.permissions.v0.Permissions
+import net.minecraft.ChatFormatting
 import net.minecraft.DetectedVersion
 import net.minecraft.commands.CommandSourceStack
 import net.minecraft.commands.arguments.blocks.BlockInput
+import net.minecraft.network.chat.Style
 import net.silkmc.silk.commands.LiteralCommandBuilder
 import net.silkmc.silk.commands.command
 import net.silkmc.silk.core.text.literal
+import net.silkmc.silk.core.text.literalText
 
 object VeinminerCommand {
 
@@ -148,7 +151,7 @@ object VeinminerCommand {
 
     private fun CommandSourceStack.msg(message: String, color: Int) {
         try {
-            sendSystemMessage(message.literal.withColor(color))
+            sendSystemMessage(literalText(message) { this.color = color })
         } catch (_: Exception) {
             sendSystemMessage(message.literal)
         } catch (_: Exception) {
