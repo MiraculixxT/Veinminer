@@ -1,6 +1,6 @@
 ## Veinminer
 <!-- modrinth_exclude.start -->
-### - [DOWNLOAD](https://modrinth.com/plugin/template) -
+### - [DOWNLOAD](https://modrinth.com/project/veinminer) -
 <!-- modrinth_exclude.end -->
 
 Mine a single ore to break the full vein of the same ore! 
