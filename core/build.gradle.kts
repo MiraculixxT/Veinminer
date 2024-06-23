@@ -4,6 +4,4 @@ plugins {
     `adventure-script`
 }
 
-dependencies {
-
-}
+dependencies {}

@@ -36,7 +36,7 @@ class VeinMinerEvent {
 
             // Perform veinminer
             val item = player.inventory.itemInMainHand
-            breakAdjusted(it.block, material, item, settings.delay, settings.maxChain, mutableSetOf(), player)
+            breakAdjusted(it.block, material, item, settings.delay, settings.maxChain, mutableSetOf(), player, settings.searchRadius)
 
             // Check for cooldown config
             val cooldownTime = settings.cooldown
@@ -54,7 +54,7 @@ class VeinMinerEvent {
      * Recursively break blocks around the source block until vein stops
      * @return the number of blocks broken
      */
-    private fun breakAdjusted(source: Block, target: Material, item: ItemStack, delay: Int, max: Int, processedBlocks: MutableSet<Block>, player: Player): Int {
+    private fun breakAdjusted(source: Block, target: Material, item: ItemStack, delay: Int, max: Int, processedBlocks: MutableSet<Block>, player: Player, searchRadius: Int): Int {
         if (source.type != target || processedBlocks.contains(source)) return 0
         val size = processedBlocks.size
         if (size >= max) return 0
@@ -64,14 +64,14 @@ class VeinMinerEvent {
             damageItem(item, 1, player)
         }
         processedBlocks.add(source)
-        (-1..1).forEach { x ->
-            (-1..1).forEach { y ->
-                (-1..1).forEach z@{ z ->
+        (-searchRadius..searchRadius).forEach { x ->
+            (-searchRadius..searchRadius).forEach { y ->
+                (-searchRadius..searchRadius).forEach z@{ z ->
                     if (x == 0 && y == 0 && z == 0) return@z
                     val block = source.world.getBlockAt(source.x + x, source.y + y, source.z + z)
-                    if (delay == 0) breakAdjusted(block, target, item, delay, max, processedBlocks, player)
+                    if (delay == 0) breakAdjusted(block, target, item, delay, max, processedBlocks, player, searchRadius)
                     else taskRunLater(delay.toLong()) {
-                        if (breakAdjusted(block, target, item, delay, max, processedBlocks, player) == 0) return@taskRunLater
+                        if (breakAdjusted(block, target, item, delay, max, processedBlocks, player, searchRadius) == 0) return@taskRunLater
                     }
                 }
             }
