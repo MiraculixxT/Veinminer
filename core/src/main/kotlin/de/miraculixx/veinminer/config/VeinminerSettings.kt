@@ -11,3 +11,4 @@ data class VeinminerSettings(
     var needCorrectTool: Boolean = true,
     var searchRadius: Int = 1,
 )
+
