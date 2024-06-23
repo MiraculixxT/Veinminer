@@ -8,7 +8,6 @@ import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.api.ModContainer
 import net.minecraft.core.BlockPos
 import net.minecraft.world.entity.EquipmentSlot
-import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.Level
@@ -56,7 +55,7 @@ class Veinminer : ModInitializer {
                 if (settings.needCorrectTool && (state.requiresCorrectToolForDrops() && !mainHandItem.isCorrectToolForDrops(state))) return@register true
 
                 // Perform veinminer
-                breakAdjusted(state, material, mainHandItem, settings.delay, settings.maxChain, mutableSetOf(), world, pos, player)
+                breakAdjusted(state, material, mainHandItem, settings.delay, settings.maxChain, mutableSetOf(), world, pos, player, settings.searchRadius)
 
                 // Check for cooldown config
                 val cooldownTime = settings.cooldown
@@ -85,7 +84,8 @@ class Veinminer : ModInitializer {
         processedBlocks: MutableSet<BlockPos>,
         world: Level,
         position: BlockPos,
-        player: Player
+        player: Player,
+        searchRadius: Int,
     ): Int {
         if (source.block.descriptionId != target || processedBlocks.contains(position)) return 0
         val size = processedBlocks.size
@@ -96,15 +96,15 @@ class Veinminer : ModInitializer {
             damageItem(item, player)
         }
         processedBlocks.add(position)
-        (-1..1).forEach { x ->
-            (-1..1).forEach { y ->
-                (-1..1).forEach z@{ z ->
+        (-searchRadius..searchRadius).forEach { x ->
+            (-searchRadius..searchRadius).forEach { y ->
+                (-searchRadius..searchRadius).forEach z@{ z ->
                     if (x == 0 && y == 0 && z == 0) return@z
                     val newPos = BlockPos(position.x + x, position.y + y, position.z + z)
                     val block = world.getBlockState(newPos)
-                    if (delay == 0) breakAdjusted(block, target, item, delay, max, processedBlocks, world, newPos, player)
+                    if (delay == 0) breakAdjusted(block, target, item, delay, max, processedBlocks, world, newPos, player, searchRadius)
                     else mcCoroutineTask(delay = delay.ticks) {
-                        if (breakAdjusted(block, target, item, delay, max, processedBlocks, world, newPos, player) == 0) return@mcCoroutineTask
+                        if (breakAdjusted(block, target, item, delay, max, processedBlocks, world, newPos, player, searchRadius) == 0) return@mcCoroutineTask
                     }
                 }
             }

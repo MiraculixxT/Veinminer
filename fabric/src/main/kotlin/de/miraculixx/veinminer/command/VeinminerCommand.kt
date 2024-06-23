@@ -1,3 +1,5 @@
+@file:Suppress("unused", "UNCHECKED_CAST")
+
 package de.miraculixx.veinminer.command
 
 import de.miraculixx.veinminer.LOGGER
@@ -115,6 +117,7 @@ object VeinminerCommand {
             applySetting("delay", { settings.delay }) { settings.delay = it }
             applySetting("maxChain", { settings.maxChain }) { settings.maxChain = it }
             applySetting("needCorrectTool", { settings.needCorrectTool }) { settings.needCorrectTool = it }
+            applySetting("searchRadius", { settings.searchRadius }) { settings.searchRadius = it }
         }
     }
 
