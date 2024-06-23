@@ -19,6 +19,8 @@ import kotlin.time.Duration.Companion.milliseconds
 class VeinMinerEvent {
     private val cooldown = mutableSetOf<UUID>()
 
+    private fun Material.groupedBlocks(): Set<Material> = ConfigManager.groups.filter { it.blocks.contains(this) }.map { it.blocks }.flatten().toMutableSet().apply { add(this@groupedBlocks) }
+
     private val onBlockBreak = listen<BlockBreakEvent> {
         val player = it.player
         val material = it.block.type
@@ -34,7 +36,7 @@ class VeinMinerEvent {
 
             // Perform veinminer
             val item = player.inventory.itemInMainHand
-            breakAdjusted(it.block, material, item, settings.delay, settings.maxChain, mutableSetOf(), player, settings.searchRadius)
+            breakAdjusted(it.block, material.groupedBlocks(), item, settings.delay, settings.maxChain, mutableSetOf(), player, settings.searchRadius)
 
             // Check for cooldown config
             val cooldownTime = settings.cooldown
@@ -52,8 +54,8 @@ class VeinMinerEvent {
      * Recursively break blocks around the source block until vein stops
      * @return the number of blocks broken
      */
-    private fun breakAdjusted(source: Block, target: Material, item: ItemStack, delay: Int, max: Int, processedBlocks: MutableSet<Block>, player: Player, searchRadius: Int): Int {
-        if (source.type != target || processedBlocks.contains(source)) return 0
+    private fun breakAdjusted(source: Block, target: Set<Material>, item: ItemStack, delay: Int, max: Int, processedBlocks: MutableSet<Block>, player: Player, searchRadius: Int): Int {
+        if (!target.contains(source.type) || processedBlocks.contains(source)) return 0
         val size = processedBlocks.size
         if (size >= max) return 0
         if (item.isEmpty) return 0
@@ -61,6 +63,7 @@ class VeinMinerEvent {
             source.breakNaturally(item, true, true)
             damageItem(item, 1, player)
         }
+
         processedBlocks.add(source)
         (-searchRadius..searchRadius).forEach { x ->
             (-searchRadius..searchRadius).forEach { y ->
