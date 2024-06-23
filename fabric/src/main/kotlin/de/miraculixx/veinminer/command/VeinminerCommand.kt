@@ -1,3 +1,5 @@
+@file:Suppress("unused", "UNCHECKED_CAST")
+
 package de.miraculixx.veinminer.command
 
 import de.miraculixx.veinminer.LOGGER

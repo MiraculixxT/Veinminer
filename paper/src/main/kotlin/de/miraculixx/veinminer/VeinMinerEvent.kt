@@ -13,10 +13,8 @@ import org.bukkit.block.Block
 import org.bukkit.entity.Player
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.inventory.ItemStack
-import org.bukkit.inventory.meta.Damageable
 import java.util.*
 import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.seconds
 
 class VeinMinerEvent {
     private val cooldown = mutableSetOf<UUID>()
@@ -82,6 +80,7 @@ class VeinMinerEvent {
     /**
      * @return true if the item was broken
      */
+    @Suppress("SameParameterValue")
     private fun damageItem(item: ItemStack, amount: Int, player: Player): Boolean {
         if (item.type.maxDurability == 0.toShort() || item.isEmpty) return false
         return item.damage(amount, player).isEmpty

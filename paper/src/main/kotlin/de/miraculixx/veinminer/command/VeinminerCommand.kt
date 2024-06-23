@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION", "unused", "UNCHECKED_CAST")
+
 package de.miraculixx.veinminer.command
 
 import de.miraculixx.kpaper.extensions.bukkit.addUrl
