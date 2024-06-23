@@ -9,6 +9,7 @@ import me.lucko.fabric.api.permissions.v0.Permissions
 import net.minecraft.DetectedVersion
 import net.minecraft.commands.CommandSourceStack
 import net.minecraft.commands.arguments.blocks.BlockInput
+import net.silkmc.silk.commands.ArgumentCommandBuilder
 import net.silkmc.silk.commands.LiteralCommandBuilder
 import net.silkmc.silk.commands.command
 import net.silkmc.silk.core.text.literal
@@ -186,7 +187,15 @@ object VeinminerCommand {
                     }
 
                     literal("remove") {
+                        fun <T> ArgumentCommandBuilder<CommandSourceStack, T>.suggestGroupBlocks(groupArgument: String) {
+                            suggestList { info ->
+                                val group = info.getArgument(groupArgument, String::class.java)
+                                (getGroup(group)?: return@suggestList null).blocks
+                            }
+                        }
+
                         argument<BlockInput>("block") { block ->
+                            suggestGroupBlocks("group")
                             runs {
                                 val blockId = block().state.block.descriptionId
                                 val group = getGroup(groupName()) ?: run { source.msg("${groupName()} does not exist!", cRed); return@runs }
@@ -242,4 +251,7 @@ object VeinminerCommand {
             LOGGER.info("Messages cannot be sent in this version")
         }
     }
+
+
+
 }
