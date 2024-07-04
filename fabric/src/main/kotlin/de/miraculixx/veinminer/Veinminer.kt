@@ -42,6 +42,8 @@ class Veinminer : ModInitializer {
         VeinminerCommand
 
         PlayerBlockBreakEvents.BEFORE.register { world, player, pos, state, _ ->
+            fun groupedBlocks(id: String): Set<String> = ConfigManager.groups.filter { it.blocks.contains(id) }.map { it.blocks}.flatten().toMutableSet().apply { add(id) }
+
             if (!active) return@register true
             val material = state.block.descriptionId
 
@@ -58,7 +60,7 @@ class Veinminer : ModInitializer {
                 if (settings.needCorrectTool && (state.requiresCorrectToolForDrops() && !mainHandItem.isCorrectToolForDrops(state))) return@register true
 
                 // Perform veinminer
-                breakAdjusted(state, material, mainHandItem, settings.delay, settings.maxChain, mutableSetOf(), world, pos, player, settings.searchRadius)
+                breakAdjusted(state, groupedBlocks(material), mainHandItem, settings.delay, settings.maxChain, mutableSetOf(), world, pos, player, settings.searchRadius)
 
                 // Check for cooldown config
                 val cooldownTime = settings.cooldown
@@ -80,7 +82,7 @@ class Veinminer : ModInitializer {
      */
     private fun breakAdjusted(
         source: BlockState,
-        target: String,
+        target: Set<String>,
         item: ItemStack,
         delay: Int,
         max: Int,
@@ -90,7 +92,7 @@ class Veinminer : ModInitializer {
         player: Player,
         searchRadius: Int,
     ): Int {
-        if (source.block.descriptionId != target || processedBlocks.contains(position)) return 0
+        if (!target.contains(source.block.descriptionId) || processedBlocks.contains(position)) return 0
         val size = processedBlocks.size
         if (size >= max) return 0
         if (item.isEmpty) return 0
