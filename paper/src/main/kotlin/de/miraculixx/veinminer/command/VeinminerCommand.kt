@@ -16,14 +16,18 @@ import dev.jorel.commandapi.kotlindsl.*
 import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.Material
 import org.bukkit.block.data.BlockData
+import org.bukkit.command.CommandSender
 
 object VeinminerCommand {
     private val command = commandTree("veinminer") {
         anyExecutor { sender, _ ->
-            sender.sendMessage(cmp("Veinminer Version: ${INSTANCE.description.version} (paper)\n" +
-                        "Game Version: ${INSTANCE.server.version}" +
-                        "Download: "
-            ) + cmp("modrinth.com/project/veinminer").addUrl("https://modrinth.com/project/veinminer"))
+            sender.sendMessage(
+                cmp(
+                    "Veinminer Version: ${INSTANCE.description.version} (paper)\n" +
+                            "Game Version: ${INSTANCE.server.version}" +
+                            "Download: "
+                ) + cmp("modrinth.com/project/veinminer").addUrl("https://modrinth.com/project/veinminer")
+            )
         }
 
         literalArgument("blocks") {
@@ -93,106 +97,76 @@ object VeinminerCommand {
 
         literalArgument("groups") {
             withPermission(permissionGroups)
-            literalArgument("list") {
-
-                anyExecutor { sender, _ ->
-                    ConfigManager.groups.forEach { group ->
-                        sender.sendMessage(cmp("group: ") + cmp(group.name, NamedTextColor.WHITE))
-                        sender.sendMessage(cmp("Blocks: ") + cmp(group.blocks.map { it.name.fancy() }.joinToString(", "), NamedTextColor.WHITE))
-                        sender.sendMessage("")
-                    }
+            fun groupExists(group: String) = ConfigManager.groups.any { it.name.lowercase() == group.lowercase() }
+            fun CommandSender.createGroup(name: String, content: MutableSet<Material>) {
+                if (groupExists(name)) {
+                    sendMessage(cmp("Group '$name' already exists", cRed.color()))
+                    return
                 }
-
-                stringArgument("group") {
-                    replaceSuggestions(ArgumentSuggestions.stringCollection { ConfigManager.groups.map { it.name } })
-
-                    anyExecutor { sender, args ->
-                        val group: String by args
-                        if (!ConfigManager.groups.any { it.name.lowercase() == group.lowercase() }) {
-                            sender.sendMessage(cmp("$group not found!", cRed.color()))
-                            return@anyExecutor
-                        }
-                        val groupO = ConfigManager.groups.first { it.name.lowercase() == group.lowercase() }
-                        sender.sendMessage(cmp("Group:") + cmp(" ${groupO.name}", NamedTextColor.WHITE))
-                        sender.sendMessage(cmp("Blocks:") + cmp(groupO.blocks.map { it.name.fancy() }.joinToString(", "), NamedTextColor.WHITE))
-                    }
-
-                }
-
+                ConfigManager.groups.add(BlockGroup(name, content))
+                sendMessage(cmp("Created group '$name'\nAdd blocks with '/groups edit $name add ...'", cGreen.color()))
             }
 
-            literalArgument("add") {
-
-                stringArgument("name") {
-
-                    blockStateArgument("block") {
-
-                        anyExecutor { sender, args ->
-                            val name: String by args
-                            val block: BlockData by args
-                            if (ConfigManager.groups.any { it.name.lowercase() == name.lowercase() }) {
-                                sender.sendMessage(cmp("$name already exists!", cRed.color()))
-                                return@anyExecutor
-                            }
-                            ConfigManager.groups.add(BlockGroup(name, mutableSetOf(block.material)))
-                            sender.sendMessage(cmp("Created group $name", cGreen.color()))
-                        }
-
+            literalArgument("list") {
+                anyExecutor { sender, _ ->
+                    ConfigManager.groups.forEach { group ->
+                        sender.sendMessage(cmp("Group ") + cmp(group.name, NamedTextColor.WHITE))
+                        sender.sendMessage(cmp(" -> Blocks: [") + cmp(group.blocks.joinToString(", ") { it.name.fancy() }, NamedTextColor.WHITE) + cmp("]"))
                     }
-
                 }
+            }
 
+            literalArgument("create") {
+                stringArgument("name") {
+                    anyExecutor { sender, args -> sender.createGroup(args[0] as String, mutableSetOf()) }
+                    blockStateArgument("block1") {
+                        anyExecutor { sender, args ->
+                            sender.createGroup(args[0] as String, mutableSetOf((args[1] as BlockData).material))
+                        }
+                        blockStateArgument("block2") {
+                            anyExecutor { sender, args ->
+                                sender.createGroup(args[0] as String, mutableSetOf((args[1] as BlockData).material, (args[2] as BlockData).material))
+                            }
+                        }
+                    }
+                }
             }
 
             literalArgument("remove") {
-
                 stringArgument("group") {
-
                     replaceSuggestions(ArgumentSuggestions.stringCollection { ConfigManager.groups.map { it.name } })
-
                     anyExecutor { sender, args ->
                         val group: String by args
-                        if (!ConfigManager.groups.any { it.name.lowercase() == group.lowercase() }) {
-                            sender.sendMessage(cmp("Group $group not found!", cRed.color()))
+                        if (!groupExists(group)) {
+                            sender.sendMessage(cmp("The group '$group' does not exist", cRed.color()))
                             return@anyExecutor
                         }
-                        ConfigManager.groups.removeIf { it.name.lowercase() == group.lowercase()}
-                        sender.sendMessage(cmp("Group removed!", cGreen.color()))
+                        ConfigManager.groups.removeIf { it.name.lowercase() == group.lowercase() }
+                        sender.sendMessage(cmp("Removed group '$name'", cGreen.color()))
                     }
                 }
-
             }
 
             literalArgument("edit") {
-
                 stringArgument("group") {
-
                     replaceSuggestions(ArgumentSuggestions.stringCollection { ConfigManager.groups.map { it.name } })
-
                     literalArgument("add") {
-
                         blockStateArgument("block") {
-
                             anyExecutor { sender, args ->
-
                                 val group: String by args
                                 val block: BlockData by args
                                 val name = block.material.name.fancy()
                                 if (!ConfigManager.groups.any { it.name.lowercase() == group.lowercase() }) {
-                                    sender.sendMessage(cmp("$group not found!", cRed.color()))
+                                    sender.sendMessage(cmp("Group '$group' does not exist", cRed.color()))
                                     return@anyExecutor
                                 }
                                 if (!ConfigManager.groups.first { it.name.lowercase() == group.lowercase() }.blocks.add(block.material)) {
-                                    sender.sendMessage(cmp("$name is already present in this group!", cRed.color()))
+                                    sender.sendMessage(cmp("Block '$name' is already present in group '$name'", cRed.color()))
                                     return@anyExecutor
-                                } else {
-                                    sender.sendMessage(cmp("$name added to $group!", cGreen.color()))
                                 }
-
+                                sender.sendMessage(cmp("Added '$name' to the group '$group'!", cGreen.color()))
                             }
-
                         }
-
                     }
 
                     literalArgument("remove") {
@@ -202,16 +176,14 @@ object VeinminerCommand {
                                 val block: BlockData by args
                                 val name = block.material.name.fancy()
                                 if (!ConfigManager.groups.any { it.name.lowercase() == group.lowercase() }) {
-                                    sender.sendMessage(cmp("$group not found!", cRed.color()))
+                                    sender.sendMessage(cmp("Group '$group' does not exist", cRed.color()))
                                     return@anyExecutor
                                 }
-
                                 if (!ConfigManager.groups.first { it.name.lowercase() == group.lowercase() }.blocks.remove(block.material)) {
-                                    sender.sendMessage(cmp("$name is not present in this group!", cRed.color()))
+                                    sender.sendMessage(cmp("Block '$name' is not present in group '$group'", cRed.color()))
                                     return@anyExecutor
-                                } else {
-                                    sender.sendMessage(cmp("$name removed from $group!", cGreen.color()))
                                 }
+                                sender.sendMessage(cmp("Removed $name from the group '$group'", cGreen.color()))
                             }
                         }
                     }
