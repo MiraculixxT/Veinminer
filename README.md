@@ -27,11 +27,12 @@ The DataPack (V1) version is a simple version that is usable on every server and
 ---
 The Fabric & Paper (V2) version is a more advanced version that is only usable with Fabric/Quilt or Paper/PurPur servers.
 
-|         Command         |      Permission      |                 Short Description                 |
-|:-----------------------:|:--------------------:|:-------------------------------------------------:|
-|  /veinminer **blocks**  |  `veinminer.blocks`  |         Edit blocks that are veinmineable         |
-|  /veinminer **toggle**  |  `veinminer.toggle`  |            Completely toggle Veinminer            |
-| /veinminer **settings** | `veinminer.settings` | Change settings like cooldown, max chain and more |
+|         Command         |      Permission      |                     Short Description                     |
+|:-----------------------:|:--------------------:|:---------------------------------------------------------:|
+|  /veinminer **blocks**  |  `veinminer.blocks`  |             Edit blocks that are veinmineable             |
+|  /veinminer **toggle**  |  `veinminer.toggle`  |                Completely toggle Veinminer                |
+| /veinminer **settings** | `veinminer.settings` |     Change settings like cooldown, max chain and more     |
+|    *Using Vineminer*    |   `veinminer.use`    | If perm-restriction is active, this is needed to veinmine |
 
 OP players will have all permissions. To manually grant permissions see [Luckperms](https://luckperms.net/)
 
