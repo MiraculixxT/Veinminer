@@ -10,5 +10,5 @@ data class VeinminerSettings(
     var maxChain: Int = 100,
     var needCorrectTool: Boolean = true,
     var searchRadius: Int = 1,
+    var permissionRestricted: Boolean = false,
 )
-

@@ -88,6 +88,7 @@ object VeinminerCommand {
             applySetting("maxChain", { settings.maxChain }) { settings.maxChain = it }
             applySetting("needCorrectTool", { settings.needCorrectTool }) { settings.needCorrectTool = it }
             applySetting("searchRadius", { settings.searchRadius }) { settings.searchRadius = it }
+            applySetting("permissionRestricted", { settings.permissionRestricted }) { settings.permissionRestricted = it }
         }
 
         literalArgument("groups") {

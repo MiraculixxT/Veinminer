@@ -16,51 +16,6 @@ import net.silkmc.silk.core.text.literal
 
 object VeinminerCommand {
 
-//    init {
-//        CommandRegistrationCallback.EVENT.register(CommandRegistrationCallback { dispatcher, registryAccess, environment ->
-//            dispatcher.register(literal<CommandSourceStack>("veinminer")
-//                .executes { context ->
-//                    context.source.sendMessage(("Veinminer Version: ${Veinminer.INSTANCE.metadata.version} (fabric)\n" +
-//                                "Game Version: ${DetectedVersion.tryDetectVersion().name}").literal)
-//                    1
-//                }.then(literal<CommandSourceStack>("blocks")
-//                    .requires(Permissions.require(permissionBlocks, 3))
-//                    .then(literal<CommandSourceStack>("add")
-//                        .then(LiteralArgumentBuilder.argument("block", BlockInput.block())
-//                            .executes { context ->
-//                                val state = BlockInput.block(context, "block").state.block
-//                                val name = state.name
-//                                println(state.descriptionId)
-//                                if (ConfigManager.veinBlocks.add(state.descriptionId)) {
-//                                    context.source.sendMessage("Added $name to veinminer blocks".literal.withColor(cGreen))
-//                                    ConfigManager.save()
-//                                } else {
-//                                    context.source.sendMessage("$name is already a veinminer block".literal.withColor(cRed))
-//                                }
-//                                1
-//                            }
-//                        )
-//                    )
-//                    .then(LiteralArgumentBuilder.literal<CommandSourceStack>("remove")
-//                        .then(LiteralArgumentBuilder.argument("block", StringArgumentType.string())
-//                            .suggests { ConfigManager.veinBlocks.toList() }
-//                            .executes { context ->
-//                                val string = StringArgumentType.getString(context, "block")
-//                                val name = string.lowercase().replace("_", " ")
-//                                if (ConfigManager.veinBlocks.remove(string)) {
-//                                    context.source.sendMessage("Removed $name from veinminer blocks".literal.withColor(cGreen))
-//                                    ConfigManager.save()
-//                                } else {
-//                                    context.source.sendMessage("$name is not a veinminer block".literal.withColor(cRed))
-//                                }
-//                                1
-//                            }
-//                        )
-//                    )
-//                )
-//        })
-//    }
-
     private val command = command("veinminer") {
         runs {
             source.msg(
@@ -119,6 +74,7 @@ object VeinminerCommand {
             applySetting("maxChain", { settings.maxChain }) { settings.maxChain = it }
             applySetting("needCorrectTool", { settings.needCorrectTool }) { settings.needCorrectTool = it }
             applySetting("searchRadius", { settings.searchRadius }) { settings.searchRadius = it }
+            applySetting("permissionRestricted", { settings.permissionRestricted }) { settings.permissionRestricted = it }
         }
 
         literal("groups") {

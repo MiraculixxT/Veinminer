@@ -9,6 +9,7 @@ const val cBase = 0xaaaaaa
 const val permissionToggle = "veinminer.toggle"
 const val permissionBlocks = "veinminer.blocks"
 const val permissionSettings = "veinminer.settings"
+const val permissionVeinmine = "veinminer.use"
 const val permissionGroups = "veinminer.groups"
 
 val json = Json {

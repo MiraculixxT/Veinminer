@@ -2,6 +2,8 @@ package de.miraculixx.veinminer
 
 import de.miraculixx.veinminer.command.VeinminerCommand
 import de.miraculixx.veinminer.config.ConfigManager
+import de.miraculixx.veinminer.config.permissionVeinmine
+import me.lucko.fabric.api.permissions.v0.Permissions
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents
 import net.fabricmc.loader.api.FabricLoader
@@ -46,6 +48,7 @@ class Veinminer : ModInitializer {
             val material = state.block.descriptionId
 
             val settings = ConfigManager.settings
+            if (settings.permissionRestricted && !Permissions.check(player, permissionVeinmine)) return@register true
             if (ConfigManager.veinBlocks.contains(material)) {
                 // Check for sneak config
                 if (settings.mustSneak && !player.isCrouching) return@register true

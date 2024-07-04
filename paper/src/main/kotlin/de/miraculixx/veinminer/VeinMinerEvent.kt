@@ -4,6 +4,7 @@ import de.miraculixx.kpaper.event.listen
 import de.miraculixx.kpaper.event.unregister
 import de.miraculixx.kpaper.runnables.taskRunLater
 import de.miraculixx.veinminer.config.ConfigManager
+import de.miraculixx.veinminer.config.permissionVeinmine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -26,6 +27,7 @@ class VeinMinerEvent {
         val material = it.block.type
 
         val settings = ConfigManager.settings
+        if (settings.permissionRestricted && !player.hasPermission(permissionVeinmine)) return@listen
         if (ConfigManager.veinBlocks.contains(material)) {
             // Check for sneak config
             if (settings.mustSneak && !player.isSneaking) return@listen
