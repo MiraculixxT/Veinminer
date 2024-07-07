@@ -30,6 +30,14 @@ object VeinminerCommand {
             )
         }
 
+        literalArgument("reload") {
+            withPermission(permissionReload)
+            anyExecutor { sender, _ ->
+                ConfigManager.reload()
+                sender.sendMessage(cmp("Config reloaded!", cGreen.color()))
+            }
+        }
+
         literalArgument("blocks") {
             withPermission(permissionBlocks)
             literalArgument("add") {
@@ -104,6 +112,7 @@ object VeinminerCommand {
                     return
                 }
                 ConfigManager.groups.add(BlockGroup(name, content))
+                ConfigManager.save()
                 sendMessage(cmp("Created group '$name'\nAdd blocks with '/groups edit $name add ...'", cGreen.color()))
             }
 
@@ -142,6 +151,7 @@ object VeinminerCommand {
                             return@anyExecutor
                         }
                         ConfigManager.groups.removeIf { it.name.lowercase() == group.lowercase() }
+                        ConfigManager.save()
                         sender.sendMessage(cmp("Removed group '$name'", cGreen.color()))
                     }
                 }
@@ -164,6 +174,7 @@ object VeinminerCommand {
                                     sender.sendMessage(cmp("Block '$name' is already present in group '$name'", cRed.color()))
                                     return@anyExecutor
                                 }
+                                ConfigManager.save()
                                 sender.sendMessage(cmp("Added '$name' to the group '$group'!", cGreen.color()))
                             }
                         }
@@ -183,6 +194,7 @@ object VeinminerCommand {
                                     sender.sendMessage(cmp("Block '$name' is not present in group '$group'", cRed.color()))
                                     return@anyExecutor
                                 }
+                                ConfigManager.save()
                                 sender.sendMessage(cmp("Removed $name from the group '$group'", cGreen.color()))
                             }
                         }

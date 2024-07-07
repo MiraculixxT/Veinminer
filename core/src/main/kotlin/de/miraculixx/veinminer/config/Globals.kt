@@ -11,8 +11,10 @@ const val permissionBlocks = "veinminer.blocks"
 const val permissionSettings = "veinminer.settings"
 const val permissionVeinmine = "veinminer.use"
 const val permissionGroups = "veinminer.groups"
+const val permissionReload = "veinminer.reload"
 
 val json = Json {
     prettyPrint = true
     ignoreUnknownKeys = true
+    isLenient = true
 }
