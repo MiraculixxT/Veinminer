@@ -20,7 +20,7 @@ import kotlin.time.Duration.Companion.milliseconds
 class VeinMinerEvent {
     private val cooldown = mutableSetOf<UUID>()
 
-    private fun Material.groupedBlocks(): Set<Material> = ConfigManager.groups.filter { it.blocks.contains(this) }.map { it.blocks }.flatten().toMutableSet().apply { add(this@groupedBlocks) }
+    private fun Material.groupedBlocks(): Set<Material> = ConfigManager.groups.filter { it.blocks.contains(this) }.map { it.blocks }.flatten()
 
     private val onBlockBreak = listen<BlockBreakEvent> {
         val player = it.player
@@ -28,7 +28,7 @@ class VeinMinerEvent {
 
         val settings = ConfigManager.settings
         if (settings.permissionRestricted && !player.hasPermission(permissionVeinmine)) return@listen
-        if (ConfigManager.veinBlocks.contains(material)) {
+        if (ConfigManager.veinBlocks.contains(material) || material.groupedBlocks().contain(material)) {
             // Check for sneak config
             if (settings.mustSneak && !player.isSneaking) return@listen
             // Check for cooldown
@@ -38,7 +38,7 @@ class VeinMinerEvent {
 
             // Perform veinminer
             val item = player.inventory.itemInMainHand
-            breakAdjusted(it.block, material.groupedBlocks(), item, settings.delay, settings.maxChain, mutableSetOf(), player, settings.searchRadius)
+            breakAdjusted(it.block, material.groupedBlocks().toMutableSet().add(material), item, settings.delay, settings.maxChain, mutableSetOf(), player, settings.searchRadius)
 
             // Check for cooldown config
             val cooldownTime = settings.cooldown
