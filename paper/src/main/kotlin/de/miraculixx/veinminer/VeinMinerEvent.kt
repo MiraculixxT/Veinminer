@@ -57,8 +57,14 @@ class VeinMinerEvent {
     }
 
     /**
-     * Recursively break blocks around the source block until vein stops
+     * Recursively break blocks around the source block until the vein stops
      * @return the number of blocks broken
+     *
+     * @param source the source block
+     * @param target the set of blocks to break (all lists from the group)
+     * @param item the item to break the blocks with
+     * @param delay the delay between breaking blocks
+     * @param max the maximum number of blocks to break
      */
     private fun breakAdjusted(source: Block, target: Set<Material>, item: ItemStack, delay: Int, max: Int, processedBlocks: MutableSet<Block>, player: Player, searchRadius: Int): Int {
         if (!target.contains(source.type) || processedBlocks.contains(source)) return 0
