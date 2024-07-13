@@ -42,14 +42,15 @@ class Veinminer : ModInitializer {
         VeinminerCommand
 
         PlayerBlockBreakEvents.BEFORE.register { world, player, pos, state, _ ->
-            fun groupedBlocks(id: String): Set<String> = ConfigManager.groups.filter { it.blocks.contains(id) }.map { it.blocks}.flatten()
+            fun groupedBlocks(id: String): Set<String> = ConfigManager.groups.filter { it.blocks.contains(id) }.map { it.blocks}.flatten().toSet()
 
             if (!active) return@register true
             val material = state.block.descriptionId
 
             val settings = ConfigManager.settings
             if (settings.permissionRestricted && !Permissions.check(player, permissionVeinmine)) return@register true
-            if (ConfigManager.veinBlocks.contains(material) || groupedBlocks.contains(material)) {
+            val groupBlocks = groupedBlocks(material)
+            if (ConfigManager.veinBlocks.contains(material) || groupBlocks.isNotEmpty()) {
                 // Check for sneak config
                 if (settings.mustSneak && !player.isCrouching) return@register true
                 // Check for cooldown
@@ -60,7 +61,7 @@ class Veinminer : ModInitializer {
                 if (settings.needCorrectTool && (state.requiresCorrectToolForDrops() && !mainHandItem.isCorrectToolForDrops(state))) return@register true
 
                 // Perform veinminer
-                breakAdjusted(state, groupedBlocks(material).toMutableSet().add(id), mainHandItem, settings.delay, settings.maxChain, mutableSetOf(), world, pos, player, settings.searchRadius)
+                breakAdjusted(state, groupBlocks, mainHandItem, settings.delay, settings.maxChain, mutableSetOf(), world, pos, player, settings.searchRadius)
 
                 // Check for cooldown config
                 val cooldownTime = settings.cooldown
