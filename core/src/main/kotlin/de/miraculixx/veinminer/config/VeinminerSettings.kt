@@ -11,4 +11,5 @@ data class VeinminerSettings(
     var needCorrectTool: Boolean = true,
     var searchRadius: Int = 1,
     var permissionRestricted: Boolean = false,
+    var mergeItemDrops: Boolean = false,
 )

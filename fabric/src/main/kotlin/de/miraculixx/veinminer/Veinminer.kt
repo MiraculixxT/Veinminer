@@ -9,6 +9,8 @@ import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.api.ModContainer
 import net.minecraft.core.BlockPos
+import net.minecraft.server.level.ServerLevel
+import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.EquipmentSlot
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
@@ -16,6 +18,7 @@ import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.BaseFireBlock
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.level.block.entity.BlockEntity
 import net.minecraft.world.level.block.state.BlockState
 import net.silkmc.silk.core.kotlin.ticks
 import net.silkmc.silk.core.task.mcCoroutineTask
@@ -42,7 +45,7 @@ class Veinminer : ModInitializer {
         VeinminerCommand
 
         PlayerBlockBreakEvents.BEFORE.register { world, player, pos, state, _ ->
-            fun groupedBlocks(id: String): Set<String> = ConfigManager.groups.filter { it.blocks.contains(id) }.map { it.blocks}.flatten().toSet()
+            fun groupedBlocks(id: String): Set<String> = ConfigManager.groups.filter { it.blocks.contains(id) }.map { it.blocks }.flatten().toSet()
 
             if (!active) return@register true
             val material = state.block.descriptionId
@@ -61,7 +64,7 @@ class Veinminer : ModInitializer {
                 if (settings.needCorrectTool && (state.requiresCorrectToolForDrops() && !mainHandItem.isCorrectToolForDrops(state))) return@register true
 
                 // Perform veinminer
-                breakAdjusted(state, groupBlocks, mainHandItem, settings.delay, settings.maxChain, mutableSetOf(), world, pos, player, settings.searchRadius)
+                breakAdjusted(state, groupBlocks, mainHandItem, settings.delay, settings.maxChain, mutableSetOf(), world, pos, player, settings.searchRadius, pos)
 
                 // Check for cooldown config
                 val cooldownTime = settings.cooldown
@@ -92,13 +95,14 @@ class Veinminer : ModInitializer {
         position: BlockPos,
         player: Player,
         searchRadius: Int,
+        initialSource: BlockPos
     ): Int {
         if (!target.contains(source.block.descriptionId) || processedBlocks.contains(position)) return 0
         val size = processedBlocks.size
         if (size >= max) return 0
         if (item.isEmpty) return 0
         if (size != 0) {
-            source.destroyBlock(item, world, position, player)
+            source.destroyBlock(item, world, position, player, initialSource)
             damageItem(item, player)
         }
         processedBlocks.add(position)
@@ -108,9 +112,10 @@ class Veinminer : ModInitializer {
                     if (x == 0 && y == 0 && z == 0) return@z
                     val newPos = BlockPos(position.x + x, position.y + y, position.z + z)
                     val block = world.getBlockState(newPos)
-                    if (delay == 0) breakAdjusted(block, target, item, delay, max, processedBlocks, world, newPos, player, searchRadius)
+                    if (delay == 0) breakAdjusted(block, target, item, delay, max, processedBlocks, world, newPos, player, searchRadius, initialSource)
                     else mcCoroutineTask(delay = delay.ticks) {
-                        if (breakAdjusted(block, target, item, delay, max, processedBlocks, world, newPos, player, searchRadius) == 0) return@mcCoroutineTask
+                        if (breakAdjusted(block, target, item, delay, max, processedBlocks, world, newPos, player, searchRadius, initialSource) == 0)
+                            return@mcCoroutineTask
                     }
                 }
             }
@@ -118,10 +123,16 @@ class Veinminer : ModInitializer {
         return processedBlocks.size
     }
 
-    private fun BlockState.destroyBlock(item: ItemStack, world: Level, position: BlockPos, player: Player) {
+    private fun BlockState.destroyBlock(
+        item: ItemStack,
+        world: Level,
+        position: BlockPos,
+        player: Player,
+        initialSource: BlockPos
+    ) {
         val block = block
         if (block !== Blocks.AIR && (!requiresCorrectToolForDrops() || item.isCorrectToolForDrops(this))) {
-            Block.dropResources(this, world, position, world.getBlockEntity(position), player, item)
+            improvedDropResources(this, world, position, world.getBlockEntity(position), player, item, initialSource)
 
             if (block is BaseFireBlock) {
                 world.levelEvent(1009, position, 0)
@@ -134,6 +145,26 @@ class Veinminer : ModInitializer {
         if (destroyed) {
             block.destroy(world, position, this)
         }
+    }
+
+    /**
+     * Used to extract the drop logic from [Block.dropResources] to allow for custom handling of drops
+     */
+    private fun improvedDropResources(
+        blockState: BlockState,
+        world: Level,
+        blockPos: BlockPos,
+        blockEntity: BlockEntity?,
+        breaker: Entity,
+        tool: ItemStack,
+        initialSource: BlockPos
+    ) {
+        val serverLevel = world as? ServerLevel ?: return
+        Block.getDrops(blockState, serverLevel, blockPos, blockEntity, breaker, tool).forEach { drop: ItemStack ->
+            val dropPos = if (ConfigManager.settings.mergeItemDrops) initialSource else blockPos
+            Block.popResource(world, dropPos, drop)
+        }
+        blockState.spawnAfterBreak(serverLevel, blockPos, tool, true)
     }
 
     private fun damageItem(item: ItemStack, player: Player) {

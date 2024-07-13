@@ -74,6 +74,7 @@ object VeinminerCommand {
             applySetting("needCorrectTool", { settings.needCorrectTool }) { settings.needCorrectTool = it }
             applySetting("searchRadius", { settings.searchRadius }) { settings.searchRadius = it }
             applySetting("permissionRestricted", { settings.permissionRestricted }) { settings.permissionRestricted = it }
+            applySetting("mergeItemDrops", { settings.mergeItemDrops }) { settings.mergeItemDrops = it }
         }
 
 

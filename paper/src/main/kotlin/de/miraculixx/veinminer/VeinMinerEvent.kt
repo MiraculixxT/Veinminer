@@ -73,6 +73,7 @@ class VeinMinerEvent {
         if (item.isEmpty) return 0
         if (size != 0) {
             source.breakNaturally(item, true, true)
+            // TODO somehow grab the item and teleport it to the player (if setting is on)
             damageItem(item, 1, player)
         }
 
