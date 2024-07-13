@@ -23,7 +23,7 @@ repositories {
 //paperweight.reobfArtifactConfiguration = io.papermc.paperweight.userdev.ReobfArtifactConfiguration.REOBF_PRODUCTION
 
 dependencies {
-    paperweight.paperDevBundle("1.20.6-R0.1-SNAPSHOT")
+    paperweight.paperDevBundle("$gameVersion-R0.1-SNAPSHOT")
 
     // Kotlin libraries
     library(kotlin("stdlib"))
