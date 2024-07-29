@@ -10,18 +10,18 @@ object ConfigManager {
     private val settingsFile = Path("plugins/Veinminer/settings.json")
     private val groupsFile = Path("plugins/Veinminer/groups.json")
 
-    var veinBlocks: MutableSet<Material>
+    var veinBlocks: MutableSet<Material> = loadBlocks()
         private set
-    var settings: VeinminerSettings
+    var settings: VeinminerSettings = loadSettings()
         private set
-    var groups: MutableSet<BlockGroup<Material>>
+    var groups: MutableSet<BlockGroup<Material>> = loadGroups()
         private set
 
-    init {
-        settings = loadSettings()
-        veinBlocks = loadBlocks()
-        groups = loadGroups()
-    }
+//    init {
+//        settings = loadSettings()
+//        veinBlocks = loadBlocks()
+//        groups = loadGroups()
+//    }
 
     fun reload() {
         settings = loadSettings()

@@ -34,7 +34,7 @@ object VeinminerCommand {
             withPermission(permissionReload)
             anyExecutor { sender, _ ->
                 ConfigManager.reload()
-                sender.sendMessage(cmp("Config reloaded!", cGreen.color()))
+                sender.sendMessage(cmp("Veinminer config reloaded!", cGreen.color()))
             }
         }
 

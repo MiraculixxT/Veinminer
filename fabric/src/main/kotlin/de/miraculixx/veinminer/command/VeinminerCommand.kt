@@ -27,7 +27,7 @@ object VeinminerCommand {
             requires { Permissions.require(permissionReload, 3).test(it) }
             runs {
                 ConfigManager.reload()
-                source.msg("Config Reloaded!", cGreen)
+                source.msg("Veinminer config reloaded!", cGreen)
             }
         }
 
