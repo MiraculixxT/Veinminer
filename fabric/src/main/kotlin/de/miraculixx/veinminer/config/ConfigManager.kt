@@ -1,25 +1,46 @@
 package de.miraculixx.veinminer.config
 
 import kotlinx.serialization.encodeToString
-import java.io.File
+import kotlin.io.path.Path
+import kotlin.io.path.writeText
 
 object ConfigManager {
-    private val blocksFile = File("config/Veinminer/blocks.json")
-    private val settingsFile = File("config/Veinminer/settings.json")
-    private val groupsFile = File("config/Veinminer/groups.json")
+    private val blocksFile = Path("config/Veinminer/blocks.json")
+    private val settingsFile = Path("config/Veinminer/settings.json")
+    private val groupsFile = Path("config/Veinminer/groups.json")
 
-    val veinBlocks = blocksFile.loadFile<MutableSet<String>>(buildSet {
-        setOf("coal", "iron", "copper", "gold", "redstone", "lapis", "diamond", "emerald").forEach {
-            add("block.minecraft.${it}_ore")
-            add("block.minecraft.deepslate_${it}_ore")
-        }
-        add("block.minecraft.nether_gold_ore")
-        add("block.minecraft.nether_quartz_ore")
-    }.toMutableSet())
+    var veinBlocks: MutableSet<String>
+        private set
 
-    val settings = settingsFile.loadFile<VeinminerSettings>(VeinminerSettings())
+    var settings: VeinminerSettings
+        private set
 
-    val groups = groupsFile.loadFile<MutableSet<BlockGroup<String>>>(
+    var groups: MutableSet<BlockGroup<String>>
+        private set
+
+
+    init {
+        // Kotlin Compiler analysis cannot statically determine if a var is initialized inside a function called from init
+        // So we cant call reload from here to load them
+        settings = loadSettings()
+        veinBlocks = loadBlocks()
+        groups = loadGroups()
+    }
+
+    fun reload() {
+        settings = loadSettings()
+        veinBlocks = loadBlocks()
+        groups = loadGroups()
+    }
+
+    fun save() {
+        settingsFile.writeText(json.encodeToString(settings))
+        blocksFile.writeText(json.encodeToString(veinBlocks))
+        groupsFile.writeText(json.encodeToString(groups))
+    }
+
+    private fun loadSettings() = settingsFile.load<VeinminerSettings>(VeinminerSettings())
+    private fun loadGroups() = groupsFile.load<MutableSet<BlockGroup<String>>>(
         buildSet {
             val tag = BlockGroup("Ores", buildSet {
                 setOf("coal", "iron", "copper", "gold", "redstone", "lapis", "diamond", "emerald").forEach {
@@ -32,10 +53,12 @@ object ConfigManager {
             add(tag)
         }.toMutableSet()
     )
-
-    fun save() {
-        blocksFile.writeText(json.encodeToString(veinBlocks))
-        settingsFile.writeText(json.encodeToString(settings))
-        groupsFile.writeText(json.encodeToString(groups))
-    }
+    private fun loadBlocks() = blocksFile.load<MutableSet<String>>(buildSet {
+        setOf("coal", "iron", "copper", "gold", "redstone", "lapis", "diamond", "emerald").forEach {
+            add("block.minecraft.${it}_ore")
+            add("block.minecraft.deepslate_${it}_ore")
+        }
+        add("block.minecraft.nether_gold_ore")
+        add("block.minecraft.nether_quartz_ore")
+    }.toMutableSet())
 }

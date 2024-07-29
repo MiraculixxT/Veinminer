@@ -1,12 +1,18 @@
 package de.miraculixx.veinminer.config
 
+import kotlinx.serialization.Serializable
 import net.kyori.adventure.text.format.TextColor
 import java.io.File
+import java.nio.file.Path
+import kotlin.io.path.createFile
+import kotlin.io.path.createParentDirectories
+import kotlin.io.path.exists
+import kotlin.io.path.readText
 
-inline fun <reified T> File.loadFile(default: T): T {
+inline fun <reified T> Path.load(default: T): T {
     return if (!exists()) {
-        parentFile.mkdirs()
-        createNewFile()
+        createParentDirectories()
+        createFile()
         default
     } else {
         try {

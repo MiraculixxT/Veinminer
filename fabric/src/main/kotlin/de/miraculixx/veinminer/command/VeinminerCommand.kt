@@ -23,6 +23,14 @@ object VeinminerCommand {
             )
         }
 
+        literal("reload") {
+            requires { Permissions.require(permissionReload, 3).test(it) }
+            runs {
+                ConfigManager.reload()
+                source.msg("Config Reloaded!", cGreen)
+            }
+        }
+
         literal("blocks") {
             requires { Permissions.require(permissionBlocks, 3).test(it) }
             literal("add") {
@@ -90,6 +98,7 @@ object VeinminerCommand {
                 }
                 ConfigManager.groups.add(BlockGroup(name, content))
                 msg("Created group '$name'\nAdd blocks with '/groups edit $name add ...'", cGreen)
+                ConfigManager.save()
             }
 
             // Command description
@@ -113,7 +122,9 @@ object VeinminerCommand {
             // Create a new group with optional content
             literal("create") {
                 argument<String>("name") { name ->
-                    runs { source.createGroup(name(), mutableSetOf()) }
+                    runs {
+                        source.createGroup(name(), mutableSetOf())
+                    }
                     argument<BlockInput>("block1") { block1 ->
                         runs { source.createGroup(name(), mutableSetOf(block1().id())) }
                         argument<BlockInput>("block2") { block2 ->
@@ -135,6 +146,7 @@ object VeinminerCommand {
                         }
                         ConfigManager.groups.removeIf { it.name.lowercase() == name }
                         source.msg("Removed group '$name'", cGreen)
+                        ConfigManager.save()
                     }
                 }
             }
@@ -154,6 +166,7 @@ object VeinminerCommand {
                                 }
                                 group.blocks.add(blockId)
                                 source.msg("Added '$blockId' to the group '${name()}'", cGreen)
+                                ConfigManager.save()
                             }
                         }
                     }
@@ -172,6 +185,7 @@ object VeinminerCommand {
                                     return@runs
                                 }
                                 group.blocks.remove(blockId)
+                                ConfigManager.save()
                                 source.msg("Removed '$blockId' from the group '${name()}'", cGreen)
                             }
                         }
