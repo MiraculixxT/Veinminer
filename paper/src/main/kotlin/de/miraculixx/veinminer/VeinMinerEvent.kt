@@ -42,7 +42,7 @@ class VeinMinerEvent {
 
             // Perform veinminer
             val item = player.inventory.itemInMainHand
-            breakAdjusted(it.block, materialGroup, item, settings.delay, settings.maxChain, mutableSetOf(), player, settings.searchRadius)
+            breakAdjusted(it.block, materialGroup + setOf(material), item, settings.delay, settings.maxChain, mutableSetOf(), player, settings.searchRadius)
 
             // Check for cooldown config
             val cooldownTime = settings.cooldown
