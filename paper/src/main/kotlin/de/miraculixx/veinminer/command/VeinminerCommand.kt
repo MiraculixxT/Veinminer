@@ -93,15 +93,14 @@ object VeinminerCommand {
 
         literalArgument("settings") {
             withPermission(permissionSettings)
-            val settings = ConfigManager.settings
-            applySetting("mustSneak", { settings.mustSneak }) { settings.mustSneak = it }
-            applySetting("cooldown", { settings.cooldown }) { settings.cooldown = it }
-            applySetting("delay", { settings.delay }) { settings.delay = it }
-            applySetting("maxChain", { settings.maxChain }) { settings.maxChain = it }
-            applySetting("needCorrectTool", { settings.needCorrectTool }) { settings.needCorrectTool = it }
-            applySetting("searchRadius", { settings.searchRadius }) { settings.searchRadius = it }
-            applySetting("permissionRestricted", { settings.permissionRestricted }) { settings.permissionRestricted = it }
-            applySetting("mergeItemDrops", { settings.mergeItemDrops }) { settings.mergeItemDrops = it }
+            applySetting("mustSneak", { ConfigManager.settings.mustSneak }) { ConfigManager.settings.mustSneak = it }
+            applySetting("cooldown", { ConfigManager.settings.cooldown }) { ConfigManager.settings.cooldown = it }
+            applySetting("delay", { ConfigManager.settings.delay }) { ConfigManager.settings.delay = it }
+            applySetting("maxChain", { ConfigManager.settings.maxChain }) { ConfigManager.settings.maxChain = it }
+            applySetting("needCorrectTool", { ConfigManager.settings.needCorrectTool }) { ConfigManager.settings.needCorrectTool = it }
+            applySetting("searchRadius", { ConfigManager.settings.searchRadius }) { ConfigManager.settings.searchRadius = it }
+            applySetting("permissionRestricted", { ConfigManager.settings.permissionRestricted }) { ConfigManager.settings.permissionRestricted = it }
+            applySetting("mergeItemDrops", { ConfigManager.settings.mergeItemDrops }) { ConfigManager.settings.mergeItemDrops = it }
         }
 
         literalArgument("groups") {
