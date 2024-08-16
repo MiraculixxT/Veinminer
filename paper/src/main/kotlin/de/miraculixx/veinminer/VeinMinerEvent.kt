@@ -28,6 +28,7 @@ class VeinMinerEvent {
     private val onBlockBreak = listen<BlockBreakEvent> {
         val player = it.player
         val material = it.block.type
+        if (it.isCancelled) return@listen
 
         val settings = ConfigManager.settings
         if (settings.permissionRestricted && !player.hasPermission(permissionVeinmine)) return@listen
@@ -72,6 +73,8 @@ class VeinMinerEvent {
         if (size >= max) return 0
         if (item.isEmpty) return 0
         if (size != 0) {
+            // Check if other plugins cancel the event
+            if (!BlockBreakEvent(source, player).callEvent()) return 0
             source.breakNaturally(item, true, true)
             // TODO somehow grab the item and teleport it to the player (if setting is on)
             damageItem(item, 1, player)
