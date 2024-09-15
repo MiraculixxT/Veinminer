@@ -44,6 +44,8 @@ class Veinminer : ModInitializer {
 
         VeinminerCommand
 
+
+
         PlayerBlockBreakEvents.BEFORE.register { world, player, pos, state, _ ->
             fun groupedBlocks(id: String): Set<String> = ConfigManager.groups.filter { it.blocks.contains(id) }.map { it.blocks }.flatten().toSet()
 
