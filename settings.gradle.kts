@@ -9,4 +9,5 @@ pluginManagement {
 
 include(":core")
 include(":paper")
-include(":fabric")
+include(":veinminer-fabric")
+include(":veinminer-enchant-fabric")
