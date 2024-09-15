@@ -29,6 +29,7 @@ dependencies {
     implementation("io.papermc.paperweight.userdev:io.papermc.paperweight.userdev.gradle.plugin:1.7.1")
     implementation(pluginDep("xyz.jpenilla.run-paper", "2.2.4"))
     implementation(pluginDep("net.minecrell.plugin-yml.bukkit", "0.6.+"))
+    implementation(pluginDep("net.minecrell.plugin-yml.paper", "0.6.+"))
 
     // Project configuration
     implementation(pluginDep("com.github.johnrengelman.shadow", "8.1.1"))

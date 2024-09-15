@@ -19,7 +19,7 @@ val transitiveInclude: Configuration by configurations.creating {
 
 dependencies {
     val gameVersion: String by properties
-    outlet.mcVersionRange = properties["fabricSupportedVersions"] as String
+    outlet.mcVersionRange = properties["fabricDependencyVersions"] as String
 
     //
     // Fabric configuration

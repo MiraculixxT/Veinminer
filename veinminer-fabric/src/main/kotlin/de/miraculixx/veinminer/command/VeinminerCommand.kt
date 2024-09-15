@@ -2,8 +2,8 @@
 
 package de.miraculixx.veinminer.command
 
-import de.miraculixx.veinminer.LOGGER
 import de.miraculixx.veinminer.Veinminer
+import de.miraculixx.veinminer.Veinminer.Companion.LOGGER
 import de.miraculixx.veinminer.config.*
 import me.lucko.fabric.api.permissions.v0.Permissions
 import net.minecraft.DetectedVersion

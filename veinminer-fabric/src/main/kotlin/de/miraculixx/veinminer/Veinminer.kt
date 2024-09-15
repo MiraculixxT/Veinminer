@@ -9,11 +9,15 @@ import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.api.ModContainer
 import net.minecraft.core.BlockPos
+import net.minecraft.core.registries.Registries
+import net.minecraft.resources.ResourceKey
+import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.EquipmentSlot
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.enchantment.Enchantment
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.BaseFireBlock
 import net.minecraft.world.level.block.Block
@@ -24,13 +28,17 @@ import net.silkmc.silk.core.kotlin.ticks
 import net.silkmc.silk.core.task.mcCoroutineTask
 import java.util.*
 import java.util.logging.Logger
+import kotlin.jvm.optionals.getOrNull
 
 
 class Veinminer : ModInitializer {
     companion object {
         const val MOD_ID = "veinminer"
+        val LOGGER: Logger = Logger.getLogger(MOD_ID)
         lateinit var INSTANCE: ModContainer
         var active = true
+        val VEINMINE = ResourceKey.create<Enchantment>(Registries.ENCHANTMENT, ResourceLocation.fromNamespaceAndPath("veinminer-enchantment", "veinminer"))
+        var enchantmentActive = false
     }
 
     private lateinit var fabricLoader: FabricLoader
@@ -42,9 +50,9 @@ class Veinminer : ModInitializer {
         INSTANCE = fabricLoader.getModContainer(MOD_ID).get()
         LOGGER.info("Veinminer Version: ${INSTANCE.metadata.version} (fabric)")
 
+        enchantmentActive = fabricLoader.getModContainer("veinminer-enchantment").getOrNull() != null
+
         VeinminerCommand
-
-
 
         PlayerBlockBreakEvents.BEFORE.register { world, player, pos, state, _ ->
             fun groupedBlocks(id: String): Set<String> = ConfigManager.groups.filter { it.blocks.contains(id) }.map { it.blocks }.flatten().toSet()
@@ -64,6 +72,9 @@ class Veinminer : ModInitializer {
                 // Check for correct tool
                 val mainHandItem = player.mainHandItem
                 if (settings.needCorrectTool && (state.requiresCorrectToolForDrops() && !mainHandItem.isCorrectToolForDrops(state))) return@register true
+
+                // Check for enchantment if active
+                if (enchantmentActive && !mainHandItem.enchantments.keySet().any { it.`is`(VEINMINE) }) return@register true
 
                 // Perform veinminer
                 breakAdjusted(state, groupBlocks + setOf(material), mainHandItem, settings.delay, settings.maxChain, mutableSetOf(), world, pos, player, settings.searchRadius, pos)
@@ -173,5 +184,3 @@ class Veinminer : ModInitializer {
         item.hurtAndBreak(1, player, EquipmentSlot.MAINHAND)
     }
 }
-
-val LOGGER: Logger = Logger.getLogger(Veinminer.MOD_ID)

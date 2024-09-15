@@ -8,6 +8,6 @@ pluginManagement {
 }
 
 include(":core")
-include(":paper")
+include(":veinminer-paper")
 include(":veinminer-fabric")
-include(":veinminer-enchant-fabric")
+include(":veinminer-enchant")

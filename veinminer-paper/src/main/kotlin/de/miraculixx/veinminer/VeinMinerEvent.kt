@@ -3,6 +3,7 @@ package de.miraculixx.veinminer
 import de.miraculixx.kpaper.event.listen
 import de.miraculixx.kpaper.event.unregister
 import de.miraculixx.kpaper.runnables.taskRunLater
+import de.miraculixx.veinminer.Veinminer.Companion.VEINMINE
 import de.miraculixx.veinminer.config.ConfigManager
 import de.miraculixx.veinminer.config.permissionVeinmine
 import kotlinx.coroutines.CoroutineScope
@@ -39,10 +40,13 @@ class VeinMinerEvent {
             // Check for cooldown
             if (cooldown.contains(player.uniqueId)) return@listen
             // Check for correct tool
-            if (settings.needCorrectTool && it.block.getDrops(it.player.inventory.itemInMainHand).isEmpty()) return@listen
+            val item = player.inventory.itemInMainHand
+            if (settings.needCorrectTool && it.block.getDrops(item).isEmpty()) return@listen
+
+            // Check for enchantment if active
+            if (Veinminer.enchantmentActive && !item.enchantments.any { it.key.key == VEINMINE }) return@listen
 
             // Perform veinminer
-            val item = player.inventory.itemInMainHand
             breakAdjusted(it.block, materialGroup + setOf(material), item, settings.delay, settings.maxChain, mutableSetOf(), player, settings.searchRadius)
 
             // Check for cooldown config

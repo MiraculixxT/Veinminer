@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "id": "veinminer-enchantment",
+  "version": "2.1.4",
+  "name": "Veinminer Enchantment",
+  "description": "Addon for Veinminer to add an enchantment",
+  "authors": [
+    "Miraculixx"
+  ],
+  "license": "${license}",
+  "icon": "assets/veinminer-enchantment/icon.png",
+  "contact": {
+    "homepage": "https://modrinth.com/mod/veinminer-enchantment",
+    "issues": "https://dc.mutils.net"
+  },
+  "environment": "${environment}",
+  "entrypoints": {
+    "main": [
+      "de.miraculixx.veinminerEnchant.fabric.VeinminerEnchantment"
+    ]
+  },
+  "mixins": [],
+  "custom": {
+    "modmenu": {
+      "parent": {
+        "id": "veinminer"
+      }
+    }
+  },
+  "suggests": {
+    "modmenu":"*"
+  },
+  "depends": {
+    "fabricloader": ">=0.15.0",
+    "minecraft": ">=1.21",
+    "java": ">=17",
+    "fabric-language-kotlin": "*",
+    "veinminer": "*"
+  }
+}

@@ -7,7 +7,7 @@ plugins {
 }
 
 dependencies {
-
+    implementation(include(project(":core"))!!)
 }
 
 modrinth {
@@ -25,9 +25,24 @@ modrinth {
         required.project("fabric-api")
         required.project("fabric-language-kotlin")
 
+        val useSilk = properties["useSilk"] as String == "true"
+        if (useSilk) {
+            required.project("silk")
+        }
+
         val useConfig = properties["useConfig"] as String == "true"
         if (useConfig) {
             optional.project("cloth-config")
         }
     }
+}
+
+sourceSets {
+    main {
+        resources.srcDirs("$rootDir/commons/")
+    }
+}
+
+tasks.jar {
+    archiveBaseName = properties["projectName"] as String
 }
