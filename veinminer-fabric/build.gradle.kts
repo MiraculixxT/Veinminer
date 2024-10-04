@@ -15,6 +15,7 @@ modrinth {
     outlet.mcVersionRange = properties["fabricSupportedVersions"] as String
     outlet.allowedReleaseTypes = setOf(ReleaseType.RELEASE)
     gameVersions.addAll(outlet.mcVersions())
+    versionName = "Veinminer Fabric - $version"
     loaders.addAll(buildList {
         add("fabric")
         add("quilt")
@@ -41,8 +42,4 @@ sourceSets {
     main {
         resources.srcDirs("$rootDir/commons/")
     }
-}
-
-tasks.jar {
-    archiveBaseName = properties["projectName"] as String
 }

@@ -4,7 +4,9 @@ import de.miraculixx.kpaper.event.listen
 import de.miraculixx.kpaper.event.unregister
 import de.miraculixx.kpaper.runnables.taskRunLater
 import de.miraculixx.veinminer.Veinminer.Companion.VEINMINE
+import de.miraculixx.veinminer.config.BlockGroup
 import de.miraculixx.veinminer.config.ConfigManager
+import de.miraculixx.veinminer.config.FixedBlockGroup
 import de.miraculixx.veinminer.config.permissionVeinmine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -24,7 +26,12 @@ class VeinMinerEvent {
     /**
      * @return a set of all blocks in the same group as this material. If the material is not in a group, it will return an empty set
      */
-    private fun Material.groupedBlocks(): Set<Material> = ConfigManager.groups.filter { it.blocks.contains(this) }.map { it.blocks }.flatten().toSet()
+    private fun Material.groupedBlocks(): FixedBlockGroup<Material> {
+        val blocks = mutableSetOf<Material>()
+        val tools = mutableSetOf<Material>()
+        ConfigManager.groups.forEach { if (it.blocks.contains(this)) { blocks.addAll(it.blocks); tools.addAll(it.tools) } }
+        return FixedBlockGroup(blocks.toSet(), tools.toSet())
+    }
 
     private val onBlockBreak = listen<BlockBreakEvent> {
         val player = it.player
@@ -33,26 +40,31 @@ class VeinMinerEvent {
 
         val settings = ConfigManager.settings
         if (settings.permissionRestricted && !player.hasPermission(permissionVeinmine)) return@listen
-        val materialGroup = material.groupedBlocks()
-        if (ConfigManager.veinBlocks.contains(material) || materialGroup.isNotEmpty()) {
+        val isGlobalBlock = ConfigManager.veinBlocks.contains(material)
+        val blockGroup = if (isGlobalBlock) null else material.groupedBlocks()
+        if (isGlobalBlock || blockGroup?.blocks?.isNotEmpty() == true) {
             // Check for sneak config
             if (settings.mustSneak && !player.isSneaking) return@listen
+
             // Check for cooldown
             if (cooldown.contains(player.uniqueId)) return@listen
-            // Check for correct tool
+
+            // Check for correct tool (if block group tools are empty, it means all tools are allowed)
             val item = player.inventory.itemInMainHand
             if (settings.needCorrectTool && it.block.getDrops(item).isEmpty()) return@listen
+            if (!isGlobalBlock && blockGroup?.tools?.isEmpty() == false && !blockGroup.tools.contains(item.type)) return@listen
 
             // Check for enchantment if active
             if (Veinminer.enchantmentActive && !item.enchantments.any { it.key.key == VEINMINE }) return@listen
 
             // Perform veinminer
-            breakAdjusted(it.block, materialGroup + setOf(material), item, settings.delay, settings.maxChain, mutableSetOf(), player, settings.searchRadius)
+            breakAdjusted(it.block, blockGroup?.blocks ?: setOf(material), item, settings.delay, settings.maxChain, mutableSetOf(), player, settings.searchRadius)
 
             // Check for cooldown config
             val cooldownTime = settings.cooldown
             if (cooldownTime > 0) {
                 cooldown.add(player.uniqueId)
+
                 CoroutineScope(Dispatchers.Default).launch {
                     delay((cooldownTime * 50).milliseconds)
                     cooldown.remove(player.uniqueId)

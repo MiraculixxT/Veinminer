@@ -39,7 +39,7 @@ object ConfigManager {
     private fun loadSettings() = settingsFile.load<VeinminerSettings>(VeinminerSettings())
     private fun loadGroups() = groupsFile.load<MutableSet<BlockGroup<Material>>>(
         mutableSetOf(
-            BlockGroup("Ores", Material.entries.filter { it.name.endsWith("_ORE") }.toMutableSet()),
+            BlockGroup("Ores", Material.entries.filter { it.name.endsWith("_ORE") }.toMutableSet(), mutableSetOf()),
         )
     )
 }

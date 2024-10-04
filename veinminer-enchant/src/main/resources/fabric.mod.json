@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "veinminer-enchantment",
-  "version": "2.1.4",
+  "version": "${version}",
   "name": "Veinminer Enchantment",
   "description": "Addon for Veinminer to add an enchantment",
   "authors": [

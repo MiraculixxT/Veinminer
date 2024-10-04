@@ -45,6 +45,7 @@ public class VeinminerEnchantmentBootstrapper implements PluginBootstrap {
             final PostFlattenTagRegistrar<Enchantment> registrar = event.registrar();
             registrar.addToTag(EnchantmentTagKeys.TRADEABLE, Set.of(VEINMINE));
             registrar.addToTag(EnchantmentTagKeys.NON_TREASURE, Set.of(VEINMINE));
+            registrar.addToTag(EnchantmentTagKeys.IN_ENCHANTING_TABLE, Set.of(VEINMINE));
         });
     }
 

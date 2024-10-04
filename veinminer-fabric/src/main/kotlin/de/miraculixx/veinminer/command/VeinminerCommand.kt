@@ -9,6 +9,7 @@ import me.lucko.fabric.api.permissions.v0.Permissions
 import net.minecraft.DetectedVersion
 import net.minecraft.commands.CommandSourceStack
 import net.minecraft.commands.arguments.blocks.BlockInput
+import net.minecraft.commands.arguments.item.ItemInput
 import net.silkmc.silk.commands.LiteralCommandBuilder
 import net.silkmc.silk.commands.command
 import net.silkmc.silk.core.text.literal
@@ -87,16 +88,30 @@ object VeinminerCommand {
 
         literal("groups") {
             requires { Permissions.require(permissionGroups, 3).test(it) }
-            fun groupExists(group: String) = ConfigManager.groups.any { it.name.lowercase() == group.lowercase() }
-            fun getGroup(group: String): BlockGroup<String>? = if (!groupExists(group)) null else ConfigManager.groups.first { it.name.lowercase() == group.lowercase() }
+            fun groupExists(group: String) = ConfigManager.groups.firstOrNull { it.name.lowercase() == group.lowercase() }
             fun BlockInput.id() = state.block.descriptionId
             fun CommandSourceStack.createGroup(name: String, content: MutableSet<String>) {
-                if (groupExists(name)) {
+                if (groupExists(name) != null) {
                     msg("Group '$name' already exists", cRed)
                     return
                 }
+
                 ConfigManager.groups.add(BlockGroup(name, content))
                 msg("Created group '$name'\nAdd blocks with '/groups edit $name add ...'", cGreen)
+                ConfigManager.save()
+            }
+
+            fun CommandSourceStack.editContent(groupName: String, material: String, isBlock: Boolean, isAdd: Boolean) {
+                val group = groupExists(groupName) ?: return msg("Group '$groupName' does not exist", cRed)
+                val set = if (isBlock) group.blocks else group.tools
+
+                if (isAdd) {
+                    if (set.add(material)) msg("Added $material to group '$groupName'", cGreen)
+                    else return msg("$material is already in group '$groupName'", cRed)
+                } else {
+                    if (set.remove(material)) msg("Removed $material from group '$groupName'", cGreen)
+                    else return msg("$material is not in group '$groupName'", cRed)
+                }
                 ConfigManager.save()
             }
 
@@ -104,7 +119,8 @@ object VeinminerCommand {
             runs {
                 source.msg(
                     "Groups can chain together multiple block types.\n" +
-                            "E.g. creating a group 'oak' with oak_log & oak_leaves will veinmine the whole tree when breaking on part of it.", cBase
+                            "E.g. creating a group 'oak' with oak_log & oak_leaves will veinmine the whole tree when breaking on part of it." +
+                            "Groups can be limited to certain tools.", cBase
                 )
             }
 
@@ -114,6 +130,8 @@ object VeinminerCommand {
                     ConfigManager.groups.forEach { group ->
                         source.msg("Group '${group.name}'", cBase)
                         source.msg(" -> Blocks: [${group.blocks.joinToString(", ")}]\n", cBase)
+                        if (group.tools.isEmpty()) source.msg(" -> Tools: [all]\n", cBase)
+                        else source.msg(" -> Tools: [${group.tools.joinToString(", ")}]\n", cBase)
                     }
                 }
             }
@@ -139,7 +157,7 @@ object VeinminerCommand {
                     suggestList { ConfigManager.groups.map { it.name } }
                     runs {
                         val name = group().lowercase()
-                        if (!groupExists(name)) {
+                        if (groupExists(name) == null) {
                             source.msg("The group '$name' does not exist", cRed)
                             return@runs
                         }
@@ -154,38 +172,42 @@ object VeinminerCommand {
             literal("edit") {
                 argument<String>("group") { name ->
                     suggestList { ConfigManager.groups.map { it.name } }
-                    literal("add") {
+                    literal("add-block") {
                         argument<BlockInput>("block") { block ->
                             runs {
-                                val group = getGroup(name()) ?: run { source.msg("Group '${name()}' does not exist!", cRed); return@runs }
-                                val blockId = block().id()
-                                if (group.blocks.contains(blockId)) {
-                                    source.msg("Block '$blockId' is already present in group '${name()}'", cRed)
-                                    return@runs
-                                }
-                                group.blocks.add(blockId)
-                                source.msg("Added '$blockId' to the group '${name()}'", cGreen)
-                                ConfigManager.save()
+                                source.editContent(name(), block().id(), true, true)
                             }
                         }
                     }
 
-                    literal("remove") {
-                        argument<BlockInput>("block") { block ->
+                    literal("remove-block") {
+                        argument<String>("block") { block ->
                             suggestList { info ->
                                 val group = info.getArgument("group", String::class.java)
-                                (getGroup(group) ?: return@suggestList null).blocks
+                                groupExists(group)?.blocks
                             }
                             runs {
-                                val blockId = block().id()
-                                val group = getGroup(name()) ?: run { source.msg("Group '${name()}' does not exist!", cRed); return@runs }
-                                if (!group.blocks.contains(blockId)) {
-                                    source.msg("Blocks '$blockId' is not present in group '${group.name}'", cRed)
-                                    return@runs
-                                }
-                                group.blocks.remove(blockId)
-                                ConfigManager.save()
-                                source.msg("Removed '$blockId' from the group '${name()}'", cGreen)
+                                source.editContent(name(), block(), true, false)
+                            }
+                        }
+                    }
+
+                    literal("add-tool") {
+                        argument<ItemInput>("tool") { tool ->
+                            runs {
+                                source.editContent(name(), tool().item.descriptionId, false, true)
+                            }
+                        }
+                    }
+
+                    literal("remove-tool") {
+                        argument<String>("tool") { tool ->
+                            suggestList { info ->
+                                val group = info.getArgument("group", String::class.java)
+                                groupExists(group)?.tools
+                            }
+                            runs {
+                                source.editContent(name(), tool(), false, false)
                             }
                         }
                     }

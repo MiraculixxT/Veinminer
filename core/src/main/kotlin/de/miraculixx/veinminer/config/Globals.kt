@@ -13,6 +13,8 @@ const val permissionVeinmine = "veinminer.use"
 const val permissionGroups = "veinminer.groups"
 const val permissionReload = "veinminer.reload"
 
+const val IDENTIFIER = "veinminer"
+
 val json = Json {
     prettyPrint = true
     ignoreUnknownKeys = true

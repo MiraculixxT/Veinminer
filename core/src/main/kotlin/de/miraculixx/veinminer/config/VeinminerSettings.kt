@@ -12,4 +12,5 @@ data class VeinminerSettings(
     var searchRadius: Int = 1,
     var permissionRestricted: Boolean = false,
     var mergeItemDrops: Boolean = false,
+    var autoUpdate: Boolean = false,
 )

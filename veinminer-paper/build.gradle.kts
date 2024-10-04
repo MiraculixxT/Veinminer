@@ -19,12 +19,12 @@ sourceSets {
 }
 
 modrinth {
-    tasks.jar
-    uploadFile.set("${layout.buildDirectory.asFile.get().path}\\libs\\${properties["projectName"]}-${properties["version"]}.jar")
+    uploadFile.set(tasks.jar)
     versionName = "Veinminer Plugin - ${properties["version"]}"
     outlet.mcVersionRange = properties["paperSupportedVersions"] as String
     outlet.allowedReleaseTypes = setOf(ReleaseType.RELEASE)
     gameVersions.addAll(outlet.mcVersions())
+    changelog = properties["changelog"] as String
     loaders.addAll(buildList {
         add("paper")
         add("purpur")
@@ -37,10 +37,4 @@ modrinth {
         // The type can either be `project` or `version`
 //        required.project("fabric-api")
     }
-
-    changelog = "- Fix error caused by latest Paper API changes regarding brigadier commands"
-}
-
-tasks.jar {
-    archiveBaseName = properties["projectName"] as String
 }
