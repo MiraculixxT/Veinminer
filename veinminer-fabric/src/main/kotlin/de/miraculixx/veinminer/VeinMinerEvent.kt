@@ -55,13 +55,13 @@ object VeinMinerEvent {
             // Check for correct tool (if block group tools are empty, it means all tools are allowed)
             val mainHandItem = player.mainHandItem
             if (settings.needCorrectTool && (state.requiresCorrectToolForDrops() && !mainHandItem.isCorrectToolForDrops(state))) return@register true
-            if (!isGlobalBlock && blockGroup?.tools?.isEmpty() == false && !blockGroup.tools.contains(mainHandItem.descriptionId)) return@register true
+            if (!isGlobalBlock && blockGroup?.tools?.isEmpty() == false && !blockGroup.tools.contains(mainHandItem.item.descriptionId)) return@register true
 
             // Check for enchantment if active
             if (enchantmentActive && !mainHandItem.enchantments.keySet().any { it.`is`(VEINMINE) }) return@register true
 
             // Perform veinminer
-            breakAdjusted(state, blockGroup?.blocks ?: setOf(material), mainHandItem, settings.delay, settings.maxChain, mutableSetOf(), world, pos, player, settings.searchRadius, pos)
+            breakAdjusted(state, blockGroup?.blocks ?: setOf(material), mainHandItem, settings.delay, settings.maxChain, mutableSetOf(), world, pos, player, settings.searchRadius, pos, settings.decreaseDurability)
 
             // Check for cooldown config
             val cooldownTime = settings.cooldown
@@ -92,7 +92,8 @@ object VeinMinerEvent {
         position: BlockPos,
         player: Player,
         searchRadius: Int,
-        initialSource: BlockPos
+        initialSource: BlockPos,
+        damageItem: Boolean
     ): Int {
         if (!target.contains(source.block.descriptionId) || processedBlocks.contains(position)) return 0
         val size = processedBlocks.size
@@ -100,7 +101,7 @@ object VeinMinerEvent {
         if (item.isEmpty) return 0
         if (size != 0) {
             source.destroyBlock(item, world, position, player, initialSource)
-            damageItem(item, player)
+            if (damageItem) damageItem(item, player)
         }
         processedBlocks.add(position)
         (-searchRadius..searchRadius).forEach { x ->
@@ -109,9 +110,9 @@ object VeinMinerEvent {
                     if (x == 0 && y == 0 && z == 0) return@z
                     val newPos = BlockPos(position.x + x, position.y + y, position.z + z)
                     val block = world.getBlockState(newPos)
-                    if (delay == 0) breakAdjusted(block, target, item, delay, max, processedBlocks, world, newPos, player, searchRadius, initialSource)
+                    if (delay == 0) breakAdjusted(block, target, item, delay, max, processedBlocks, world, newPos, player, searchRadius, initialSource, damageItem)
                     else mcCoroutineTask(delay = delay.ticks) {
-                        if (breakAdjusted(block, target, item, delay, max, processedBlocks, world, newPos, player, searchRadius, initialSource) == 0)
+                        if (breakAdjusted(block, target, item, delay, max, processedBlocks, world, newPos, player, searchRadius, initialSource, damageItem) == 0)
                             return@mcCoroutineTask
                     }
                 }

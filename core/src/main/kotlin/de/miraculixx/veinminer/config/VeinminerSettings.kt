@@ -13,4 +13,5 @@ data class VeinminerSettings(
     var permissionRestricted: Boolean = false,
     var mergeItemDrops: Boolean = false,
     var autoUpdate: Boolean = false,
+    var decreaseDurability: Boolean = true,
 )

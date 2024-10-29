@@ -4,7 +4,6 @@ import de.miraculixx.kpaper.event.listen
 import de.miraculixx.kpaper.event.unregister
 import de.miraculixx.kpaper.runnables.taskRunLater
 import de.miraculixx.veinminer.Veinminer.Companion.VEINMINE
-import de.miraculixx.veinminer.config.BlockGroup
 import de.miraculixx.veinminer.config.ConfigManager
 import de.miraculixx.veinminer.config.FixedBlockGroup
 import de.miraculixx.veinminer.config.permissionVeinmine
@@ -35,6 +34,12 @@ class VeinMinerEvent {
 
     private val onBlockBreak = listen<BlockBreakEvent> {
         val player = it.player
+        if (player.scoreboardTags.contains("veinminer")) {
+            player.removeScoreboardTag("veinminer")
+            println("Cancelled check")
+            return@listen
+        }
+
         val material = it.block.type
         if (it.isCancelled) return@listen
 
@@ -58,7 +63,9 @@ class VeinMinerEvent {
             if (Veinminer.enchantmentActive && !item.enchantments.any { it.key.key == VEINMINE }) return@listen
 
             // Perform veinminer
-            breakAdjusted(it.block, blockGroup?.blocks ?: setOf(material), item, settings.delay, settings.maxChain, mutableSetOf(), player, settings.searchRadius)
+            player.addScoreboardTag("veinmine")
+            breakAdjusted(it.block, blockGroup?.blocks ?: setOf(material), item, settings.delay, settings.maxChain, mutableSetOf(), player, settings.searchRadius, settings.decreaseDurability)
+            player.removeScoreboardTag("veinmine")
 
             // Check for cooldown config
             val cooldownTime = settings.cooldown
@@ -83,7 +90,17 @@ class VeinMinerEvent {
      * @param delay the delay between breaking blocks
      * @param max the maximum number of blocks to break
      */
-    private fun breakAdjusted(source: Block, target: Set<Material>, item: ItemStack, delay: Int, max: Int, processedBlocks: MutableSet<Block>, player: Player, searchRadius: Int): Int {
+    private fun breakAdjusted(
+        source: Block,
+        target: Set<Material>,
+        item: ItemStack,
+        delay: Int,
+        max: Int,
+        processedBlocks: MutableSet<Block>,
+        player: Player,
+        searchRadius: Int,
+        damageItem: Boolean
+    ): Int {
         if (!target.contains(source.type) || processedBlocks.contains(source)) return 0
         val size = processedBlocks.size
         if (size >= max) return 0
@@ -93,7 +110,7 @@ class VeinMinerEvent {
             if (!BlockBreakEvent(source, player).callEvent()) return 0
             source.breakNaturally(item, true, true)
             // TODO somehow grab the item and teleport it to the player (if setting is on)
-            damageItem(item, 1, player)
+            if (damageItem) damageItem(item, 1, player)
         }
 
         processedBlocks.add(source)
@@ -102,9 +119,9 @@ class VeinMinerEvent {
                 (-searchRadius..searchRadius).forEach z@{ z ->
                     if (x == 0 && y == 0 && z == 0) return@z
                     val block = source.world.getBlockAt(source.x + x, source.y + y, source.z + z)
-                    if (delay == 0) breakAdjusted(block, target, item, delay, max, processedBlocks, player, searchRadius)
+                    if (delay == 0) breakAdjusted(block, target, item, delay, max, processedBlocks, player, searchRadius, damageItem)
                     else taskRunLater(delay.toLong()) {
-                        if (breakAdjusted(block, target, item, delay, max, processedBlocks, player, searchRadius) == 0) return@taskRunLater
+                        if (breakAdjusted(block, target, item, delay, max, processedBlocks, player, searchRadius, damageItem) == 0) return@taskRunLater
                     }
                 }
             }
