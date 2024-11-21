@@ -3,7 +3,7 @@
   "id": "veinminer-enchantment",
   "version": "${version}",
   "name": "Veinminer Enchantment",
-  "description": "Addon for Veinminer to add an enchantment",
+  "description": "Addon for Veinminer to add an exclusive enchantment",
   "authors": [
     "Miraculixx"
   ],

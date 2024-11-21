@@ -28,6 +28,7 @@ public class VeinminerEnchantmentBootstrapper implements PluginBootstrap {
 
         // Add new enchantment
         final var VEINMINE = TypedKey.create(RegistryKey.ENCHANTMENT, Key.key("veinminer-enchantment:veinminer"));
+
         manager.registerEventHandler(RegistryEvents.ENCHANTMENT.freeze().newHandler(event -> event.registry().register(
             VEINMINE,
             builder -> builder.description(Component.translatable("enchantment.veinmine", "Veinmine"))

@@ -4,9 +4,6 @@ import com.mojang.logging.LogUtils
 import de.miraculixx.veinminer.command.VeinminerCommand
 import de.miraculixx.veinminer.config.UpdateManager
 import net.fabricmc.api.ModInitializer
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.api.ModContainer
 import net.minecraft.core.registries.Registries
@@ -14,7 +11,6 @@ import net.minecraft.resources.ResourceKey
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.item.enchantment.Enchantment
 import net.silkmc.silk.core.Silk.server
-import net.silkmc.silk.core.event.PlayerEvents
 import net.silkmc.silk.core.task.mcCoroutineTask
 import kotlin.jvm.optionals.getOrNull
 
@@ -50,7 +46,5 @@ class Veinminer : ModInitializer {
         }
 
         VeinMinerEvent
-
-
     }
 }
