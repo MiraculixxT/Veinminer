@@ -3,7 +3,7 @@
     "translate": "enchantment.veinmine",
     "fallback": "Veinmine"
   },
-  "supported_items": "#minecraft:pickaxes",
+  "supported_items": "#minecraft:enchantable/mining",
   "weight": 1,
   "max_level": 1,
   "min_cost": {
