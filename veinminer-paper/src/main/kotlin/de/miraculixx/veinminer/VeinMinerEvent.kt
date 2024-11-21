@@ -45,9 +45,11 @@ class VeinMinerEvent {
 
         val settings = ConfigManager.settings
         if (settings.permissionRestricted && !player.hasPermission(permissionVeinmine)) return@listen
-        val isGlobalBlock = ConfigManager.veinBlocks.contains(material)
-        val blockGroup = if (isGlobalBlock) null else material.groupedBlocks()
-        if (isGlobalBlock || blockGroup?.blocks?.isNotEmpty() == true) {
+        val blockGroup = material.groupedBlocks()
+        val isGroupBlock = blockGroup.blocks.isNotEmpty()
+        val isWhitelisted = isGroupBlock || ConfigManager.veinBlocks.contains(material)
+
+        if (isWhitelisted) {
             // Check for sneak config
             if (settings.mustSneak && !player.isSneaking) return@listen
 
@@ -57,15 +59,14 @@ class VeinMinerEvent {
             // Check for correct tool (if block group tools are empty, it means all tools are allowed)
             val item = player.inventory.itemInMainHand
             if (settings.needCorrectTool && it.block.getDrops(item).isEmpty()) return@listen
-            if (!isGlobalBlock && blockGroup?.tools?.isEmpty() == false && !blockGroup.tools.contains(item.type)) return@listen
+            if (isGroupBlock && !blockGroup.tools.isEmpty() && !blockGroup.tools.contains(item.type)) return@listen
 
             // Check for enchantment if active
             if (Veinminer.enchantmentActive && !item.enchantments.any { it.key.key == VEINMINE }) return@listen
 
             // Perform veinminer
-            player.addScoreboardTag("veinmine")
-            breakAdjusted(it.block, blockGroup?.blocks ?: setOf(material), item, settings.delay, settings.maxChain, mutableSetOf(), player, settings.searchRadius, settings.decreaseDurability)
-            player.removeScoreboardTag("veinmine")
+            val blocks = if (isGroupBlock) blockGroup.blocks else setOf(material)
+            breakAdjusted(it.block, blocks, item, settings.delay, settings.maxChain, mutableSetOf(), player, settings.searchRadius, settings.decreaseDurability)
 
             // Check for cooldown config
             val cooldownTime = settings.cooldown
@@ -107,6 +108,7 @@ class VeinMinerEvent {
         if (item.isEmpty) return 0
         if (size != 0) {
             // Check if other plugins cancel the event
+            player.addScoreboardTag("veinmine")
             if (!BlockBreakEvent(source, player).callEvent()) return 0
             source.breakNaturally(item, true, true)
             // TODO somehow grab the item and teleport it to the player (if setting is on)

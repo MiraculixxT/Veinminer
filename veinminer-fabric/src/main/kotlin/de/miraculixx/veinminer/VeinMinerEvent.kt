@@ -43,9 +43,11 @@ object VeinMinerEvent {
 
         val settings = ConfigManager.settings
         if (settings.permissionRestricted && !Permissions.check(player, permissionVeinmine)) return@register true
-        val isGlobalBlock = ConfigManager.veinBlocks.contains(material)
-        val blockGroup = if (isGlobalBlock) null else material.groupedBlocks()
-        if (isGlobalBlock || blockGroup?.blocks?.isNotEmpty() == true) {
+        val blockGroup = material.groupedBlocks()
+        val isGroupBlock = blockGroup.blocks.isNotEmpty()
+        val isWhitelisted = isGroupBlock || ConfigManager.veinBlocks.contains(material)
+
+        if (isWhitelisted) {
             // Check for sneak config
             if (settings.mustSneak && !player.isCrouching) return@register true
 
@@ -55,13 +57,14 @@ object VeinMinerEvent {
             // Check for correct tool (if block group tools are empty, it means all tools are allowed)
             val mainHandItem = player.mainHandItem
             if (settings.needCorrectTool && (state.requiresCorrectToolForDrops() && !mainHandItem.isCorrectToolForDrops(state))) return@register true
-            if (!isGlobalBlock && blockGroup?.tools?.isEmpty() == false && !blockGroup.tools.contains(mainHandItem.item.descriptionId)) return@register true
+            if (isGroupBlock && !blockGroup.tools.isEmpty() && !blockGroup.tools.contains(mainHandItem.item.descriptionId)) return@register true
 
             // Check for enchantment if active
             if (enchantmentActive && !mainHandItem.enchantments.keySet().any { it.`is`(VEINMINE) }) return@register true
 
             // Perform veinminer
-            breakAdjusted(state, blockGroup?.blocks ?: setOf(material), mainHandItem, settings.delay, settings.maxChain, mutableSetOf(), world, pos, player, settings.searchRadius, pos, settings.decreaseDurability)
+            val blocks = if (isGroupBlock) blockGroup.blocks else setOf(material)
+            breakAdjusted(state, blocks, mainHandItem, settings.delay, settings.maxChain, mutableSetOf(), world, pos, player, settings.searchRadius, pos, settings.decreaseDurability)
 
             // Check for cooldown config
             val cooldownTime = settings.cooldown
