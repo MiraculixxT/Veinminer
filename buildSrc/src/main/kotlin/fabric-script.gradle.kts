@@ -54,7 +54,7 @@ dependencies {
     //
     val usePermissions = properties["usePermissions"] as String == "true"
     if (usePermissions) {
-        modImplementation(include("me.lucko", "fabric-permissions-api", "0.2-SNAPSHOT"))
+        modImplementation(include("me.lucko", "fabric-permissions-api", "0.3.3"))
     }
 
     //
