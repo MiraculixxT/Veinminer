@@ -115,7 +115,7 @@ object VeinminerCommand {
                 }
                 ConfigManager.groups.add(BlockGroup(name, content))
                 ConfigManager.save()
-                sendMessage(cmp("Created group '$name'\nAdd blocks with '/groups edit $name add ...'", cGreen.color()))
+                sendMessage(cmp("Created group '$name'\nAdd blocks with '/veinminer groups edit $name add ...'", cGreen.color()))
             }
             fun CommandSender.editContent(args: CommandArguments, material: Material, isBlock: Boolean, isAdd: Boolean) {
                 val groupName = args[0] as String
@@ -134,13 +134,25 @@ object VeinminerCommand {
             }
 
             literalArgument("list") {
-                anyExecutor { sender, _ ->
-                    ConfigManager.groups.forEach { group ->
-                        sender.sendMessage(cmp("Group ") + cmp(group.name, NamedTextColor.WHITE))
-                        sender.sendMessage(cmp(" -> Blocks: [") + cmp(group.blocks.joinToString(", ") { it.name.fancy() }, NamedTextColor.WHITE) + cmp("]"))
-                        if (group.tools.isEmpty()) sender.sendMessage(cmp(" -> Tools: [All]", NamedTextColor.WHITE))
-                        else sender.sendMessage(cmp(" -> Tools: [") + cmp(group.tools.joinToString(", ") { it.name.fancy() }, NamedTextColor.WHITE) + cmp("]"))
+                fun BlockGroup<Material>.print(sender: CommandSender) {
+                    sender.sendMessage(cmp("Group ") + cmp(name, NamedTextColor.WHITE))
+                    sender.sendMessage(cmp(" -> Blocks: [") + cmp(blocks.joinToString(", ") { it.name.fancy() }, NamedTextColor.WHITE) + cmp("]"))
+                    if (tools.isEmpty()) sender.sendMessage(cmp(" -> Tools: [All]", NamedTextColor.WHITE))
+                    else sender.sendMessage(cmp(" -> Tools: [") + cmp(tools.joinToString(", ") { it.name.fancy() }, NamedTextColor.WHITE) + cmp("]"))
+
+                }
+
+                stringArgument("group") {
+                    replaceSuggestions(ArgumentSuggestions.stringCollection { ConfigManager.groups.map { it.name } })
+                    anyExecutor { sender, args ->
+                        val groupName = args[0] as String
+                        val group = groupExists(groupName) ?: return@anyExecutor sender.sendMessage(cmp("Group '$groupName' does not exist", cRed.color()))
+                        group.print(sender)
                     }
+                }
+
+                anyExecutor { sender, _ ->
+                    ConfigManager.groups.forEach { group -> group.print(sender) }
                 }
             }
 

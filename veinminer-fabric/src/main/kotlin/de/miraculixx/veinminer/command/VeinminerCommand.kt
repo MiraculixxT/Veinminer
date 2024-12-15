@@ -97,7 +97,7 @@ object VeinminerCommand {
                 }
 
                 ConfigManager.groups.add(BlockGroup(name, content))
-                msg("Created group '$name'\nAdd blocks with '/groups edit $name add ...'", cGreen)
+                msg("Created group '$name'\nAdd blocks with '/veinminer groups edit $name add ...'", cGreen)
                 ConfigManager.save()
             }
 
@@ -126,13 +126,23 @@ object VeinminerCommand {
 
             // Display all present groups
             literal("list") {
-                runs {
-                    ConfigManager.groups.forEach { group ->
-                        source.msg("Group '${group.name}'", cBase)
-                        source.msg(" -> Blocks: [${group.blocks.joinToString(", ")}]\n", cBase)
-                        if (group.tools.isEmpty()) source.msg(" -> Tools: [all]\n", cBase)
-                        else source.msg(" -> Tools: [${group.tools.joinToString(", ")}]\n", cBase)
+                fun BlockGroup<String>.print(source: CommandSourceStack) {
+                    source.msg("Group '${name}'", cBase)
+                    source.msg(" -> Blocks: [${blocks.joinToString(", ")}]\n", cBase)
+                    if (tools.isEmpty()) source.msg(" -> Tools: [all]\n", cBase)
+                    else source.msg(" -> Tools: [${tools.joinToString(", ")}]\n", cBase)
+                }
+
+                argument<String>("group") { groupName ->
+                    suggestList { ConfigManager.groups.map { it.name } }
+                    runs {
+                        val group = groupExists(groupName()) ?: return@runs source.msg("Group '$groupName' does not exist", cRed)
+                        group.print(source)
                     }
+                }
+
+                runs {
+                    ConfigManager.groups.forEach { group -> group.print(source) }
                 }
             }
 
