@@ -34,12 +34,6 @@ class VeinMinerEvent {
 
     private val onBlockBreak = listen<BlockBreakEvent> {
         val player = it.player
-        if (player.scoreboardTags.contains("veinminer")) {
-            player.removeScoreboardTag("veinminer")
-            println("Cancelled check")
-            return@listen
-        }
-
         val material = it.block.type
         if (it.isCancelled) return@listen
 
@@ -108,8 +102,7 @@ class VeinMinerEvent {
         if (item.isEmpty) return 0
         if (size != 0) {
             // Check if other plugins cancel the event
-            player.addScoreboardTag("veinmine")
-            if (!BlockBreakEvent(source, player).callEvent()) return 0
+            //if (!BlockBreakEvent(source, player).callEvent()) return 0
             source.breakNaturally(item, true, true)
             // TODO somehow grab the item and teleport it to the player (if setting is on)
             if (damageItem) damageItem(item, 1, player)

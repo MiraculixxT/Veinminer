@@ -40,7 +40,7 @@ class Veinminer : ModInitializer {
         mcCoroutineTask(false) {
             UpdateManager.Module.entries.forEach { module ->
                 try {
-                    UpdateManager.checkForUpdates(module, "fabric", server?.serverVersion ?: "1.21", fabricLoader.getModContainer(module.modID).getOrNull()?.metadata?.version?.friendlyString)
+                    UpdateManager.checkForUpdates(module, "fabric", server?.serverVersion ?: "1.21.4", fabricLoader.getModContainer(module.modID).getOrNull()?.metadata?.version?.friendlyString)
                 } catch (e: Exception) { println("[VeinminerUpdater] Error while checking for updates: ${e.message}") }
             }
         }
