@@ -30,6 +30,7 @@
     "fabric-api": "*",
     "fabric-language-kotlin": "*",
 
-    "silk-all": "*"
+    "silk-core": "*",
+    "silk-commands": "*"
   }
 }

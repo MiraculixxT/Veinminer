@@ -6,6 +6,7 @@ plugins {
 
 repositories {
     mavenCentral()
+    mavenLocal()
     maven("https://maven.shedaniel.me/")
     maven("https://maven.terraformersmc.com/releases/")
     maven("https://oss.sonatype.org/content/repositories/snapshots")
