@@ -11,6 +11,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.block.Block
 import org.bukkit.entity.Player
@@ -33,6 +34,11 @@ class VeinMinerEvent {
     }
 
     private val onBlockBreak = listen<BlockBreakEvent> {
+        if (it is VeinminerEvent) {
+            // TODO: Get item drop and teleport it to source location
+            return@listen
+        }
+
         val player = it.player
         val material = it.block.type
         if (it.isCancelled) return@listen
@@ -60,7 +66,8 @@ class VeinMinerEvent {
 
             // Perform veinminer
             val blocks = if (isGroupBlock) blockGroup.blocks else setOf(material)
-            breakAdjusted(it.block, blocks, item, settings.delay, settings.maxChain, mutableSetOf(), player, settings.searchRadius, settings.decreaseDurability)
+            VeinmineAction(it.block, blocks, item, settings.delay, settings.maxChain, mutableSetOf(), player, settings.searchRadius, settings.decreaseDurability, it.block.location)
+                .breakAdjusted()
 
             // Check for cooldown config
             val cooldownTime = settings.cooldown
@@ -78,45 +85,28 @@ class VeinMinerEvent {
     /**
      * Recursively break blocks around the source block until the vein stops
      * @return the number of blocks broken
-     *
-     * @param source the source block
-     * @param target the set of blocks to break (all lists from the group)
-     * @param item the item to break the blocks with
-     * @param delay the delay between breaking blocks
-     * @param max the maximum number of blocks to break
      */
-    private fun breakAdjusted(
-        source: Block,
-        target: Set<Material>,
-        item: ItemStack,
-        delay: Int,
-        max: Int,
-        processedBlocks: MutableSet<Block>,
-        player: Player,
-        searchRadius: Int,
-        damageItem: Boolean
-    ): Int {
-        if (!target.contains(source.type) || processedBlocks.contains(source)) return 0
+    private fun VeinmineAction.breakAdjusted(): Int {
+        if (!targetTypes.contains(currentBlock.type) || processedBlocks.contains(currentBlock)) return 0
         val size = processedBlocks.size
-        if (size >= max) return 0
-        if (item.isEmpty) return 0
+        if (size >= maxChain) return 0
+        if (tool.isEmpty) return 0
         if (size != 0) {
             // Check if other plugins cancel the event
-            //if (!BlockBreakEvent(source, player).callEvent()) return 0
-            source.breakNaturally(item, true, true)
-            // TODO somehow grab the item and teleport it to the player (if setting is on)
-            if (damageItem) damageItem(item, 1, player)
+            if (!VeinminerEvent(currentBlock, player, sourceLocation).callEvent()) return 0
+            currentBlock.breakNaturally(tool, true, true)
+            if (damageItem) damageItem(tool, 1, player)
         }
 
-        processedBlocks.add(source)
+        processedBlocks.add(currentBlock)
         (-searchRadius..searchRadius).forEach { x ->
             (-searchRadius..searchRadius).forEach { y ->
                 (-searchRadius..searchRadius).forEach z@{ z ->
                     if (x == 0 && y == 0 && z == 0) return@z
-                    val block = source.world.getBlockAt(source.x + x, source.y + y, source.z + z)
-                    if (delay == 0) breakAdjusted(block, target, item, delay, max, processedBlocks, player, searchRadius, damageItem)
+                    val block = currentBlock.world.getBlockAt(currentBlock.x + x, currentBlock.y + y, currentBlock.z + z)
+                    if (delay == 0) copy(currentBlock = block).breakAdjusted()
                     else taskRunLater(delay.toLong()) {
-                        if (breakAdjusted(block, target, item, delay, max, processedBlocks, player, searchRadius, damageItem) == 0) return@taskRunLater
+                        if (copy(currentBlock = block).breakAdjusted() == 0) return@taskRunLater
                     }
                 }
             }
@@ -136,4 +126,19 @@ class VeinMinerEvent {
     fun disable() {
         onBlockBreak.unregister()
     }
+
+    private class VeinminerEvent(block: Block, breaker: Player, val sourceLocation: Location): BlockBreakEvent(block, breaker)
+
+    private data class VeinmineAction(
+        val currentBlock: Block,
+        val targetTypes: Set<Material>,
+        val tool: ItemStack,
+        val delay: Int,
+        val maxChain: Int,
+        val processedBlocks: MutableSet<Block>,
+        val player: Player,
+        val searchRadius: Int,
+        val damageItem: Boolean,
+        val sourceLocation: Location
+    )
 }

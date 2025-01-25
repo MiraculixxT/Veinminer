@@ -64,7 +64,8 @@ object VeinMinerEvent {
 
             // Perform veinminer
             val blocks = if (isGroupBlock) blockGroup.blocks else setOf(material)
-            breakAdjusted(state, blocks, mainHandItem, settings.delay, settings.maxChain, mutableSetOf(), world, pos, player, settings.searchRadius, pos, settings.decreaseDurability)
+            VeinmineAction(state, blocks, mainHandItem, settings.delay, settings.maxChain, mutableSetOf(), world, pos, player, settings.searchRadius, pos, settings.decreaseDurability)
+                .breakAdjusted()
 
             // Check for cooldown config
             val cooldownTime = settings.cooldown
@@ -84,20 +85,7 @@ object VeinMinerEvent {
      * Recursively break blocks around the source block until vein stops
      * @return the number of blocks broken
      */
-    private fun breakAdjusted(
-        source: BlockState,
-        target: Set<String>,
-        item: ItemStack,
-        delay: Int,
-        max: Int,
-        processedBlocks: MutableSet<BlockPos>,
-        world: Level,
-        position: BlockPos,
-        player: Player,
-        searchRadius: Int,
-        initialSource: BlockPos,
-        damageItem: Boolean
-    ): Int {
+    private fun VeinmineAction.breakAdjusted(): Int {
         if (!target.contains(source.block.descriptionId) || processedBlocks.contains(position)) return 0
         val size = processedBlocks.size
         if (size >= max) return 0
@@ -113,9 +101,9 @@ object VeinMinerEvent {
                     if (x == 0 && y == 0 && z == 0) return@z
                     val newPos = BlockPos(position.x + x, position.y + y, position.z + z)
                     val block = world.getBlockState(newPos)
-                    if (delay == 0) breakAdjusted(block, target, item, delay, max, processedBlocks, world, newPos, player, searchRadius, initialSource, damageItem)
+                    if (delay == 0) copy(source = block, position = newPos).breakAdjusted()
                     else mcCoroutineTask(delay = delay.ticks) {
-                        if (breakAdjusted(block, target, item, delay, max, processedBlocks, world, newPos, player, searchRadius, initialSource, damageItem) == 0)
+                        if (copy(source = block, position = newPos).breakAdjusted() == 0)
                             return@mcCoroutineTask
                     }
                 }
@@ -171,4 +159,19 @@ object VeinMinerEvent {
     private fun damageItem(item: ItemStack, player: Player) {
         item.hurtAndBreak(1, player, EquipmentSlot.MAINHAND)
     }
+
+    private data class VeinmineAction(
+        val source: BlockState,
+        val target: Set<String>,
+        val item: ItemStack,
+        val delay: Int,
+        val max: Int,
+        val processedBlocks: MutableSet<BlockPos>,
+        val world: Level,
+        val position: BlockPos,
+        val player: Player,
+        val searchRadius: Int,
+        val initialSource: BlockPos,
+        val damageItem: Boolean
+    )
 }
