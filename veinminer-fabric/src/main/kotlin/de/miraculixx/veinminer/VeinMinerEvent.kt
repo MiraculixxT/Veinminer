@@ -157,6 +157,7 @@ object VeinMinerEvent {
     }
 
     private fun damageItem(item: ItemStack, player: Player) {
+        if (item.isEmpty) return
         item.hurtAndBreak(1, player, EquipmentSlot.MAINHAND)
     }
 

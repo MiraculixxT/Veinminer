@@ -6,6 +6,7 @@ import de.miraculixx.kpaper.runnables.taskRunLater
 import de.miraculixx.veinminer.Veinminer.Companion.VEINMINE
 import de.miraculixx.veinminer.config.ConfigManager
 import de.miraculixx.veinminer.config.FixedBlockGroup
+import de.miraculixx.veinminer.config.VeinminerSettings
 import de.miraculixx.veinminer.config.permissionVeinmine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -13,7 +14,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.bukkit.Location
 import org.bukkit.Material
+import org.bukkit.Particle
 import org.bukkit.block.Block
+import org.bukkit.entity.ExperienceOrb
 import org.bukkit.entity.Player
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.inventory.ItemStack
@@ -34,16 +37,31 @@ class VeinMinerEvent {
     }
 
     private val onBlockBreak = listen<BlockBreakEvent> {
+        if (it.isCancelled) return@listen
+
+        val player = it.player
+        val settings = ConfigManager.settings
+        val block = it.block
+
+        // Check if the event is triggered by Veinminer
         if (it is VeinminerEvent) {
-            // TODO: Get item drop and teleport it to source location
+//            println("Veinminer Event: ${it.sourceLocation}")
+
+            // Check if item drops should be merged
+            if (!settings.mergeItemDrops || !it.isDropItems) return@listen
+
+            block.getDrops(player.inventory.itemInMainHand, player).forEach { drop ->
+                block.world.dropItem(it.sourceLocation, drop)
+            }
+            if (it.expToDrop > 0) block.world.spawn(it.sourceLocation, ExperienceOrb::class.java).experience = it.expToDrop
+
+            it.isDropItems = false
+            it.expToDrop = 0
             return@listen
         }
 
-        val player = it.player
-        val material = it.block.type
-        if (it.isCancelled) return@listen
+        val material = block.type
 
-        val settings = ConfigManager.settings
         if (settings.permissionRestricted && !player.hasPermission(permissionVeinmine)) return@listen
         val blockGroup = material.groupedBlocks()
         val isGroupBlock = blockGroup.blocks.isNotEmpty()
@@ -58,7 +76,7 @@ class VeinMinerEvent {
 
             // Check for correct tool (if block group tools are empty, it means all tools are allowed)
             val item = player.inventory.itemInMainHand
-            if (settings.needCorrectTool && it.block.getDrops(item).isEmpty()) return@listen
+            if (settings.needCorrectTool && (it.block.getDrops(item).isEmpty() || item.isEmpty)) return@listen
             if (isGroupBlock && !blockGroup.tools.isEmpty() && !blockGroup.tools.contains(item.type)) return@listen
 
             // Check for enchantment if active
@@ -66,8 +84,9 @@ class VeinMinerEvent {
 
             // Perform veinminer
             val blocks = if (isGroupBlock) blockGroup.blocks else setOf(material)
-            VeinmineAction(it.block, blocks, item, settings.delay, settings.maxChain, mutableSetOf(), player, settings.searchRadius, settings.decreaseDurability, it.block.location)
+            VeinmineAction(it.block, blocks, item, mutableSetOf(), player, it.block.location.toCenterLocation(), settings)
                 .breakAdjusted()
+            it.isCancelled = true // Cancel the original event
 
             // Check for cooldown config
             val cooldownTime = settings.cooldown
@@ -89,23 +108,23 @@ class VeinMinerEvent {
     private fun VeinmineAction.breakAdjusted(): Int {
         if (!targetTypes.contains(currentBlock.type) || processedBlocks.contains(currentBlock)) return 0
         val size = processedBlocks.size
-        if (size >= maxChain) return 0
-        if (tool.isEmpty) return 0
-        if (size != 0) {
-            // Check if other plugins cancel the event
-            if (!VeinminerEvent(currentBlock, player, sourceLocation).callEvent()) return 0
-            currentBlock.breakNaturally(tool, true, true)
-            if (damageItem) damageItem(tool, 1, player)
-        }
+        if (size >= settings.maxChain) return 0
+        if (settings.needCorrectTool && tool.isEmpty) return 0
+
+        // Check if other plugins cancel the event
+        if (!VeinminerEvent(currentBlock, player, sourceLocation).callEvent()) return 0
+        currentBlock.destroy(tool, !settings.mergeItemDrops)
+        if (settings.decreaseDurability) damageItem(tool, 1, player)
 
         processedBlocks.add(currentBlock)
+        val searchRadius = settings.searchRadius
         (-searchRadius..searchRadius).forEach { x ->
             (-searchRadius..searchRadius).forEach { y ->
                 (-searchRadius..searchRadius).forEach z@{ z ->
                     if (x == 0 && y == 0 && z == 0) return@z
                     val block = currentBlock.world.getBlockAt(currentBlock.x + x, currentBlock.y + y, currentBlock.z + z)
-                    if (delay == 0) copy(currentBlock = block).breakAdjusted()
-                    else taskRunLater(delay.toLong()) {
+                    if (settings.delay == 0) copy(currentBlock = block).breakAdjusted()
+                    else taskRunLater(settings.delay.toLong()) {
                         if (copy(currentBlock = block).breakAdjusted() == 0) return@taskRunLater
                     }
                 }
@@ -119,8 +138,19 @@ class VeinMinerEvent {
      */
     @Suppress("SameParameterValue")
     private fun damageItem(item: ItemStack, amount: Int, player: Player): Boolean {
+        if (item.isEmpty) return false
         if (item.type.maxDurability == 0.toShort() || item.isEmpty) return false
         return item.damage(amount, player).isEmpty
+    }
+
+    private fun Block.destroy(tool: ItemStack, drop: Boolean) {
+        if (drop) breakNaturally(tool, true, true)
+        else {
+            val center = location.toCenterLocation()
+            world.playSound(center, blockSoundGroup.breakSound, 1f, 1f)
+            world.spawnParticle(Particle.BLOCK, center, 20, blockData)
+            type = Material.AIR
+        }
     }
 
     fun disable() {
@@ -133,12 +163,9 @@ class VeinMinerEvent {
         val currentBlock: Block,
         val targetTypes: Set<Material>,
         val tool: ItemStack,
-        val delay: Int,
-        val maxChain: Int,
         val processedBlocks: MutableSet<Block>,
         val player: Player,
-        val searchRadius: Int,
-        val damageItem: Boolean,
-        val sourceLocation: Location
+        val sourceLocation: Location,
+        val settings: VeinminerSettings
     )
 }
