@@ -23,18 +23,14 @@ class Veinminer : KPaper() {
     private var shouldDisable = false
 
     override fun load() {
-        if (runningLegacy()) {
-            shouldDisable = true
-            logger.severe("Veinminer has been loaded on an installation of Bukkit/Spigot!")
-            logger.severe("Veinminer does not support anything other than Paper and derivatives!")
-            logger.severe("Spigot is considered legacy, and you should definitively consider upgrading!")
-            logger.severe("For further information, see https://docs.papermc.io/paper/migration")
-            logger.severe("Veinminer will shut down now...")
+        INSTANCE = this
+        if (!VeinminerCompatibility.isCompatible()) {
+           shouldDisable = true
             pluginManager.disablePlugin(this)
             return
         }
 
-        INSTANCE = this
+
         CommandAPI.onLoad(CommandAPIBukkitConfig(this).silentLogs(true))
         ConfigManager
         VeinminerCommand
@@ -90,8 +86,6 @@ class Veinminer : KPaper() {
 //        server.sendPluginMessage(this@Veinminer, IDENTIFIER, out.toByteArray())
 //    }
 
-    // If an essential Class in the paper namespace is not found, it's safe to assume that the plugin is running on Bukkit/Spigot
-    private fun runningLegacy(): Boolean = runCatching { Class.forName("io.papermc.paper.event.player.AbstractChatEvent") }.isFailure
 }
 
 val INSTANCE by lazy { Veinminer.INSTANCE }
