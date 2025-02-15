@@ -20,14 +20,24 @@ class Veinminer : KPaper() {
         var enchantmentActive = false
     }
 
+    private var shouldDisable = false
+
     override fun load() {
         INSTANCE = this
+        if (!VeinminerCompatibility.isCompatible()) {
+           shouldDisable = true
+            pluginManager.disablePlugin(this)
+            return
+        }
+
+
         CommandAPI.onLoad(CommandAPIBukkitConfig(this).silentLogs(true))
         ConfigManager
         VeinminerCommand
     }
 
     override fun startup() {
+        if (shouldDisable) return // Safeguard because disabling isn't actually instantaneous
         CommandAPI.onEnable()
         eventInstance = VeinMinerEvent()
 
@@ -59,6 +69,7 @@ class Veinminer : KPaper() {
     }
 
     override fun shutdown() {
+        if (shouldDisable) return // Safeguard because disabling isn't actually instantaneous
         // Soft fix for /reload command. Still not a good idea to use /reload
         CommandAPI.unregister("veinminer")
         CommandAPI.onDisable()
@@ -74,6 +85,7 @@ class Veinminer : KPaper() {
 //        out.writeUTF(data)
 //        server.sendPluginMessage(this@Veinminer, IDENTIFIER, out.toByteArray())
 //    }
+
 }
 
 val INSTANCE by lazy { Veinminer.INSTANCE }

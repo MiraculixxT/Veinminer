@@ -9,6 +9,7 @@ import de.miraculixx.kpaper.extensions.kotlin.enumOf
 import de.miraculixx.veinminer.INSTANCE
 import de.miraculixx.veinminer.VeinMinerEvent
 import de.miraculixx.veinminer.Veinminer
+import de.miraculixx.veinminer.VeinminerCompatibility
 import de.miraculixx.veinminer.config.*
 import dev.jorel.commandapi.arguments.Argument
 import dev.jorel.commandapi.arguments.ArgumentSuggestions
@@ -97,7 +98,8 @@ object VeinminerCommand {
             withPermission(permissionSettings)
             applySetting("mustSneak", { ConfigManager.settings.mustSneak }) { ConfigManager.settings.mustSneak = it }
             applySetting("cooldown", { ConfigManager.settings.cooldown }) { ConfigManager.settings.cooldown = it }
-            applySetting("delay", { ConfigManager.settings.delay }) { ConfigManager.settings.delay = it }
+            if (VeinminerCompatibility.platform != VeinminerCompatibility.Platform.Folia)
+                applySetting("delay", { ConfigManager.settings.delay }) { ConfigManager.settings.delay = it }
             applySetting("maxChain", { ConfigManager.settings.maxChain }) { ConfigManager.settings.maxChain = it }
             applySetting("needCorrectTool", { ConfigManager.settings.needCorrectTool }) { ConfigManager.settings.needCorrectTool = it }
             applySetting("searchRadius", { ConfigManager.settings.searchRadius }) { ConfigManager.settings.searchRadius = it }
