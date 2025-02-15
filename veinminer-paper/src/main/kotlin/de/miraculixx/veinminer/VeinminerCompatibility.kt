@@ -8,6 +8,8 @@ import net.kyori.adventure.text.Component
 object VeinminerCompatibility {
     private val logger = INSTANCE.logger
 
+    val platform by lazy { checkPlatform() }
+
     enum class Platform {
         Bukkit,
         Spigot,
@@ -16,7 +18,7 @@ object VeinminerCompatibility {
         Purpur
     }
 
-    fun getPlatform(): Platform {
+    private fun checkPlatform(): Platform {
         var platform = Platform.Folia
         if (runCatching { Class.forName("io.papermc.paper.threadedregions.RegionizedServer") }.isFailure)
             platform = Platform.Purpur
@@ -34,8 +36,6 @@ object VeinminerCompatibility {
 
     // Returns false if the plugin should be stopped
     fun isCompatible(): Boolean {
-        val platform = getPlatform()
-
         when (platform) {
             Platform.Bukkit, Platform.Spigot -> {
                 logger.severe("Veinminer has been loaded on an installation of Bukkit/Spigot!")
