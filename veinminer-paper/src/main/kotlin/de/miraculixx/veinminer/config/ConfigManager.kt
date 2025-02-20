@@ -1,6 +1,5 @@
 package de.miraculixx.veinminer.config
 
-import kotlinx.serialization.encodeToString
 import org.bukkit.Material
 import kotlin.io.path.Path
 import kotlin.io.path.writeText
