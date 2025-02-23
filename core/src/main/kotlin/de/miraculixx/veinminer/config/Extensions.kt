@@ -1,8 +1,6 @@
 package de.miraculixx.veinminer.config
 
-import kotlinx.serialization.Serializable
 import net.kyori.adventure.text.format.TextColor
-import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.createFile
 import kotlin.io.path.createParentDirectories
@@ -17,7 +15,10 @@ inline fun <reified T> Path.load(default: T): T {
     } else {
         try {
             json.decodeFromString<T>(readText())
-        } catch (_: Exception) { default }
+        } catch (e: Exception) {
+            println("[Veinminer] Failed to load ${this.fileName} config: Reason: ${e.message}")
+            default
+        }
     }
 }
 
