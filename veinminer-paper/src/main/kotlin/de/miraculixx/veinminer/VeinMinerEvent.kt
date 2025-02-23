@@ -53,7 +53,6 @@ class VeinMinerEvent {
 
         // Check if the event is triggered by Veinminer
         if (it is VeinminerEvent) {
-//            println("Veinminer Event: ${it.sourceLocation}")
 
             if (!it.isDropItems) return@listen
 
@@ -63,7 +62,7 @@ class VeinMinerEvent {
             val dropItemEvent = VeinminerDropEvent(block, block.state, player, drops, it.expToDrop).also(Event::callEvent)
 
             // Use source location as drop pos if setting is enabled
-            val location = if (settings.mergeItemDrops) it.sourceLocation else block.location
+            val location = if (settings.mergeItemDrops) it.sourceLocation else block.location.toCenterLocation()
 
             drops.forEach { drop ->
                 block.world.dropItem(location, drop)
