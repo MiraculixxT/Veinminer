@@ -37,6 +37,7 @@ class Veinminer : ModInitializer {
 
         VeinminerCommand
 
+        // Updater
         mcCoroutineTask(false) {
             UpdateManager.Module.entries.forEach { module ->
                 try {
