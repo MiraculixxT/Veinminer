@@ -1,7 +1,6 @@
-
 plugins {
     kotlin("jvm")
-    id("com.github.johnrengelman.shadow")
+    id("com.gradleup.shadow")
 }
 
 tasks {

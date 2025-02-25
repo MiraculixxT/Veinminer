@@ -26,12 +26,12 @@ dependencies {
     implementation("net.fabricmc:fabric-loom:1.9-SNAPSHOT")
 
     // Paper implementation
-    implementation(pluginDep("io.papermc.paperweight.userdev", "2.0.0-beta.12"))
+    implementation(pluginDep("io.papermc.paperweight.userdev", "2.0.0-beta.14"))
     implementation(pluginDep("xyz.jpenilla.run-paper", "2.3.1"))
     implementation(pluginDep("de.eldoria.plugin-yml.paper", "0.7.+"))
 
     // Project configuration
-    implementation(pluginDep("com.github.johnrengelman.shadow", "8.1.1"))
+    implementation(pluginDep("com.gradleup.shadow", "9.0.0-beta9"))
     implementation(pluginDep("com.modrinth.minotaur", "2.+"))
     implementation(pluginDep("io.github.dexman545.outlet", "1.6.+"))
 }
