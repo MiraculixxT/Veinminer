@@ -7,9 +7,8 @@ tasks {
     shadowJar {
         dependencies {
             include {
-                it.moduleGroup == properties["group"] as String || it.moduleGroup == "dev.jorel"
+                it.moduleGroup == properties["group"] as String
             }
         }
-        relocate("dev.jorel.commandapi", "de.miraculixx.veinminer.commandapi")
     }
 }
