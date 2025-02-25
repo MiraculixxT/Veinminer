@@ -58,9 +58,7 @@ class VeinMinerEvent {
 
         // Check if the event is triggered by Veinminer
         if (it is VeinminerEvent) {
-
             if (!it.isDropItems) return@listen
-            block.breakNaturally()
 
             // Invoke VeinminerDropEvent - allows other plugins to modify the items and exp dropped by Veinminer itself
             // Veinminer will drop the items that are still in the list and the remaining amount of experience
