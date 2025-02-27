@@ -1,6 +1,7 @@
 package de.miraculixx.veinminer.config
 
-import kotlinx.serialization.encodeToString
+import de.miraculixx.veinminer.config.data.BlockGroup
+import de.miraculixx.veinminer.config.data.VeinminerSettings
 import org.bukkit.Material
 import kotlin.io.path.Path
 import kotlin.io.path.writeText

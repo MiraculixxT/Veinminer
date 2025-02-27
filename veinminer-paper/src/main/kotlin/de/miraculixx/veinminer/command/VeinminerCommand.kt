@@ -11,6 +11,7 @@ import de.miraculixx.veinminer.VeinMinerEvent
 import de.miraculixx.veinminer.Veinminer
 import de.miraculixx.veinminer.VeinminerCompatibility
 import de.miraculixx.veinminer.config.*
+import de.miraculixx.veinminer.config.data.BlockGroup
 import dev.jorel.commandapi.arguments.Argument
 import dev.jorel.commandapi.arguments.ArgumentSuggestions
 import dev.jorel.commandapi.executors.CommandArguments

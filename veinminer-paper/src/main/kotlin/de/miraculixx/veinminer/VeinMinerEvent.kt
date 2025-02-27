@@ -5,8 +5,8 @@ import de.miraculixx.kpaper.event.unregister
 import de.miraculixx.kpaper.runnables.taskRunLater
 import de.miraculixx.veinminer.Veinminer.Companion.VEINMINE
 import de.miraculixx.veinminer.config.ConfigManager
-import de.miraculixx.veinminer.config.FixedBlockGroup
-import de.miraculixx.veinminer.config.VeinminerSettings
+import de.miraculixx.veinminer.config.data.FixedBlockGroup
+import de.miraculixx.veinminer.config.data.VeinminerSettings
 import de.miraculixx.veinminer.config.permissionVeinmine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

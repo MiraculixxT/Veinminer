@@ -48,6 +48,7 @@ dependencies {
         modImplementation("net.silkmc", "silk-core", silkVersion)
         modImplementation("net.silkmc", "silk-commands", silkVersion) // easy command registration
         modImplementation("net.silkmc", "silk-nbt", silkVersion) // item simplification
+        modImplementation("net.silkmc", "silk-network", silkVersion)
     }
 
     //

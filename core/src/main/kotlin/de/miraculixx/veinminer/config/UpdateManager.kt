@@ -1,5 +1,7 @@
 package de.miraculixx.veinminer.config
 
+import de.miraculixx.veinminer.config.data.ModrinthFile
+import de.miraculixx.veinminer.config.data.ModrinthVersion
 import java.io.File
 import java.net.HttpURLConnection
 import java.net.URI

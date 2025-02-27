@@ -5,6 +5,7 @@ package de.miraculixx.veinminer.command
 import de.miraculixx.veinminer.Veinminer
 import de.miraculixx.veinminer.Veinminer.Companion.LOGGER
 import de.miraculixx.veinminer.config.*
+import de.miraculixx.veinminer.config.data.BlockGroup
 import me.lucko.fabric.api.permissions.v0.Permissions
 import net.minecraft.DetectedVersion
 import net.minecraft.commands.CommandSourceStack
