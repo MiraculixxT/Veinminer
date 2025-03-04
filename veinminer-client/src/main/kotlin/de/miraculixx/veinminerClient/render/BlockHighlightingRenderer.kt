@@ -17,7 +17,7 @@ object BlockHighlightingRenderer {
     val highlightedBlocks = mutableSetOf<BlockPosition>()
 
     private val renderDefault = RenderType.create(
-        "${VeinminerClient.MOD_ID}:highlight",
+        "${VeinminerClient.MOD_ID}_highlight",
         DefaultVertexFormat.POSITION_COLOR,
         VertexFormat.Mode.DEBUG_LINES,
         256,
@@ -32,7 +32,7 @@ object BlockHighlightingRenderer {
     )
 
     private val rendererTransparentOverlay = RenderType.create(
-        "${VeinminerClient.MOD_ID}:highlight_transparent",
+        "${VeinminerClient.MOD_ID}_highlight_transparent",
         DefaultVertexFormat.POSITION_COLOR,
         VertexFormat.Mode.DEBUG_LINES,
         256,
@@ -54,6 +54,7 @@ object BlockHighlightingRenderer {
         val client = VeinminerClient.client
         val stack = context.matrixStack() ?: return // Interfering render mod?
         val camPos = client.entityRenderDispatcher.camera.position
+        println("Render: $targetBlock ($highlightedBlocks)")
 
         stack.pushPose()
         stack.translate(targetBlock.x - camPos.x, targetBlock.y - camPos.y, targetBlock.z - camPos.z)

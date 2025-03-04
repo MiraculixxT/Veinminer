@@ -28,6 +28,7 @@ object KeyBindManager {
         val target = instance.hitResult as? BlockHitResult ?: return
         val pos = target.blockPos
         if (pos == lastTarget) return
+        println("Target: $pos")
         lastTarget = pos
 
         // Request vein for block highlighting and hud
