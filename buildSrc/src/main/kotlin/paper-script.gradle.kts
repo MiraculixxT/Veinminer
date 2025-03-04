@@ -4,15 +4,13 @@ plugins {
     kotlin("jvm")
     id("io.papermc.paperweight.userdev")
     id("xyz.jpenilla.run-paper")
-    id("net.minecrell.plugin-yml.bukkit")
+    id("de.eldoria.plugin-yml.paper")
     id("com.modrinth.minotaur")
 }
 
 description = properties["description"] as String
 
 val gameVersion by properties
-val foliaSupport = properties["foliaSupport"] as String == "true"
-val projectName = properties["projectName"] as String
 
 repositories {
     mavenCentral()
@@ -20,7 +18,7 @@ repositories {
     maven("https://s01.oss.sonatype.org/content/repositories/snapshots/")
 }
 
-paperweight.reobfArtifactConfiguration = io.papermc.paperweight.userdev.ReobfArtifactConfiguration.REOBF_PRODUCTION
+paperweight.reobfArtifactConfiguration = io.papermc.paperweight.userdev.ReobfArtifactConfiguration.MOJANG_PRODUCTION
 
 dependencies {
     paperweight.paperDevBundle("$gameVersion-R0.1-SNAPSHOT")
@@ -33,28 +31,29 @@ dependencies {
     // Utility libraries (optional)
     val useBrigadier = properties["useBrigadier"] as String == "true"
     if (useBrigadier) {
-        implementation("dev.jorel:commandapi-bukkit-shade:9.7.0")
-        implementation("dev.jorel:commandapi-bukkit-kotlin:9.7.0")
+        implementation(library("dev.jorel:commandapi-bukkit-shade-mojang-mapped:9.7.0")!!)
+        implementation(library("dev.jorel:commandapi-bukkit-kotlin:9.7.0")!!)
     }
 
     library("de.miraculixx:kpaper:1.+")
 }
 
-tasks {
-    assemble {
-        dependsOn(reobfJar)
-    }
-}
+//tasks {
+//    assemble {
+//        dependsOn(reobfJar)
+//    }
+//}
 
-bukkit {
-    main = "$group.${projectName.lowercase()}.${projectName}"
-    apiVersion = "1.16"
-    foliaSupported = foliaSupport
-    name = projectName
-    println(name + projectName)
+paper {
+    main = "$group.veinminer.Veinminer"
+    bootstrapper = "$group.veinminer.VeinminerBootstrapper"
+    loader = "$group.veinminer.VeinminerLoader"
+    generateLibrariesJson = true
 
-    // Optionals
+    name = "Veinminer"
+    website = "https://mutils.net"
+
+    foliaSupported = true
+    apiVersion = "1.20"
     load = BukkitPluginDescription.PluginLoadOrder.STARTUP
-    depend = listOf()
-    softDepend = listOf()
 }
