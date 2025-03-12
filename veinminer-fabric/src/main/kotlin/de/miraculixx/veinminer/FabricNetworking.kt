@@ -1,12 +1,5 @@
 package de.miraculixx.veinminer
 
-import de.miraculixx.veinminer.config.IDENTIFIER
-import de.miraculixx.veinminer.config.network.NetworkManager
-import net.minecraft.network.RegistryFriendlyByteBuf
-import net.minecraft.network.codec.StreamCodec
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload
-import net.minecraft.resources.ResourceLocation
-
 //object FabricNetworking: CustomPacketPayload {
 //    val PACKET_IDENTIFIER = ResourceLocation.fromNamespaceAndPath(IDENTIFIER, NetworkManager.PACKET_JOIN)
 //    val PACKET_ID = CustomPacketPayload.Type<FabricNetworking>(PACKET_IDENTIFIER)

@@ -6,6 +6,14 @@ import de.miraculixx.veinminer.Veinminer
 import de.miraculixx.veinminer.Veinminer.Companion.LOGGER
 import de.miraculixx.veinminer.config.*
 import de.miraculixx.veinminer.config.data.BlockGroup
+import de.miraculixx.veinminer.config.utils.cBase
+import de.miraculixx.veinminer.config.utils.cGreen
+import de.miraculixx.veinminer.config.utils.cRed
+import de.miraculixx.veinminer.config.utils.permissionBlocks
+import de.miraculixx.veinminer.config.utils.permissionGroups
+import de.miraculixx.veinminer.config.utils.permissionReload
+import de.miraculixx.veinminer.config.utils.permissionSettings
+import de.miraculixx.veinminer.config.utils.permissionToggle
 import me.lucko.fabric.api.permissions.v0.Permissions
 import net.minecraft.DetectedVersion
 import net.minecraft.commands.CommandSourceStack

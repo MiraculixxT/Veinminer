@@ -2,6 +2,8 @@ package de.miraculixx.veinminer.config
 
 import de.miraculixx.veinminer.config.data.BlockGroup
 import de.miraculixx.veinminer.config.data.VeinminerSettings
+import de.miraculixx.veinminer.config.extensions.load
+import de.miraculixx.veinminer.config.utils.json
 import org.bukkit.Material
 import kotlin.io.path.Path
 import kotlin.io.path.writeText

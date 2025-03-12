@@ -5,7 +5,7 @@ import de.miraculixx.veinminer.Veinminer.Companion.active
 import de.miraculixx.veinminer.Veinminer.Companion.enchantmentActive
 import de.miraculixx.veinminer.config.ConfigManager
 import de.miraculixx.veinminer.config.data.FixedBlockGroup
-import de.miraculixx.veinminer.config.permissionVeinmine
+import de.miraculixx.veinminer.config.utils.permissionVeinmine
 import me.lucko.fabric.api.permissions.v0.Permissions
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents
 import net.minecraft.core.BlockPos

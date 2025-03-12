@@ -1,5 +1,6 @@
 package de.miraculixx.veinminerClient
 
+import de.miraculixx.veinminer.config.utils.NamespacedLogging
 import de.miraculixx.veinminerClient.constants.KEY_VEINMINE
 import de.miraculixx.veinminerClient.network.NetworkManager
 import de.miraculixx.veinminerClient.render.BlockHighlightingRenderer
@@ -15,6 +16,7 @@ class VeinminerClient : ClientModInitializer {
     companion object {
         const val MOD_ID = "veinminer-client"
         lateinit var client: Minecraft
+        val LOGGER = NamespacedLogging(MOD_ID)
     }
 
     override fun onInitializeClient() {

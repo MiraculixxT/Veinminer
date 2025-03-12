@@ -1,4 +1,4 @@
-package de.miraculixx.veinminer.config
+package de.miraculixx.veinminer.config.extensions
 
 fun String.fancy(): String {
         val split = split('_') //GRASS_BLOCK -> [GRASS, BLOCK]

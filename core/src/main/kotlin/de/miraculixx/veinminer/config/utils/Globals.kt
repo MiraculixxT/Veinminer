@@ -1,4 +1,4 @@
-package de.miraculixx.veinminer.config
+package de.miraculixx.veinminer.config.utils
 
 import kotlinx.serialization.json.Json
 

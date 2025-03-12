@@ -7,7 +7,7 @@ import de.miraculixx.veinminer.Veinminer.Companion.VEINMINE
 import de.miraculixx.veinminer.config.ConfigManager
 import de.miraculixx.veinminer.config.data.FixedBlockGroup
 import de.miraculixx.veinminer.config.data.VeinminerSettings
-import de.miraculixx.veinminer.config.permissionVeinmine
+import de.miraculixx.veinminer.config.utils.permissionVeinmine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
