@@ -12,6 +12,15 @@ import de.miraculixx.veinminer.Veinminer
 import de.miraculixx.veinminer.VeinminerCompatibility
 import de.miraculixx.veinminer.config.*
 import de.miraculixx.veinminer.config.data.BlockGroup
+import de.miraculixx.veinminer.config.extensions.color
+import de.miraculixx.veinminer.config.extensions.fancy
+import de.miraculixx.veinminer.config.utils.cGreen
+import de.miraculixx.veinminer.config.utils.cRed
+import de.miraculixx.veinminer.config.utils.permissionBlocks
+import de.miraculixx.veinminer.config.utils.permissionGroups
+import de.miraculixx.veinminer.config.utils.permissionReload
+import de.miraculixx.veinminer.config.utils.permissionSettings
+import de.miraculixx.veinminer.config.utils.permissionToggle
 import dev.jorel.commandapi.arguments.Argument
 import dev.jorel.commandapi.arguments.ArgumentSuggestions
 import dev.jorel.commandapi.executors.CommandArguments

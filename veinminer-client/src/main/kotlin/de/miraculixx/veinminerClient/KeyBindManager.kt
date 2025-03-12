@@ -11,13 +11,22 @@ import net.minecraft.world.phys.BlockHitResult
 
 object KeyBindManager {
     var lastTarget: BlockPos? = null
+        private set
+    var isPressed = false
+        private set(value) {
+            NetworkManager.sendKeyPress(value)
+            field = value
+        }
+
 
     fun tick() {
         if (KEY_VEINMINE.isDown) {
+            if (!isPressed) isPressed = true
             checkBlockTarget()
             scrollPattern()
 
         } else {
+            if (isPressed) isPressed = false
             lastTarget = null
         }
     }
@@ -37,8 +46,6 @@ object KeyBindManager {
         // DEBUG
         BlockHighlightingRenderer.highlightedBlocks.clear()
         BlockHighlightingRenderer.highlightedBlocks.add(pos.toVeinminer())
-        BlockHighlightingRenderer.highlightedBlocks.add(pos.toVeinminer().copy(y = pos.y + 1))
-        BlockHighlightingRenderer.highlightedBlocks.add(pos.toVeinminer().copy(y = pos.y + 2))
     }
 
     // Scroll through veinmine patterns

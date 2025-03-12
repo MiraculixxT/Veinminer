@@ -14,6 +14,10 @@ data class JoinInformation(
 data class RequestBlockVein(
     val blockPosition: BlockPosition,
     val surface: Surface,
-    val pattern: Pattern,
-    val mine: Boolean
+    val pattern: Pattern
+)
+
+@Serializable
+data class KeyPress(
+    val pressed: Boolean
 )
