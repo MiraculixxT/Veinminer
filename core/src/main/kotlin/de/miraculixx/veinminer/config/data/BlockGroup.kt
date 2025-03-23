@@ -3,14 +3,14 @@ package de.miraculixx.veinminer.config.data
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class BlockGroup(
+data class BlockGroup<T>(
     var name: String,
-    var blocks: MutableSet<String>,
-    val tools: MutableSet<String> = mutableSetOf<String>()
+    var blocks: MutableSet<T>,
+    val tools: MutableSet<T> = mutableSetOf<T>()
 )
 
 @Serializable
-data class FixedBlockGroup(
-    val blocks: Set<String>,
-    val tools: Set<String>
+data class FixedBlockGroup<T>(
+    val blocks: Set<T>,
+    val tools: Set<T>
 )

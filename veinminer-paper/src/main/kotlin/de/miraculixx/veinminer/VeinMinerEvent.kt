@@ -14,6 +14,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.bukkit.Location
 import org.bukkit.Material
+import org.bukkit.NamespacedKey
 import org.bukkit.Particle
 import org.bukkit.block.Block
 import org.bukkit.entity.ExperienceOrb
@@ -29,10 +30,16 @@ class VeinMinerEvent {
     /**
      * @return a set of all blocks in the same group as this material. If the material is not in a group, it will return an empty set
      */
-    private fun Material.groupedBlocks(): FixedBlockGroup<Material> {
-        val blocks = mutableSetOf<Material>()
-        val tools = mutableSetOf<Material>()
-        ConfigManager.groups.forEach { if (it.blocks.contains(this)) { blocks.addAll(it.blocks); tools.addAll(it.tools) } }
+    private fun NamespacedKey.groupedBlocks(): FixedBlockGroup<NamespacedKey> {
+        val blocks = mutableSetOf<NamespacedKey>()
+        val tools = mutableSetOf<NamespacedKey>()
+
+        ConfigManager.groups.forEach {
+            if (it.blocks.contains(this)) {
+                blocks.addAll(it.blocks)
+                tools.addAll(it.tools)
+            }
+        }
         return FixedBlockGroup(blocks.toSet(), tools.toSet())
     }
 
@@ -60,7 +67,7 @@ class VeinMinerEvent {
             return@listen
         }
 
-        val material = block.type
+        val material = block.type.key
 
         if (settings.permissionRestricted && !player.hasPermission(permissionVeinmine)) return@listen
         val blockGroup = material.groupedBlocks()
@@ -77,7 +84,7 @@ class VeinMinerEvent {
             // Check for correct tool (if block group tools are empty, it means all tools are allowed)
             val item = player.inventory.itemInMainHand
             if (settings.needCorrectTool && (it.block.getDrops(item).isEmpty() || item.isEmpty)) return@listen
-            if (isGroupBlock && !blockGroup.tools.isEmpty() && !blockGroup.tools.contains(item.type)) return@listen
+            if (isGroupBlock && !blockGroup.tools.isEmpty() && !blockGroup.tools.contains(item.type.key)) return@listen
 
             // Check for enchantment if active
             if (Veinminer.enchantmentActive && !item.enchantments.any { it.key.key == VEINMINE }) return@listen
@@ -106,7 +113,7 @@ class VeinMinerEvent {
      * @return the number of blocks broken
      */
     private fun VeinmineAction.breakAdjusted(): Int {
-        if (!targetTypes.contains(currentBlock.type) || processedBlocks.contains(currentBlock)) return 0
+        if (!targetTypes.contains(currentBlock.type.key) || processedBlocks.contains(currentBlock)) return 0
         val size = processedBlocks.size
         if (size >= settings.maxChain) return 0
         if (settings.needCorrectTool && tool.isEmpty) return 0
@@ -157,11 +164,11 @@ class VeinMinerEvent {
         onBlockBreak.unregister()
     }
 
-    private class VeinminerEvent(block: Block, breaker: Player, val sourceLocation: Location): BlockBreakEvent(block, breaker)
+    private class VeinminerEvent(block: Block, breaker: Player, val sourceLocation: Location) : BlockBreakEvent(block, breaker)
 
     private data class VeinmineAction(
         val currentBlock: Block,
-        val targetTypes: Set<Material>,
+        val targetTypes: Set<NamespacedKey>,
         val tool: ItemStack,
         val processedBlocks: MutableSet<Block>,
         val player: Player,
