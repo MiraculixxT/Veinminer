@@ -9,12 +9,16 @@ import de.miraculixx.veinminerClient.VeinminerClient
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext
 import net.minecraft.client.renderer.RenderStateShard
 import net.minecraft.client.renderer.RenderType
+import net.minecraft.core.BlockPos
+import net.minecraft.world.phys.shapes.Shapes
+import net.minecraft.world.phys.shapes.VoxelShape
 import org.joml.Matrix4f
-import java.util.OptionalDouble
+import java.util.*
+import kotlin.text.toFloat
 
-
+// TODO: Check for optimization, Copilot threw this at me
 object BlockHighlightingRenderer {
-    val highlightedBlocks = mutableSetOf<BlockPosition>()
+    private var highlightingShape: VoxelShape = Shapes.empty()
 
     private val renderDefault = RenderType.create(
         "${VeinminerClient.MOD_ID}_highlight",
@@ -49,12 +53,11 @@ object BlockHighlightingRenderer {
 
     fun render(context: WorldRenderContext) {
         val targetBlock = KeyBindManager.lastTarget
-        if (highlightedBlocks.isEmpty() || targetBlock == null) return
+        if (highlightingShape.isEmpty || targetBlock == null) return
 
         val client = VeinminerClient.client
         val stack = context.matrixStack() ?: return // Interfering render mod?
         val camPos = client.entityRenderDispatcher.camera.position
-        println("Render: $targetBlock ($highlightedBlocks)")
 
         stack.pushPose()
         stack.translate(targetBlock.x - camPos.x, targetBlock.y - camPos.y, targetBlock.z - camPos.z)
@@ -64,24 +67,40 @@ object BlockHighlightingRenderer {
 
         // Default drawing
         val consumer = source.getBuffer(renderDefault)
-        renderBlocks(consumer, matrix, highlightedBlocks, 255)
+        renderBlocks(consumer, matrix, highlightingShape, 255)
         source.endBatch(renderDefault)
 
         // Transparent drawing
         val bufferTransparent = source.getBuffer(rendererTransparentOverlay)
-        renderBlocks(bufferTransparent, matrix, highlightedBlocks, 20)
+        renderBlocks(bufferTransparent, matrix, highlightingShape, 20)
         source.endBatch(rendererTransparentOverlay)
 
         stack.popPose()
     }
 
-    private fun renderBlocks(buffer: VertexConsumer, matrix: Matrix4f, blocks: Set<BlockPosition>, transparency: Int) {
-        blocks.forEach { blockPos ->
-            val x = blockPos.x.toFloat()
-            val y = blockPos.y.toFloat()
-            val z = blockPos.z.toFloat()
-            buffer.addVertex(matrix, x, y, z).setColor(255, 255, 255, transparency)
-            buffer.addVertex(matrix, x + 1f, y + 1f, z + 1f).setColor(255, 255, 255, transparency)
+    private fun renderBlocks(buffer: VertexConsumer, matrix: Matrix4f, shape: VoxelShape, transparency: Int) {
+        shape.forAllEdges { x, y, z, dx, dy, dz ->
+            // Outline
+            buffer.addVertex(matrix, x.toFloat(), y.toFloat(), z.toFloat()).setColor(255, 255, 255, transparency)
+            buffer.addVertex(matrix, dx.toFloat(), dy.toFloat(), dz.toFloat()).setColor(255, 255, 255, transparency)
         }
+    }
+
+    fun setShape(positions: List<BlockPosition>) {
+        val source = KeyBindManager.lastTarget
+        if (positions.isEmpty() || source == null) {
+            highlightingShape = Shapes.empty()
+            return
+        }
+
+        val splines = positions.map {
+            val box = Shapes.box(-0.010, -0.010, -0.010, 1.010, 1.010, 1.010)
+            val dx = it.x - source.x
+            val dy = it.y - source.y
+            val dz = it.z - source.z
+            if (dx == 0 && dy == 0 && dz == 0) box
+            else box.move(dx.toDouble(), dy.toDouble(), dz.toDouble())
+        }
+        highlightingShape = Shapes.or(splines.first(), *splines.toTypedArray())
     }
 }

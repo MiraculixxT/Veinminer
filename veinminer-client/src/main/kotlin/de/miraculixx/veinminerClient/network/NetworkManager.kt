@@ -13,6 +13,7 @@ import de.miraculixx.veinminerClient.constants.PACKET_JOIN
 import de.miraculixx.veinminerClient.constants.PACKET_KEY_PRESS
 import de.miraculixx.veinminerClient.constants.PACKET_MINE
 import de.miraculixx.veinminerClient.render.BlockHighlightingRenderer
+import de.miraculixx.veinminerClient.render.HUDRenderer
 import net.minecraft.client.gui.components.toasts.SystemToast
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
@@ -29,10 +30,6 @@ object NetworkManager {
         private set
     var cooldown = 0
         private set
-    var globalBlocks = setOf<String>()
-        private set
-    var blockGroups = setOf<FixedBlockGroup>()
-        private set
 
     private val onConfiguration = PACKET_CONFIGURATION.receiveOnClient { packet, context ->
         if (packet.outdated) {
@@ -44,19 +41,18 @@ object NetworkManager {
         isVeinminerActive = true
         mustSneak = packet.mustSneak
         cooldown = packet.cooldown
-        globalBlocks = packet.globalBlockList
-        blockGroups = packet.blockGroups
     }
 
     private val onHighlight = PACKET_HIGHLIGHT.receiveOnClient { packet, context ->
         VeinminerClient.LOGGER.info("Received block highlight: $packet")
         if (!packet.allowed) {
-            // TODO
+            HUDRenderer.updateTarget(null)
+            BlockHighlightingRenderer.setShape(emptyList())
             return@receiveOnClient
         }
 
-        BlockHighlightingRenderer.highlightedBlocks.clear()
-        BlockHighlightingRenderer.highlightedBlocks.addAll(packet.blocks)
+        HUDRenderer.updateTarget(packet.icon)
+        BlockHighlightingRenderer.setShape(packet.blocks)
     }
 
     fun requestBlockInfo(position: BlockPos, direction: Direction) {

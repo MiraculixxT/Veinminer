@@ -4,9 +4,12 @@ import de.miraculixx.veinminer.config.utils.NamespacedLogging
 import de.miraculixx.veinminerClient.constants.KEY_VEINMINE
 import de.miraculixx.veinminerClient.network.NetworkManager
 import de.miraculixx.veinminerClient.render.BlockHighlightingRenderer
+import de.miraculixx.veinminerClient.render.HUDRenderer
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
+import net.fabricmc.fabric.api.client.rendering.v1.HudLayerRegistrationCallback
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.Minecraft
@@ -36,6 +39,8 @@ class VeinminerClient : ClientModInitializer {
         ClientTickEvents.END_CLIENT_TICK.register {
             KeyBindManager.tick()
         }
+
+        HudRenderCallback.EVENT.register(HUDRenderer::render)
     }
 
 

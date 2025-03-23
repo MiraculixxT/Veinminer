@@ -6,8 +6,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class ServerConfiguration(
-    val globalBlockList: Set<String>,
-    val blockGroups: Set<FixedBlockGroup>,
     val cooldown: Int,
     val mustSneak: Boolean,
     val outdated: Boolean
@@ -16,5 +14,6 @@ data class ServerConfiguration(
 @Serializable
 data class BlockHighlighting(
     val allowed: Boolean,
+    val icon: String,
     val blocks: List<BlockPosition>
 )

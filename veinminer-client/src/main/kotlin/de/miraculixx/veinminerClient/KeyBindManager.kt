@@ -1,10 +1,7 @@
 package de.miraculixx.veinminerClient
 
-import de.miraculixx.veinminer.config.extensions.toVeinminer
-import de.miraculixx.veinminer.config.network.BlockHighlighting
 import de.miraculixx.veinminerClient.constants.KEY_VEINMINE
 import de.miraculixx.veinminerClient.network.NetworkManager
-import de.miraculixx.veinminerClient.render.BlockHighlightingRenderer
 import net.minecraft.client.Minecraft
 import net.minecraft.core.BlockPos
 import net.minecraft.world.phys.BlockHitResult
@@ -44,8 +41,8 @@ object KeyBindManager {
         NetworkManager.requestBlockInfo(pos, target.direction)
 
         // DEBUG
-        BlockHighlightingRenderer.highlightedBlocks.clear()
-        BlockHighlightingRenderer.highlightedBlocks.add(pos.toVeinminer())
+//        if (lastTarget == null) return
+//        BlockHighlightingRenderer.setShape(listOf(lastTarget!!.toVeinminer(), lastTarget!!.offset(0, 1, 0).toVeinminer()))
     }
 
     // Scroll through veinmine patterns
