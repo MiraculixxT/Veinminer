@@ -2,6 +2,7 @@
 
 package de.miraculixx.veinminer.command
 
+import de.miraculixx.veinminer.VeinMinerEvent.key
 import de.miraculixx.veinminer.Veinminer
 import de.miraculixx.veinminer.Veinminer.Companion.LOGGER
 import de.miraculixx.veinminer.config.*
@@ -19,6 +20,7 @@ import net.minecraft.DetectedVersion
 import net.minecraft.commands.CommandSourceStack
 import net.minecraft.commands.arguments.blocks.BlockInput
 import net.minecraft.commands.arguments.item.ItemInput
+import net.minecraft.resources.ResourceLocation
 import net.silkmc.silk.commands.LiteralCommandBuilder
 import net.silkmc.silk.commands.command
 import net.silkmc.silk.core.text.literal
@@ -46,7 +48,7 @@ object VeinminerCommand {
             literal("add") {
                 argument<BlockInput>("block") { block ->
                     runs {
-                        val id = block().state.block.descriptionId
+                        val id = block().state.key()
                         if (ConfigManager.veinBlocks.add(id)) {
                             ConfigManager.save()
                             source.msg("Added $id to veinminer blocks", cGreen)
@@ -62,9 +64,10 @@ object VeinminerCommand {
                     suggestList { ConfigManager.veinBlocks.toList() }
                     runs {
                         val string = block()
-                        if (ConfigManager.veinBlocks.remove(string)) {
+                        val key = ResourceLocation.tryParse(string)
+                        if (key != null && ConfigManager.veinBlocks.remove(key)) {
                             ConfigManager.save()
-                            source.msg("Removed $string from veinminer blocks", cGreen)
+                            source.msg("Removed $key from veinminer blocks", cGreen)
                         } else {
                             source.msg("$string is not a veinminer block", cRed)
                         }
@@ -93,6 +96,11 @@ object VeinminerCommand {
             applySetting("permissionRestricted", { ConfigManager.settings.permissionRestricted }) { ConfigManager.settings.permissionRestricted = it }
             applySetting("mergeItemDrops", { ConfigManager.settings.mergeItemDrops }) { ConfigManager.settings.mergeItemDrops = it }
             applySetting("decreaseDurability", { ConfigManager.settings.decreaseDurability }) { ConfigManager.settings.decreaseDurability = it }
+            literal("client") {
+                applySetting("allow", { ConfigManager.settings.client.allow }) { ConfigManager.settings.client.allow = it }
+                applySetting("translucentBlockHighlight", { ConfigManager.settings.client.translucentBlockHighlight }) { ConfigManager.settings.client.translucentBlockHighlight = it }
+                applySetting("allowAllBlocks", { ConfigManager.settings.client.allBlocks }) { ConfigManager.settings.client.allBlocks = it }
+            }
         }
 
 
@@ -100,7 +108,7 @@ object VeinminerCommand {
             requires { Permissions.require(permissionGroups, 3).test(it) }
             fun groupExists(group: String) = ConfigManager.groups.firstOrNull { it.name.lowercase() == group.lowercase() }
             fun BlockInput.id() = state.block.descriptionId
-            fun CommandSourceStack.createGroup(name: String, content: MutableSet<String>) {
+            fun CommandSourceStack.createGroup(name: String, content: MutableSet<ResourceLocation>) {
                 if (groupExists(name) != null) {
                     msg("Group '$name' already exists", cRed)
                     return
@@ -111,10 +119,11 @@ object VeinminerCommand {
                 ConfigManager.save()
             }
 
-            fun CommandSourceStack.editContent(groupName: String, material: String, isBlock: Boolean, isAdd: Boolean) {
+            fun CommandSourceStack.editContent(groupName: String, material: ResourceLocation?, isBlock: Boolean, isAdd: Boolean) {
                 val group = groupExists(groupName) ?: return msg("Group '$groupName' does not exist", cRed)
                 val set = if (isBlock) group.blocks else group.tools
 
+                if (material == null) return msg("Invalid material", cRed)
                 if (isAdd) {
                     if (set.add(material)) msg("Added $material to group '$groupName'", cGreen)
                     else return msg("$material is already in group '$groupName'", cRed)
@@ -136,7 +145,7 @@ object VeinminerCommand {
 
             // Display all present groups
             literal("list") {
-                fun BlockGroup<String>.print(source: CommandSourceStack) {
+                fun BlockGroup<ResourceLocation>.print(source: CommandSourceStack) {
                     source.msg("Group '${name}'", cBase)
                     source.msg(" -> Blocks: [${blocks.joinToString(", ")}]\n", cBase)
                     if (tools.isEmpty()) source.msg(" -> Tools: [all]\n", cBase)
@@ -163,9 +172,9 @@ object VeinminerCommand {
                         source.createGroup(name(), mutableSetOf())
                     }
                     argument<BlockInput>("block1") { block1 ->
-                        runs { source.createGroup(name(), mutableSetOf(block1().id())) }
+                        runs { source.createGroup(name(), mutableSetOf(block1().state.key())) }
                         argument<BlockInput>("block2") { block2 ->
-                            runs { source.createGroup(name(), mutableSetOf(block1().id(), block2().id())) }
+                            runs { source.createGroup(name(), mutableSetOf(block1().state.key(), block2().state.key())) }
                         }
                     }
                 }
@@ -195,7 +204,7 @@ object VeinminerCommand {
                     literal("add-block") {
                         argument<BlockInput>("block") { block ->
                             runs {
-                                source.editContent(name(), block().id(), true, true)
+                                source.editContent(name(), block().state.key(), true, true)
                             }
                         }
                     }
@@ -207,7 +216,7 @@ object VeinminerCommand {
                                 groupExists(group)?.blocks
                             }
                             runs {
-                                source.editContent(name(), block(), true, false)
+                                source.editContent(name(), ResourceLocation.tryParse(block()), true, false)
                             }
                         }
                     }
@@ -215,7 +224,7 @@ object VeinminerCommand {
                     literal("add-tool") {
                         argument<ItemInput>("tool") { tool ->
                             runs {
-                                source.editContent(name(), tool().item.descriptionId, false, true)
+                                source.editContent(name(), tool().item.defaultInstance.key(), false, true)
                             }
                         }
                     }
@@ -227,7 +236,7 @@ object VeinminerCommand {
                                 groupExists(group)?.tools
                             }
                             runs {
-                                source.editContent(name(), tool(), false, false)
+                                source.editContent(name(), ResourceLocation.tryParse(tool()), false, false)
                             }
                         }
                     }

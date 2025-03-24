@@ -19,7 +19,9 @@
       "de.miraculixx.veinminerClient.VeinminerClient"
     ]
   },
-  "mixins": [],
+  "mixins": [
+    "veinminer-client.mixins.json"
+  ],
   "custom": {
     "modmenu": {
       "parent": {

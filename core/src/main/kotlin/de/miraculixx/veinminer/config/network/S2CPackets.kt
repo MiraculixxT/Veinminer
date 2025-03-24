@@ -8,7 +8,8 @@ import kotlinx.serialization.Serializable
 data class ServerConfiguration(
     val cooldown: Int,
     val mustSneak: Boolean,
-    val outdated: Boolean
+    val outdated: Boolean,
+    val translucentBlockHighlight: Boolean,
 )
 
 @Serializable

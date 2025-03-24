@@ -5,28 +5,19 @@ package de.miraculixx.veinminer.command
 import de.miraculixx.kpaper.extensions.bukkit.addUrl
 import de.miraculixx.kpaper.extensions.bukkit.cmp
 import de.miraculixx.kpaper.extensions.bukkit.plus
-import de.miraculixx.kpaper.extensions.kotlin.enumOf
 import de.miraculixx.veinminer.INSTANCE
 import de.miraculixx.veinminer.VeinMinerEvent
-import de.miraculixx.veinminer.Veinminer
 import de.miraculixx.veinminer.VeinminerCompatibility
-import de.miraculixx.veinminer.config.*
+import de.miraculixx.veinminer.config.ConfigManager
 import de.miraculixx.veinminer.config.data.BlockGroup
 import de.miraculixx.veinminer.config.extensions.color
-import de.miraculixx.veinminer.config.extensions.fancy
-import de.miraculixx.veinminer.config.utils.cGreen
-import de.miraculixx.veinminer.config.utils.cRed
-import de.miraculixx.veinminer.config.utils.permissionBlocks
-import de.miraculixx.veinminer.config.utils.permissionGroups
-import de.miraculixx.veinminer.config.utils.permissionReload
-import de.miraculixx.veinminer.config.utils.permissionSettings
-import de.miraculixx.veinminer.config.utils.permissionToggle
+import de.miraculixx.veinminer.config.utils.*
 import dev.jorel.commandapi.arguments.Argument
 import dev.jorel.commandapi.arguments.ArgumentSuggestions
 import dev.jorel.commandapi.executors.CommandArguments
 import dev.jorel.commandapi.kotlindsl.*
 import net.kyori.adventure.text.format.NamedTextColor
-import org.bukkit.Material
+import org.bukkit.NamespacedKey
 import org.bukkit.block.data.BlockData
 import org.bukkit.command.CommandSender
 import org.bukkit.inventory.ItemStack
@@ -57,8 +48,8 @@ object VeinminerCommand {
                 blockStateArgument("block") {
                     anyExecutor { sender, args ->
                         val block = args[0] as BlockData
-                        val name = block.material.name.fancy()
-                        if (ConfigManager.veinBlocks.add(block.material)) {
+                        val name = block.material.key.asString()
+                        if (ConfigManager.veinBlocks.add(block.material.key)) {
                             sender.sendMessage(cmp("Added $name to veinminer blocks", cGreen.color()))
                             ConfigManager.save()
                         } else {
@@ -70,20 +61,19 @@ object VeinminerCommand {
 
             literalArgument("remove") {
                 stringArgument("block") {
-                    replaceSuggestions(ArgumentSuggestions.stringCollection { ConfigManager.veinBlocks.map { it.name.lowercase() } })
+                    replaceSuggestions(ArgumentSuggestions.stringCollection { ConfigManager.veinBlocks.map { it.asString() } })
                     anyExecutor { sender, args ->
                         val string = args[0] as String
-                        val material = enumOf<Material>(string.uppercase())
+                        val material = NamespacedKey.fromString(string)
                         if (material == null) {
-                            sender.sendMessage(cmp("$string is not a valid material", cRed.color()))
+                            sender.sendMessage(cmp("$string is not a valid block", cRed.color()))
                             return@anyExecutor
                         }
-                        val name = string.fancy()
                         if (ConfigManager.veinBlocks.remove(material)) {
-                            sender.sendMessage(cmp("Removed $name from veinminer blocks", cGreen.color()))
+                            sender.sendMessage(cmp("Removed $string from veinminer blocks", cGreen.color()))
                             ConfigManager.save()
                         } else {
-                            sender.sendMessage(cmp("$name is not a veinminer block", cRed.color()))
+                            sender.sendMessage(cmp("$string is not a veinminer block", cRed.color()))
                         }
                     }
                 }
@@ -93,14 +83,13 @@ object VeinminerCommand {
         literalArgument("toggle") {
             withPermission(permissionToggle)
             anyExecutor { sender, _ ->
-                if (Veinminer.eventInstance == null) {
-                    sender.sendMessage(cmp("Veinminer functions enabled", cGreen.color()))
-                    Veinminer.eventInstance = VeinMinerEvent()
+                if (VeinMinerEvent.enabled) {
+                    VeinMinerEvent.enabled = false
+                    sender.sendMessage(cmp("Veinminer functions disabled", cRed.color()))
                     return@anyExecutor
                 }
-                sender.sendMessage(cmp("Veinminer functions disabled", cRed.color()))
-                Veinminer.eventInstance?.disable()
-                Veinminer.eventInstance = null
+                sender.sendMessage(cmp("Veinminer functions enabled", cRed.color()))
+                VeinMinerEvent.enabled = true
             }
         }
 
@@ -121,7 +110,7 @@ object VeinminerCommand {
         literalArgument("groups") {
             withPermission(permissionGroups)
             fun groupExists(group: String) = ConfigManager.groups.firstOrNull { it.name.lowercase() == group.lowercase() }
-            fun CommandSender.createGroup(name: String, content: MutableSet<Material>) {
+            fun CommandSender.createGroup(name: String, content: MutableSet<NamespacedKey>) {
                 if (groupExists(name) != null) {
                     sendMessage(cmp("Group '$name' already exists", cRed.color()))
                     return
@@ -130,9 +119,10 @@ object VeinminerCommand {
                 ConfigManager.save()
                 sendMessage(cmp("Created group '$name'\nAdd blocks with '/veinminer groups edit $name add ...'", cGreen.color()))
             }
-            fun CommandSender.editContent(args: CommandArguments, material: Material, isBlock: Boolean, isAdd: Boolean) {
+
+            fun CommandSender.editContent(args: CommandArguments, material: NamespacedKey, isBlock: Boolean, isAdd: Boolean) {
                 val groupName = args[0] as String
-                val name = material.name.fancy()
+                val name = material.asString()
                 val group = groupExists(groupName) ?: return sendMessage(cmp("Group '$groupName' does not exist", cRed.color()))
                 val set = if (isBlock) group.blocks else group.tools
 
@@ -147,11 +137,11 @@ object VeinminerCommand {
             }
 
             literalArgument("list") {
-                fun BlockGroup<Material>.print(sender: CommandSender) {
+                fun BlockGroup<NamespacedKey>.print(sender: CommandSender) {
                     sender.sendMessage(cmp("Group ") + cmp(name, NamedTextColor.WHITE))
-                    sender.sendMessage(cmp(" -> Blocks: [") + cmp(blocks.joinToString(", ") { it.name.fancy() }, NamedTextColor.WHITE) + cmp("]"))
+                    sender.sendMessage(cmp(" -> Blocks: [") + cmp(blocks.joinToString(", ") { it.asString() }, NamedTextColor.WHITE) + cmp("]"))
                     if (tools.isEmpty()) sender.sendMessage(cmp(" -> Tools: [All]", NamedTextColor.WHITE))
-                    else sender.sendMessage(cmp(" -> Tools: [") + cmp(tools.joinToString(", ") { it.name.fancy() }, NamedTextColor.WHITE) + cmp("]"))
+                    else sender.sendMessage(cmp(" -> Tools: [") + cmp(tools.joinToString(", ") { it.asString() }, NamedTextColor.WHITE) + cmp("]"))
 
                 }
 
@@ -174,11 +164,11 @@ object VeinminerCommand {
                     anyExecutor { sender, args -> sender.createGroup(args[0] as String, mutableSetOf()) }
                     blockStateArgument("block1") {
                         anyExecutor { sender, args ->
-                            sender.createGroup(args[0] as String, mutableSetOf((args[1] as BlockData).material))
+                            sender.createGroup(args[0] as String, mutableSetOf((args[1] as BlockData).material.key))
                         }
                         blockStateArgument("block2") {
                             anyExecutor { sender, args ->
-                                sender.createGroup(args[0] as String, mutableSetOf((args[1] as BlockData).material, (args[2] as BlockData).material))
+                                sender.createGroup(args[0] as String, mutableSetOf((args[1] as BlockData).material.key, (args[2] as BlockData).material.key))
                             }
                         }
                     }
@@ -205,7 +195,7 @@ object VeinminerCommand {
                     literalArgument("add-block") {
                         blockStateArgument("block") {
                             anyExecutor { sender, args ->
-                                sender.editContent(args, (args[1] as BlockData).material, true, true)
+                                sender.editContent(args, (args[1] as BlockData).material.key, true, true)
                             }
                         }
                     }
@@ -213,7 +203,7 @@ object VeinminerCommand {
                     literalArgument("remove-block") {
                         blockStateArgument("block") {
                             anyExecutor { sender, args ->
-                                sender.editContent(args, (args[1] as BlockData).material, true, false)
+                                sender.editContent(args, (args[1] as BlockData).material.key, true, false)
                             }
                         }
                     }
@@ -221,7 +211,7 @@ object VeinminerCommand {
                     literalArgument("add-tool") {
                         itemStackArgument("tool") {
                             anyExecutor { sender, args ->
-                                sender.editContent(args, (args[1] as ItemStack).type, false, true)
+                                sender.editContent(args, (args[1] as ItemStack).type.key, false, true)
                             }
                         }
                     }
@@ -229,7 +219,7 @@ object VeinminerCommand {
                     literalArgument("remove-tool") {
                         itemStackArgument("tool") {
                             anyExecutor { sender, args ->
-                                sender.editContent(args, (args[1] as ItemStack).type, false, false)
+                                sender.editContent(args, (args[1] as ItemStack).type.key, false, false)
                             }
                         }
                     }

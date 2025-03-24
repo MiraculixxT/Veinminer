@@ -1,20 +1,17 @@
 package de.miraculixx.veinminerClient.network
 
-import de.miraculixx.veinminer.config.data.FixedBlockGroup
 import de.miraculixx.veinminer.config.extensions.toVeinminer
 import de.miraculixx.veinminer.config.network.JoinInformation
 import de.miraculixx.veinminer.config.network.KeyPress
 import de.miraculixx.veinminer.config.network.RequestBlockVein
 import de.miraculixx.veinminer.config.pattern.Pattern
 import de.miraculixx.veinminerClient.VeinminerClient
-import de.miraculixx.veinminerClient.constants.PACKET_CONFIGURATION
-import de.miraculixx.veinminerClient.constants.PACKET_HIGHLIGHT
-import de.miraculixx.veinminerClient.constants.PACKET_JOIN
-import de.miraculixx.veinminerClient.constants.PACKET_KEY_PRESS
-import de.miraculixx.veinminerClient.constants.PACKET_MINE
+import de.miraculixx.veinminerClient.constants.*
 import de.miraculixx.veinminerClient.render.BlockHighlightingRenderer
 import de.miraculixx.veinminerClient.render.HUDRenderer
+import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.toasts.SystemToast
+import net.minecraft.client.multiplayer.ClientPacketListener
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
 import net.minecraft.network.chat.Component
@@ -30,8 +27,11 @@ object NetworkManager {
         private set
     var cooldown = 0
         private set
+    var translucentBlockHighlight = true
+        private set
 
     private val onConfiguration = PACKET_CONFIGURATION.receiveOnClient { packet, context ->
+        VeinminerClient.LOGGER.info("Server configuration: $packet")
         if (packet.outdated) {
             context.client.toastManager.addToast(
                 SystemToast(SystemToast.SystemToastId.PERIODIC_NOTIFICATION, Component.literal("Veinminer Outdated"), Component.literal("Please update Veinminer"))
@@ -41,18 +41,23 @@ object NetworkManager {
         isVeinminerActive = true
         mustSneak = packet.mustSneak
         cooldown = packet.cooldown
+        translucentBlockHighlight = packet.translucentBlockHighlight
     }
 
     private val onHighlight = PACKET_HIGHLIGHT.receiveOnClient { packet, context ->
         VeinminerClient.LOGGER.info("Received block highlight: $packet")
         if (!packet.allowed) {
-            HUDRenderer.updateTarget(null)
+            HUDRenderer.updateTarget("forbidden")
             BlockHighlightingRenderer.setShape(emptyList())
             return@receiveOnClient
         }
 
         HUDRenderer.updateTarget(packet.icon)
         BlockHighlightingRenderer.setShape(packet.blocks)
+    }
+
+    fun onDisconnect() {
+        isVeinminerActive = false
     }
 
     fun requestBlockInfo(position: BlockPos, direction: Direction) {

@@ -6,6 +6,7 @@ import com.mojang.blaze3d.vertex.VertexFormat
 import de.miraculixx.veinminer.config.data.BlockPosition
 import de.miraculixx.veinminerClient.KeyBindManager
 import de.miraculixx.veinminerClient.VeinminerClient
+import de.miraculixx.veinminerClient.network.NetworkManager
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext
 import net.minecraft.client.renderer.RenderStateShard
 import net.minecraft.client.renderer.RenderType
@@ -70,10 +71,12 @@ object BlockHighlightingRenderer {
         renderBlocks(consumer, matrix, highlightingShape, 255)
         source.endBatch(renderDefault)
 
-        // Transparent drawing
-        val bufferTransparent = source.getBuffer(rendererTransparentOverlay)
-        renderBlocks(bufferTransparent, matrix, highlightingShape, 20)
-        source.endBatch(rendererTransparentOverlay)
+        // Translucent drawing
+        if (NetworkManager.translucentBlockHighlight) {
+            val bufferTransparent = source.getBuffer(rendererTransparentOverlay)
+            renderBlocks(bufferTransparent, matrix, highlightingShape, 20)
+            source.endBatch(rendererTransparentOverlay)
+        }
 
         stack.popPose()
     }
@@ -94,7 +97,8 @@ object BlockHighlightingRenderer {
         }
 
         val splines = positions.map {
-            val box = Shapes.box(-0.010, -0.010, -0.010, 1.010, 1.010, 1.010)
+            val box = Shapes.box(-0.010, -0.010, -0.010, 1.010, 1.010, 1.010) // Outline
+            //val box = Shapes.box(0.35, 0.35, 0.35, 0.65, 0.65, 0.65) // Inline Box
             val dx = it.x - source.x
             val dy = it.y - source.y
             val dz = it.z - source.z
