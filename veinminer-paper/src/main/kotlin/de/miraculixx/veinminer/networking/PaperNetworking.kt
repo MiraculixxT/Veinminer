@@ -83,30 +83,33 @@ object PaperNetworking {
 
             // Encode the data to CBOR bytes
             val payload = Cbor.encodeToByteArray<T>(data)
+            val baos = ByteArrayOutputStream()
 
-            val message: ByteArray
-
-            if (payload.size <= 255) {
-                // Small payload - use 1-byte header
-                message = ByteArray(payload.size + 1)
-                message[0] = payload.size.toByte()  // Single byte size
-                System.arraycopy(payload, 0, message, 1, payload.size)
-            } else { // NOT WORKING TODO
-                // Large payload - use 2-byte header
-                // First byte is 0 to indicate a 2-byte size header follows
-                message = ByteArray(payload.size + 3)
-                message[0] = 0.toByte()  // Marker indicating 2-byte size
-                message[1] = ((payload.size shr 8) and 0xFF).toByte()  // High byte
-                message[2] = (payload.size and 0xFF).toByte()          // Low byte
-                System.arraycopy(payload, 0, message, 3, payload.size)
-            }
+            // Write the payload size as a VarInt
+            writeVarInt(baos, payload.size)
+            // Write the payload itself
+            baos.write(payload)
 
             // Send to player
-            player.sendPluginMessage(Veinminer.INSTANCE, this, message)
+            if (debug) Veinminer.INSTANCE.logger.info("Sending packet $this (${payload.size}) to ${player.name}")
+            player.sendPluginMessage(Veinminer.INSTANCE, this, baos.toByteArray())
 
         } catch (e: Exception) {
             Veinminer.INSTANCE.logger.warning("Failed to encode packet $this: ${e.message}")
             e.printStackTrace()
         }
+    }
+
+    // VarInt encoding implementation
+    private fun writeVarInt(outputStream: ByteArrayOutputStream, value: Int) {
+        var val1 = value
+        do {
+            var temp = (val1 and 0x7F)
+            val1 = val1 ushr 7
+            if (val1 != 0) {
+                temp = temp or 0x80
+            }
+            outputStream.write(temp)
+        } while (val1 != 0)
     }
 }
