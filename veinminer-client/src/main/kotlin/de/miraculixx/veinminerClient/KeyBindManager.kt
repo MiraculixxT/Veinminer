@@ -1,6 +1,5 @@
 package de.miraculixx.veinminerClient
 
-import com.mojang.authlib.minecraft.client.MinecraftClient
 import de.miraculixx.veinminerClient.constants.KEY_VEINMINE
 import de.miraculixx.veinminerClient.network.NetworkManager
 import de.miraculixx.veinminerClient.render.BlockHighlightingRenderer
@@ -10,7 +9,7 @@ import net.minecraft.client.gui.components.toasts.SystemToast
 import net.minecraft.core.BlockPos
 import net.minecraft.network.chat.Component
 import net.minecraft.world.phys.BlockHitResult
-import net.silkmc.silk.core.Silk
+import net.minecraft.world.phys.HitResult
 
 object KeyBindManager {
     var lastTarget: BlockPos? = null
@@ -59,9 +58,15 @@ object KeyBindManager {
         val pos = target.blockPos
         if (pos == lastTarget) return
         lastTarget = pos
+        BlockHighlightingRenderer.setShape(emptyList())
+
+        // If not targeting block, fail
+        if (target.type != HitResult.Type.BLOCK) {
+            HUDRenderer.updateTarget("forbidden")
+            return
+        }
 
         // Request vein for block highlighting and hud
-        BlockHighlightingRenderer.setShape(emptyList())
         NetworkManager.requestBlockInfo(pos, target.direction)
     }
 
