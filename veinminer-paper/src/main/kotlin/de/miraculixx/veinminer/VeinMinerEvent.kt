@@ -147,7 +147,7 @@ object VeinMinerEvent {
 
             // Only break if action is mining
             if (shouldBreak) {
-                taskRunLater((settings.delay * vBlock.distance).toLong()) {
+                taskRunLater((settings.delay * vBlock.distance).toLong(), VeinminerCompatibility.runsAsync) {
                     // Delay if necessary & check again if the block is still valid
                     if (settings.delay != 0) {
                         if (!targetTypes.contains(block.type.key)) return@taskRunLater

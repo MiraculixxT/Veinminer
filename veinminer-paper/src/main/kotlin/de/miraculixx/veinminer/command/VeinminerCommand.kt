@@ -2,12 +2,12 @@
 
 package de.miraculixx.veinminer.command
 
+import de.miraculixx.kpaper.chat.KColors
 import de.miraculixx.kpaper.extensions.bukkit.addUrl
 import de.miraculixx.kpaper.extensions.bukkit.cmp
 import de.miraculixx.kpaper.extensions.bukkit.plus
 import de.miraculixx.veinminer.INSTANCE
 import de.miraculixx.veinminer.VeinMinerEvent
-import de.miraculixx.veinminer.VeinminerCompatibility
 import de.miraculixx.veinminer.config.ConfigManager
 import de.miraculixx.veinminer.config.data.BlockGroup
 import de.miraculixx.veinminer.config.extensions.color
@@ -97,8 +97,7 @@ object VeinminerCommand {
             withPermission(permissionSettings)
             applySetting("mustSneak", { ConfigManager.settings.mustSneak }) { ConfigManager.settings.mustSneak = it }
             applySetting("cooldown", { ConfigManager.settings.cooldown }) { ConfigManager.settings.cooldown = it }
-            if (VeinminerCompatibility.platform != VeinminerCompatibility.Platform.Folia)
-                applySetting("delay", { ConfigManager.settings.delay }) { ConfigManager.settings.delay = it }
+            applySetting("delay", { ConfigManager.settings.delay }) { ConfigManager.settings.delay = it }
             applySetting("maxChain", { ConfigManager.settings.maxChain }) { ConfigManager.settings.maxChain = it }
             applySetting("needCorrectTool", { ConfigManager.settings.needCorrectTool }) { ConfigManager.settings.needCorrectTool = it }
             applySetting("searchRadius", { ConfigManager.settings.searchRadius }) { ConfigManager.settings.searchRadius = it }
@@ -106,6 +105,11 @@ object VeinminerCommand {
             applySetting("mergeItemDrops", { ConfigManager.settings.mergeItemDrops }) { ConfigManager.settings.mergeItemDrops = it }
             applySetting("decreaseDurability", { ConfigManager.settings.decreaseDurability }) { ConfigManager.settings.decreaseDurability = it }
             applySetting("debug", { debug }) { debug = it }
+            literalArgument("client") {
+                applySetting("allow", { ConfigManager.settings.client.allow }) { ConfigManager.settings.client.allow = it }
+                applySetting("translucentBlockHighlight", { ConfigManager.settings.client.translucentBlockHighlight }) { ConfigManager.settings.client.translucentBlockHighlight = it }
+                applySetting("allowAllBlocks", { ConfigManager.settings.client.allBlocks }) { ConfigManager.settings.client.allBlocks = it }
+            }
         }
 
         literalArgument("groups") {
@@ -232,7 +236,7 @@ object VeinminerCommand {
     private fun <T> Argument<*>.applySetting(name: String, currentConsumer: () -> T, consumer: (T) -> Unit) {
         literalArgument(name) {
             anyExecutor { sender, _ ->
-                sender.sendMessage(cmp("$name is currently set to ${currentConsumer.invoke()}"))
+                sender.sendMessage(cmp(name, KColors.BLUE) + cmp(" is currently set to ") + cmp(currentConsumer.invoke().toString(), KColors.BLUE))
             }
 
             when (currentConsumer.invoke()) {
