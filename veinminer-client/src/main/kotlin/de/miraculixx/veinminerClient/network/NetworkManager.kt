@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package de.miraculixx.veinminerClient.network
 
 import de.miraculixx.veinminer.config.extensions.toVeinminer
@@ -9,12 +11,13 @@ import de.miraculixx.veinminerClient.VeinminerClient
 import de.miraculixx.veinminerClient.constants.*
 import de.miraculixx.veinminerClient.render.BlockHighlightingRenderer
 import de.miraculixx.veinminerClient.render.HUDRenderer
+import net.fabricmc.fabric.impl.networking.RegistrationPayload
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.toasts.SystemToast
-import net.minecraft.client.multiplayer.ClientPacketListener
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
 import net.minecraft.network.chat.Component
+import net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket
 
 object NetworkManager {
     // Client info
@@ -62,16 +65,29 @@ object NetworkManager {
 
     fun requestBlockInfo(position: BlockPos, direction: Direction) {
         VeinminerClient.LOGGER.info("Sending veinmine request: ($position, $direction)")
+        Minecraft.getInstance().connection ?: return notConnected()
         PACKET_MINE.send(RequestBlockVein(position.toVeinminer(), direction.toVeinminer(), selectedPattern))
     }
 
     fun sendJoin(version: String) {
         VeinminerClient.LOGGER.info("Sending join: ($version)")
+
+        // Register incoming packets
+        val con = Minecraft.getInstance().connection ?: return notConnected()
+        con.send(ServerboundCustomPayloadPacket(
+            RegistrationPayload(RegistrationPayload.REGISTER, listOf(PACKET_CONFIGURATION.id, PACKET_HIGHLIGHT.id))
+        ))
+
         PACKET_JOIN.send(JoinInformation(version))
     }
 
     fun sendKeyPress(pressed: Boolean) {
         VeinminerClient.LOGGER.info("Sending key press: $pressed")
+        Minecraft.getInstance().connection ?: return notConnected()
         PACKET_KEY_PRESS.send(KeyPress(pressed))
+    }
+
+    private fun notConnected() {
+        VeinminerClient.LOGGER.warn("Can not send packet without server connection!")
     }
 }

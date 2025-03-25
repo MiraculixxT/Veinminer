@@ -1,5 +1,6 @@
 package de.miraculixx.veinminer.networking
 
+import de.miraculixx.kpaper.extensions.onlinePlayers
 import de.miraculixx.kpaper.extensions.server
 import de.miraculixx.veinminer.Veinminer
 import de.miraculixx.veinminer.config.network.NetworkManager
@@ -15,6 +16,10 @@ val PACKET_HIGHLIGHT = s2cPacket(NetworkManager.PACKET_HIGHLIGHT_ID)
 fun s2cPacket(packetID: String): String {
     val identifier = "$IDENTIFIER:$packetID"
     server.messenger.registerOutgoingPluginChannel(Veinminer.INSTANCE, identifier)
+    onlinePlayers.forEach {
+        it.listeningPluginChannels
+    }
+
     return identifier
 }
 

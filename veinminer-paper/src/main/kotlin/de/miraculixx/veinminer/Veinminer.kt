@@ -15,7 +15,7 @@ import org.bukkit.NamespacedKey
 
 class Veinminer : KPaper() {
     companion object {
-        lateinit var INSTANCE: KPaper
+        lateinit var INSTANCE: Veinminer
         val VEINMINE = NamespacedKey("veinminer-enchantment", "veinminer")
         var enchantmentActive = false
     }

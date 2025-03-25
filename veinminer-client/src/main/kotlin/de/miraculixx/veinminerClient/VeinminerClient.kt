@@ -3,7 +3,6 @@ package de.miraculixx.veinminerClient
 import com.mojang.logging.LogUtils
 import de.miraculixx.veinminerClient.constants.KEY_VEINMINE
 import de.miraculixx.veinminerClient.network.NetworkManager
-import de.miraculixx.veinminerClient.network.NetworkTest
 import de.miraculixx.veinminerClient.render.BlockHighlightingRenderer
 import de.miraculixx.veinminerClient.render.HUDRenderer
 import net.fabricmc.api.ClientModInitializer
@@ -47,7 +46,6 @@ class VeinminerClient : ClientModInitializer {
         }
 
         HudRenderCallback.EVENT.register(HUDRenderer::render)
-        NetworkTest
     }
 
 

@@ -82,13 +82,25 @@ object PaperNetworking {
             // Encode the data to CBOR bytes
             val payload = Cbor.encodeToByteArray<T>(data)
 
-            //  Prepare the complete message with 1-byte header
-            val message = ByteArray(payload.size + 1)
-            message[0] = 0x19 // ClientboundCustomPayloadPacket
-            System.arraycopy(payload, 0, message, 1, payload.size)
+            val message: ByteArray
+
+            if (payload.size <= 255) {
+                // Small payload - use 1-byte header
+                message = ByteArray(payload.size + 1)
+                message[0] = payload.size.toByte()  // Single byte size
+                System.arraycopy(payload, 0, message, 1, payload.size)
+            } else { // NOT WORKING TODO
+                // Large payload - use 2-byte header
+                // First byte is 0 to indicate a 2-byte size header follows
+                message = ByteArray(payload.size + 3)
+                message[0] = 0.toByte()  // Marker indicating 2-byte size
+                message[1] = ((payload.size shr 8) and 0xFF).toByte()  // High byte
+                message[2] = (payload.size and 0xFF).toByte()          // Low byte
+                System.arraycopy(payload, 0, message, 3, payload.size)
+            }
 
             // Send to player
-            player.sendPluginMessage(Veinminer.INSTANCE, this@send, payload)
+            player.sendPluginMessage(Veinminer.INSTANCE, this, message)
 
         } catch (e: Exception) {
             Veinminer.INSTANCE.logger.warning("Failed to encode packet $this: ${e.message}")
