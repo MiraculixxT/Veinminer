@@ -46,7 +46,7 @@ class Veinminer : KPaper() {
         enchantmentActive = enchantmentContainer != null
 
         CoroutineScope(Dispatchers.Default).launch {
-            UpdateManager.Module.entries.forEach { module ->
+            listOf(UpdateManager.Module.VEINMINER, UpdateManager.Module.VEINMINER_ENCHANTMENT).forEach { module ->
                 try {
                     UpdateManager.checkForUpdates(module, "paper", server.minecraftVersion, pluginManager.getPlugin(module.modID)?.pluginMeta?.version)
                 } catch (e: Exception) {

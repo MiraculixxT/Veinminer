@@ -10,11 +10,13 @@ import de.miraculixx.veinminer.config.ConfigManager
 import de.miraculixx.veinminer.config.data.BlockPosition
 import de.miraculixx.veinminer.config.data.VeinminerSettings
 import de.miraculixx.veinminer.config.network.*
+import de.miraculixx.veinminer.config.utils.debug
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.cbor.Cbor
 import kotlinx.serialization.encodeToByteArray
 import org.bukkit.entity.Player
 import org.bukkit.event.player.PlayerQuitEvent
+import java.io.ByteArrayOutputStream
 import java.util.*
 
 @OptIn(ExperimentalSerializationApi::class)
@@ -38,12 +40,12 @@ object PaperNetworking {
         val uuid = player.uniqueId
         if (packet.pressed) readyToVeinmine.add(uuid)
         else readyToVeinmine.remove(uuid)
-        Veinminer.INSTANCE.logger.info("$uuid pressed hotkey (${packet.pressed})")
+        if (debug) Veinminer.INSTANCE.logger.info("$uuid pressed hotkey (${packet.pressed})")
     }
 
     private val onMine = c2sPacket<RequestBlockVein>(NetworkManager.PACKET_MINE_ID) { player, packet ->
         val uuid = player.uniqueId
-        Veinminer.INSTANCE.logger.info("$uuid requested to veinmine block at ${packet.blockPosition}")
+        if (debug) Veinminer.INSTANCE.logger.info("$uuid requested to veinmine block at ${packet.blockPosition}")
 
         // Send feedback
         val position = packet.blockPosition

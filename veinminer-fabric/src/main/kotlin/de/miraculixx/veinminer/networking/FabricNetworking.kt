@@ -11,6 +11,7 @@ import de.miraculixx.veinminer.config.extensions.toNMS
 import de.miraculixx.veinminer.config.extensions.toVeinminer
 import de.miraculixx.veinminer.config.network.BlockHighlighting
 import de.miraculixx.veinminer.config.network.ServerConfiguration
+import de.miraculixx.veinminer.config.utils.debug
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.server.network.ServerGamePacketListenerImpl
@@ -38,12 +39,12 @@ object FabricNetworking {
         val uuid = context.player.uuid
         if (packet.pressed) readyToVeinmine.add(uuid)
         else readyToVeinmine.remove(uuid)
-        Veinminer.LOGGER.info("$uuid pressed hotkey (${packet.pressed})")
+        if (debug) Veinminer.LOGGER.info("$uuid pressed hotkey (${packet.pressed})")
     }
 
     private val onMine = PACKET_MINE.receiveOnServer { packet, context ->
         val uuid = context.player.uuid
-        Veinminer.LOGGER.info("$uuid requested to veinmine block at ${packet.blockPosition}")
+        if (debug) Veinminer.LOGGER.info("$uuid requested to veinmine block at ${packet.blockPosition}")
 
         // Send feedback
         val player = context.player

@@ -10,6 +10,7 @@ import de.miraculixx.veinminer.config.data.BlockGroup
 import de.miraculixx.veinminer.config.utils.cBase
 import de.miraculixx.veinminer.config.utils.cGreen
 import de.miraculixx.veinminer.config.utils.cRed
+import de.miraculixx.veinminer.config.utils.debug
 import de.miraculixx.veinminer.config.utils.permissionBlocks
 import de.miraculixx.veinminer.config.utils.permissionGroups
 import de.miraculixx.veinminer.config.utils.permissionReload
@@ -96,6 +97,7 @@ object VeinminerCommand {
             applySetting("permissionRestricted", { ConfigManager.settings.permissionRestricted }) { ConfigManager.settings.permissionRestricted = it }
             applySetting("mergeItemDrops", { ConfigManager.settings.mergeItemDrops }) { ConfigManager.settings.mergeItemDrops = it }
             applySetting("decreaseDurability", { ConfigManager.settings.decreaseDurability }) { ConfigManager.settings.decreaseDurability = it }
+            applySetting("debug", { debug }) { debug = it }
             literal("client") {
                 applySetting("allow", { ConfigManager.settings.client.allow }) { ConfigManager.settings.client.allow = it }
                 applySetting("translucentBlockHighlight", { ConfigManager.settings.client.translucentBlockHighlight }) { ConfigManager.settings.client.translucentBlockHighlight = it }
