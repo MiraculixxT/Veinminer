@@ -1,4 +1,4 @@
 {
-  "toast.disabled.title": "Veinminer Disabled",
-  "toast.disabled.subtitle": "This server does not have Veinminer installed or disallowed the client addon"
+  "veinminer.disabled.title": "Veinminer Disabled",
+  "veinminer.disabled.subtitle": "This server does not have Veinminer installed or disallowed the client addon"
 }

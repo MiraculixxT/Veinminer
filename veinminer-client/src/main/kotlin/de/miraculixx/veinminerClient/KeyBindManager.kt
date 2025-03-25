@@ -31,8 +31,8 @@ object KeyBindManager {
                     val mc = Minecraft.getInstance()
                     mc.toastManager.addToast(
                         SystemToast.multiline(mc, SystemToast.SystemToastId.PERIODIC_NOTIFICATION,
-                            Component.translatable("toast.disabled.title"),
-                            Component.translatable("toast.disabled.subtitle")
+                            Component.translatable("veinminer.disabled.title"),
+                            Component.translatable("veinminer.disabled.subtitle")
                         )
                     )
                 }
