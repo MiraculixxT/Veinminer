@@ -1,4 +1,7 @@
 {
   "veinminer.disabled.title": "Veinminer Deaktiviert",
-  "veinminer.disabled.subtitle": "Dieser Server hat Veinminer nicht installiert oder das Client-Addon deaktiviert"
+  "veinminer.disabled.subtitle": "Dieser Server hat Veinminer nicht installiert oder das Client-Addon deaktiviert",
+
+  "category.veinminer-client": "Veinminer",
+  "key.veinminer-client.veinmine": "Aktiviere Veinmining"
 }
