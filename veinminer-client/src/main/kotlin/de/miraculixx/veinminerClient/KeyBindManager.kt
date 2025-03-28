@@ -19,7 +19,7 @@ object KeyBindManager {
             NetworkManager.sendKeyPress(value)
             field = value
         }
-    private var notifiedOnce = false
+    var notifiedOnce = false
 
 
     fun tick() {
@@ -67,7 +67,7 @@ object KeyBindManager {
         }
 
         // Request vein for block highlighting and hud
-        NetworkManager.requestBlockInfo(pos, target.direction)
+        NetworkManager.sendBlockRequest(pos, target.direction)
     }
 
     // Scroll through veinmine patterns

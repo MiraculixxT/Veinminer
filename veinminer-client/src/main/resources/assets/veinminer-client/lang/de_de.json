@@ -1,6 +1,8 @@
 {
   "veinminer.disabled.title": "Veinminer Deaktiviert",
   "veinminer.disabled.subtitle": "Dieser Server hat Veinminer nicht installiert oder das Client-Addon deaktiviert",
+  "veinminer.notavailable.title": "Veinminer Nicht Verfügbar",
+  "veinminer.notavailable.subtitle": "Installiere die base Veinminer Mod um im Einzelspieler es zu nutzen! https://modrinth.com/mod/veinminer",
 
   "category.veinminer-client": "Veinminer",
   "key.veinminer-client.veinmine": "Aktiviere Veinmining"

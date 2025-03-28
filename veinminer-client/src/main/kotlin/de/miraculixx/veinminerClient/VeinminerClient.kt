@@ -13,6 +13,8 @@ import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.components.toasts.SystemToast
+import net.minecraft.network.chat.Component
 import net.silkmc.silk.core.task.mcCoroutineTask
 import org.slf4j.Logger
 import kotlin.jvm.optionals.getOrNull
@@ -23,6 +25,8 @@ class VeinminerClient : ClientModInitializer {
         const val MOD_ID = "veinminer-client"
         lateinit var client: Minecraft
         val LOGGER: Logger = LogUtils.getLogger()
+        var veinminerAvailable = false
+        var isSinglePlayer = false
     }
 
     override fun onInitializeClient() {
@@ -30,10 +34,27 @@ class VeinminerClient : ClientModInitializer {
         val instance = fabricLoader.getModContainer(MOD_ID).get()
         client = Minecraft.getInstance()
 
+        // Check if Veinminer is available
+        val veinminerContainer = fabricLoader.getModContainer("veinminer").getOrNull()
+        if (veinminerContainer != null) veinminerAvailable = true
+
         // Register keybinds
         KEY_VEINMINE
 
         ClientPlayConnectionEvents.JOIN.register { packet, sender, mc ->
+            isSinglePlayer = mc.singleplayerServer != null
+            LOGGER.info("Loading for ${if (isSinglePlayer) "singleplayer" else "multiplayer"}...")
+            if (isSinglePlayer && !veinminerAvailable) {
+                LOGGER.info("Veinminer not available!")
+                KeyBindManager.notifiedOnce = true
+                val toast = SystemToast.multiline(mc, SystemToast.SystemToastId.PERIODIC_NOTIFICATION,
+                    Component.translatable("veinminer.notavailable.title"),
+                    Component.translatable("veinminer.notavailable.subtitle")
+                )
+                mc.toastManager.addToast(toast)
+                return@register
+            }
+
             // Inform the server that we are ready to receive the configuration
             NetworkManager.sendJoin(instance.metadata.version.friendlyString)
         }
