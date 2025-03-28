@@ -35,6 +35,6 @@
     "fabric-language-kotlin": "*",
 
     "silk-core": "*",
-    "silk-commands": "*"
+    "silk-network": "*"
   }
 }
