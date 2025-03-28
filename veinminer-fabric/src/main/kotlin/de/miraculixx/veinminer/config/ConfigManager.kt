@@ -56,7 +56,9 @@ object ConfigManager {
 
     private fun loadSettings() = settingsFile.load<VeinminerSettings>(VeinminerSettings())
     private fun loadGroups(): MutableSet<BlockGroup<ResourceLocation>> {
-        val defaultSource = this::class.java.classLoader.getResourceAsStream("/default_groups.json")?.readAllBytes()?.decodeToString() ?: "[]"
+        val stream = this::class.java.classLoader.getResourceAsStream("default_groups.json") ?: throw IllegalStateException("[Veinminer] Could not find and load default_groups.json")
+        val defaultSource = stream.readAllBytes().decodeToString()
+        stream.close()
         val defaultGroups = json.decodeFromString<MutableSet<BlockGroup<ResourceLocation>>>(defaultSource)
         return groupsFile.load<MutableSet<BlockGroup<ResourceLocation>>>(defaultGroups, json)
     }
