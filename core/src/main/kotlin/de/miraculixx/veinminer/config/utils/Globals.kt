@@ -1,4 +1,4 @@
-package de.miraculixx.veinminer.config
+package de.miraculixx.veinminer.config.utils
 
 import kotlinx.serialization.json.Json
 
@@ -14,6 +14,8 @@ const val permissionGroups = "veinminer.groups"
 const val permissionReload = "veinminer.reload"
 
 const val IDENTIFIER = "veinminer"
+
+var debug = false
 
 val json = Json {
     prettyPrint = true

@@ -7,7 +7,7 @@ plugins {
 }
 
 dependencies {
-    implementation(include(project(":core"))!!)
+    implementation(include(project(":core", configuration = "namedElements"))!!)
 }
 
 modrinth {

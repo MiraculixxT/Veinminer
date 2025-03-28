@@ -5,6 +5,7 @@ import de.miraculixx.kpaper.main.KPaper
 import de.miraculixx.veinminer.command.VeinminerCommand
 import de.miraculixx.veinminer.config.ConfigManager
 import de.miraculixx.veinminer.config.UpdateManager
+import de.miraculixx.veinminer.networking.PaperNetworking
 import dev.jorel.commandapi.CommandAPI
 import dev.jorel.commandapi.CommandAPIBukkitConfig
 import kotlinx.coroutines.CoroutineScope
@@ -14,8 +15,7 @@ import org.bukkit.NamespacedKey
 
 class Veinminer : KPaper() {
     companion object {
-        lateinit var INSTANCE: KPaper
-        var eventInstance: VeinMinerEvent? = null
+        lateinit var INSTANCE: Veinminer
         val VEINMINE = NamespacedKey("veinminer-enchantment", "veinminer")
         var enchantmentActive = false
     }
@@ -39,13 +39,14 @@ class Veinminer : KPaper() {
     override fun startup() {
         if (shouldDisable) return // Safeguard because disabling isn't actually instantaneous
         CommandAPI.onEnable()
-        eventInstance = VeinMinerEvent()
+        VeinMinerEvent
+        PaperNetworking
 
         val enchantmentContainer = server.pluginManager.getPlugin("veinminer-enchantment")
         enchantmentActive = enchantmentContainer != null
 
         CoroutineScope(Dispatchers.Default).launch {
-            UpdateManager.Module.entries.forEach { module ->
+            listOf(UpdateManager.Module.VEINMINER, UpdateManager.Module.VEINMINER_ENCHANTMENT).forEach { module ->
                 try {
                     UpdateManager.checkForUpdates(module, "paper", server.minecraftVersion, pluginManager.getPlugin(module.modID)?.pluginMeta?.version)
                 } catch (e: Exception) {
@@ -53,19 +54,6 @@ class Veinminer : KPaper() {
                 }
             }
         }
-
-        // Register packet channel
-//        server.messenger.registerOutgoingPluginChannel(this, IDENTIFIER)
-//        server.messenger.registerIncomingPluginChannel(this, IDENTIFIER) { channel, player, message ->
-//            if (channel != "veinminer") return@registerIncomingPluginChannel
-//            val incoming = ByteStreams.newDataInput(message)
-//            val subChannel = incoming.readUTF()
-//            println("Sub: $subChannel, Data: ${incoming.readUTF()}")
-//
-//            when (subChannel) {
-//                PACKET_JOIN -> player.sendPacket(PACKET_JOIN_PONG, "pong")
-//            }
-//        }
     }
 
     override fun shutdown() {
@@ -75,16 +63,9 @@ class Veinminer : KPaper() {
         CommandAPI.onDisable()
 
         // Unregister packet channel
-//        server.messenger.unregisterOutgoingPluginChannel(this, IDENTIFIER)
-//        server.messenger.unregisterIncomingPluginChannel(this, IDENTIFIER)
+        server.messenger.unregisterOutgoingPluginChannel(this)
+        server.messenger.unregisterIncomingPluginChannel(this)
     }
-
-//    private fun Player.sendPacket(sub: String, data: String) {
-//        val out = ByteStreams.newDataOutput()
-//        out.writeUTF(sub)
-//        out.writeUTF(data)
-//        server.sendPluginMessage(this@Veinminer, IDENTIFIER, out.toByteArray())
-//    }
 
 }
 

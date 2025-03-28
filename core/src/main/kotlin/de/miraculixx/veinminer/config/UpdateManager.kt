@@ -1,5 +1,8 @@
 package de.miraculixx.veinminer.config
 
+import de.miraculixx.veinminer.config.data.ModrinthFile
+import de.miraculixx.veinminer.config.data.ModrinthVersion
+import de.miraculixx.veinminer.config.utils.json
 import java.io.File
 import java.net.HttpURLConnection
 import java.net.URI
@@ -33,6 +36,6 @@ object UpdateManager {
     enum class Module(val id: String, val modID: String) {
         VEINMINER("OhduvhIc", "veinminer"),
         VEINMINER_ENCHANTMENT("4sP0LXxp", "veinminer-enchantment"),
-        VEINMINER_CLIENT("4sP0LXxp", "veinminer-client")
+        VEINMINER_CLIENT("dxa0Bm8m", "veinminer-client"),
     }
 }
