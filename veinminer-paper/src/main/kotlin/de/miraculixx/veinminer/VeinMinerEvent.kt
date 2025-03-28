@@ -1,7 +1,6 @@
 package de.miraculixx.veinminer
 
 import de.miraculixx.kpaper.event.listen
-import de.miraculixx.kpaper.event.unregister
 import de.miraculixx.kpaper.runnables.taskRunLater
 import de.miraculixx.veinminer.Veinminer.Companion.VEINMINE
 import de.miraculixx.veinminer.config.ConfigManager
@@ -147,7 +146,7 @@ object VeinMinerEvent {
 
             // Only break if action is mining
             if (shouldBreak) {
-                taskRunLater((settings.delay * vBlock.distance).toLong(), VeinminerCompatibility.runsAsync) {
+                taskRunLater((settings.delay * vBlock.distance).toLong(), !VeinminerCompatibility.runsAsync) {
                     // Delay if necessary & check again if the block is still valid
                     if (settings.delay != 0) {
                         if (!targetTypes.contains(block.type.key)) return@taskRunLater
@@ -155,10 +154,9 @@ object VeinMinerEvent {
 
                     // Check if other plugins cancel the event
                     if (!VeinminerEvent(block, player, sourceLocation).callEvent()) return@taskRunLater
-                    currentBlock.destroy(tool, !settings.mergeItemDrops)
+                    block.destroy(tool, !settings.mergeItemDrops)
                     if (settings.decreaseDurability) damageItem(tool, 1, player)
                 }
-
             }
             processedBlocks.add(block)
 
@@ -196,10 +194,6 @@ object VeinMinerEvent {
             world.spawnParticle(Particle.BLOCK, center, 20, blockData)
             type = Material.AIR
         }
-    }
-
-    fun disable() {
-        onBlockBreak.unregister()
     }
 
     private class VeinminerEvent(block: Block, breaker: Player, val sourceLocation: Location) : BlockBreakEvent(block, breaker)
