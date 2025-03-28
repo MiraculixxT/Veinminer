@@ -7,6 +7,7 @@ plugins {
 
 dependencies {
     implementation(include(project(":core", configuration = "namedElements"))!!)
+    implementation(project(":veinminer-fabric", configuration = "namedElements"))
 }
 
 

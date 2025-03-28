@@ -10,7 +10,7 @@ plugins {
 
 description = properties["description"] as String
 
-val gameVersion by properties
+val paperVersion by properties
 val foliaSupport = properties["foliaSupport"] as String == "true"
 val projectName = properties["projectName"] as String
 
@@ -23,7 +23,7 @@ repositories {
 paperweight.reobfArtifactConfiguration = io.papermc.paperweight.userdev.ReobfArtifactConfiguration.REOBF_PRODUCTION
 
 dependencies {
-    paperweight.paperDevBundle("$gameVersion-R0.1-SNAPSHOT")
+    paperweight.paperDevBundle("$paperVersion-R0.1-SNAPSHOT")
 
     // Kotlin libraries
     library(kotlin("stdlib"))

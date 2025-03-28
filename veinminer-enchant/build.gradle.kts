@@ -10,10 +10,10 @@ plugins {
     id("net.minecrell.plugin-yml.paper")
 }
 
-val gameVersion by properties
+val paperVersion by properties
 
 dependencies {
-    paperweight.paperDevBundle("$gameVersion-R0.1-SNAPSHOT")
+    paperweight.paperDevBundle("$paperVersion-R0.1-SNAPSHOT")
 }
 
 modrinth {
