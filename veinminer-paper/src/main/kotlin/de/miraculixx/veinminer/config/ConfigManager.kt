@@ -3,7 +3,6 @@ package de.miraculixx.veinminer.config
 import de.miraculixx.veinminer.config.data.BlockGroup
 import de.miraculixx.veinminer.config.data.VeinminerSettings
 import de.miraculixx.veinminer.config.extensions.load
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import org.bukkit.NamespacedKey
@@ -46,7 +45,7 @@ object ConfigManager {
 
     private fun loadBlocks() = blocksFile.load<MutableSet<NamespacedKey>>(mutableSetOf(), json)
     private fun loadGroups(): MutableSet<BlockGroup<NamespacedKey>> {
-        val defaultSource = this::class.java.classLoader.getResourceAsStream("/default_groups.json")?.readAllBytes()?.decodeToString() ?: "[]"
+        val defaultSource = this::class.java.classLoader.getResourceAsStream("default_groups.json")?.readAllBytes()?.decodeToString() ?: "[]"
         val defaultGroups = json.decodeFromString<MutableSet<BlockGroup<NamespacedKey>>>(defaultSource)
         return groupsFile.load<MutableSet<BlockGroup<NamespacedKey>>>(defaultGroups, json)
     }
