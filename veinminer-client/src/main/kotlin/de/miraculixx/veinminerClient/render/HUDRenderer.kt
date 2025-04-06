@@ -1,19 +1,18 @@
 package de.miraculixx.veinminerClient.render
 
-import net.minecraft.client.DeltaTracker
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.resources.ResourceLocation
 
 object HUDRenderer {
-    private val AXE_ICON = ResourceLocation.fromNamespaceAndPath("veinminer-client", "textures/gui/sprite/axe.png")
-    private val PICKAXE_ICON = ResourceLocation.fromNamespaceAndPath("veinminer-client", "textures/gui/sprite/pickaxe.png")
-    private val SHOVEL_ICON = ResourceLocation.fromNamespaceAndPath("veinminer-client", "textures/gui/sprite/shovel.png")
-    private val HOE_ICON = ResourceLocation.fromNamespaceAndPath("veinminer-client", "textures/gui/sprite/hoe.png")
-    private val FORBIDDEN_ICON = ResourceLocation.fromNamespaceAndPath("veinminer-client", "textures/gui/sprite/forbidden.png")
+    private val AXE_ICON = ResourceLocation("veinminer-client", "textures/gui/sprite/axe.png")
+    private val PICKAXE_ICON = ResourceLocation("veinminer-client", "textures/gui/sprite/pickaxe.png")
+    private val SHOVEL_ICON = ResourceLocation("veinminer-client", "textures/gui/sprite/shovel.png")
+    private val HOE_ICON = ResourceLocation("veinminer-client", "textures/gui/sprite/hoe.png")
+    private val FORBIDDEN_ICON = ResourceLocation("veinminer-client", "textures/gui/sprite/forbidden.png")
     private var target: ResourceLocation? = null
 
-    fun render(guiGraphics: GuiGraphics, deltaTracker: DeltaTracker) {
+    fun render(guiGraphics: GuiGraphics, deltaTracker: Float) {
         if (target == null) return
 
         val client = Minecraft.getInstance()

@@ -23,7 +23,7 @@ class Veinminer : ModInitializer {
         val LOGGER = LogUtils.getLogger()
         lateinit var INSTANCE: ModContainer
         var active = true
-        val VEINMINE = ResourceKey.create<Enchantment>(Registries.ENCHANTMENT, ResourceLocation.fromNamespaceAndPath("veinminer-enchantment", "veinminer"))
+        val VEINMINE = ResourceKey.create<Enchantment>(Registries.ENCHANTMENT, ResourceLocation("veinminer-enchantment", "veinminer"))
         var enchantmentActive = false
     }
 

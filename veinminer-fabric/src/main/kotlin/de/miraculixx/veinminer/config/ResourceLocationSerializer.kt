@@ -14,8 +14,8 @@ object ResourceLocationSerializer : KSerializer<ResourceLocation> {
         var decode = decoder.decodeString()
         return if (!decode.contains(":")) {
             decode = decode.removePrefix("block.").removePrefix("item.").replace('.', ':')
-            ResourceLocation.parse(decode)
-        } else ResourceLocation.parse(decode)
+            ResourceLocation.tryParse(decode) ?: ResourceLocation("veinminer", "error")
+        } else ResourceLocation.tryParse(decode) ?: ResourceLocation("veinminer", "error")
     }
 
     override fun serialize(encoder: Encoder, value: ResourceLocation) {

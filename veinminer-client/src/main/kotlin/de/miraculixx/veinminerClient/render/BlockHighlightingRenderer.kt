@@ -10,12 +10,10 @@ import de.miraculixx.veinminerClient.network.NetworkManager
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext
 import net.minecraft.client.renderer.RenderStateShard
 import net.minecraft.client.renderer.RenderType
-import net.minecraft.core.BlockPos
 import net.minecraft.world.phys.shapes.Shapes
 import net.minecraft.world.phys.shapes.VoxelShape
 import org.joml.Matrix4f
 import java.util.*
-import kotlin.text.toFloat
 
 // TODO: Check for optimization, Copilot threw this at me
 object BlockHighlightingRenderer {
@@ -84,8 +82,8 @@ object BlockHighlightingRenderer {
     private fun renderBlocks(buffer: VertexConsumer, matrix: Matrix4f, shape: VoxelShape, transparency: Int) {
         shape.forAllEdges { x, y, z, dx, dy, dz ->
             // Outline
-            buffer.addVertex(matrix, x.toFloat(), y.toFloat(), z.toFloat()).setColor(255, 255, 255, transparency)
-            buffer.addVertex(matrix, dx.toFloat(), dy.toFloat(), dz.toFloat()).setColor(255, 255, 255, transparency)
+            buffer.vertex(matrix, x.toFloat(), y.toFloat(), z.toFloat()).color(255, 255, 255, transparency).endVertex()
+            buffer.vertex(matrix, dx.toFloat(), dy.toFloat(), dz.toFloat()).color(255, 255, 255, transparency).endVertex()
         }
     }
 
