@@ -26,7 +26,7 @@ dependencies {
     implementation("net.fabricmc:fabric-loom:1.10-SNAPSHOT")
 
     // Paper implementation
-    implementation(pluginDep("io.papermc.paperweight.userdev", "2.0.0-beta.12"))
+    implementation(pluginDep("io.papermc.paperweight.userdev", "2.0.0-beta.16"))
     implementation(pluginDep("xyz.jpenilla.run-paper", "2.2.4"))
     implementation(pluginDep("net.minecrell.plugin-yml.bukkit", "0.6.+"))
     implementation(pluginDep("net.minecrell.plugin-yml.paper", "0.6.+"))
