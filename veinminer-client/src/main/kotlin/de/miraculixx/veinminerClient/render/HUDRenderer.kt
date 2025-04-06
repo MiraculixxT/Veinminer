@@ -3,7 +3,6 @@ package de.miraculixx.veinminerClient.render
 import net.minecraft.client.DeltaTracker
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
-import net.minecraft.client.renderer.RenderType
 import net.minecraft.resources.ResourceLocation
 
 object HUDRenderer {
@@ -20,7 +19,7 @@ object HUDRenderer {
         val client = Minecraft.getInstance()
         val window = client.window
 
-        guiGraphics.blit(RenderType::crosshair, target, (window.guiScaledWidth / 2) + 2, (window.guiScaledHeight / 2) - 10, 0f, 0f, 8, 8, 8, 8)
+        guiGraphics.blit(target, (window.guiScaledWidth / 2) + 2, (window.guiScaledHeight / 2) - 10, 0f, 0f, 8, 8, 8, 8)
     }
 
     fun updateTarget(target: String?) {

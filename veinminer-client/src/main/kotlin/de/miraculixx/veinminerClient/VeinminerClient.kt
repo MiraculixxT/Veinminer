@@ -51,7 +51,7 @@ class VeinminerClient : ClientModInitializer {
                     Component.translatable("veinminer.notavailable.title"),
                     Component.translatable("veinminer.notavailable.subtitle")
                 )
-                mc.toastManager.addToast(toast)
+                mc.toasts.addToast(toast)
                 return@register
             }
 

@@ -46,7 +46,7 @@ object NetworkManager {
     fun onConfiguration(packet: ServerConfiguration, client: Minecraft) {
         VeinminerClient.LOGGER.info("Server configuration: $packet")
         if (packet.outdated) {
-            client.toastManager.addToast(
+            client.toasts.addToast(
                 SystemToast(SystemToast.SystemToastId.PERIODIC_NOTIFICATION, Component.literal("Veinminer Outdated"), Component.literal("Please update Veinminer"))
             )
         }
