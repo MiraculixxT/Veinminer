@@ -2,6 +2,7 @@
 
 package de.miraculixx.veinminer.command
 
+import com.mojang.brigadier.context.CommandContext
 import de.miraculixx.veinminer.VeinMinerEvent.key
 import de.miraculixx.veinminer.Veinminer
 import de.miraculixx.veinminer.Veinminer.Companion.LOGGER
@@ -29,7 +30,7 @@ import net.silkmc.silk.core.text.literal
 object VeinminerCommand {
 
     private val command = command("veinminer") {
-        runs {
+        runsAsync {
             source.msg(
                 "Veinminer Version: ${Veinminer.INSTANCE.metadata.version} (fabric)\n" +
                         "Game Version: ${DetectedVersion.tryDetectVersion().name}", cBase
@@ -38,7 +39,7 @@ object VeinminerCommand {
 
         literal("reload") {
             requires { Permissions.require(permissionReload, 3).test(it) }
-            runs {
+            runsAsync {
                 ConfigManager.reload()
                 source.msg("Veinminer config reloaded!", cGreen)
             }
@@ -48,7 +49,7 @@ object VeinminerCommand {
             requires { Permissions.require(permissionBlocks, 3).test(it) }
             literal("add") {
                 argument<BlockInput>("block") { block ->
-                    runs {
+                    runsAsync {
                         val id = block().state.key()
                         if (ConfigManager.veinBlocks.add(id)) {
                             ConfigManager.save()
@@ -61,16 +62,15 @@ object VeinminerCommand {
             }
 
             literal("remove") {
-                argument<String>("block") { block ->
-                    suggestList { ConfigManager.veinBlocks.toList() }
-                    runs {
-                        val string = block()
-                        val key = ResourceLocation.tryParse(string)
-                        if (key != null && ConfigManager.veinBlocks.remove(key)) {
+                argument<BlockInput>("block") { block ->
+                    suggestListSuspending { ctx -> ctx.suggestFilteredList(ConfigManager.veinBlocks) }
+                    runsAsync {
+                        val id = block().state.key()
+                        if (ConfigManager.veinBlocks.remove(id)) {
                             ConfigManager.save()
-                            source.msg("Removed $key from veinminer blocks", cGreen)
+                            source.msg("Removed $id from veinminer blocks", cGreen)
                         } else {
-                            source.msg("$string is not a veinminer block", cRed)
+                            source.msg("$id is not a veinminer block", cRed)
                         }
                     }
                 }
@@ -79,9 +79,9 @@ object VeinminerCommand {
 
         literal("toggle") {
             requires { Permissions.require(permissionToggle, 3).test(it) }
-            runs {
-                if (Veinminer.active) source.msg("Veinminer functions disabled", cGreen)
-                else source.msg("Veinminer functions enabled", cRed)
+            runsAsync {
+                if (Veinminer.active) source.msg("Veinminer functions disabled", cRed)
+                else source.msg("Veinminer functions enabled", cGreen)
                 Veinminer.active = !Veinminer.active
             }
         }
@@ -137,7 +137,7 @@ object VeinminerCommand {
             }
 
             // Command description
-            runs {
+            runsAsync {
                 source.msg(
                     "Groups can chain together multiple block types.\n" +
                             "E.g. creating a group 'oak' with oak_log & oak_leaves will veinmine the whole tree when breaking on part of it." +
@@ -155,14 +155,14 @@ object VeinminerCommand {
                 }
 
                 argument<String>("group") { groupName ->
-                    suggestList { ConfigManager.groups.map { it.name } }
-                    runs {
-                        val group = groupExists(groupName()) ?: return@runs source.msg("Group '$groupName' does not exist", cRed)
+                    suggestListSuspending { ConfigManager.groups.map { it.name } }
+                    runsAsync {
+                        val group = groupExists(groupName()) ?: return@runsAsync source.msg("Group '$groupName' does not exist", cRed)
                         group.print(source)
                     }
                 }
 
-                runs {
+                runsAsync {
                     ConfigManager.groups.forEach { group -> group.print(source) }
                 }
             }
@@ -170,13 +170,13 @@ object VeinminerCommand {
             // Create a new group with optional content
             literal("create") {
                 argument<String>("name") { name ->
-                    runs {
+                    runsAsync {
                         source.createGroup(name(), mutableSetOf())
                     }
                     argument<BlockInput>("block1") { block1 ->
-                        runs { source.createGroup(name(), mutableSetOf(block1().state.key())) }
+                        runsAsync { source.createGroup(name(), mutableSetOf(block1().state.key())) }
                         argument<BlockInput>("block2") { block2 ->
-                            runs { source.createGroup(name(), mutableSetOf(block1().state.key(), block2().state.key())) }
+                            runsAsync { source.createGroup(name(), mutableSetOf(block1().state.key(), block2().state.key())) }
                         }
                     }
                 }
@@ -185,12 +185,12 @@ object VeinminerCommand {
             // Remove an existing group
             literal("remove") {
                 argument<String>("group") { group ->
-                    suggestList { ConfigManager.groups.map { it.name } }
-                    runs {
+                    suggestListSuspending { ConfigManager.groups.map { it.name } }
+                    runsAsync {
                         val name = group().lowercase()
                         if (groupExists(name) == null) {
                             source.msg("The group '$name' does not exist", cRed)
-                            return@runs
+                            return@runsAsync
                         }
                         ConfigManager.groups.removeIf { it.name.lowercase() == name }
                         source.msg("Removed group '$name'", cGreen)
@@ -202,43 +202,43 @@ object VeinminerCommand {
             // Add or remove blocks from a group
             literal("edit") {
                 argument<String>("group") { name ->
-                    suggestList { ConfigManager.groups.map { it.name } }
+                    suggestListSuspending { ConfigManager.groups.map { it.name } }
                     literal("add-block") {
                         argument<BlockInput>("block") { block ->
-                            runs {
+                            runsAsync {
                                 source.editContent(name(), block().state.key(), true, true)
                             }
                         }
                     }
 
                     literal("remove-block") {
-                        argument<String>("block") { block ->
-                            suggestList { info ->
-                                val group = info.getArgument("group", String::class.java)
-                                groupExists(group)?.blocks
+                        argument<BlockInput>("block") { block ->
+                            suggestListSuspending { ctx ->
+                                val group = ctx.getArgument("group", String::class.java)
+                                ctx.suggestFilteredList(groupExists(group)?.blocks)
                             }
-                            runs {
-                                source.editContent(name(), ResourceLocation.tryParse(block()), true, false)
+                            runsAsync {
+                                source.editContent(name(), block().state.key(), true, false)
                             }
                         }
                     }
 
                     literal("add-tool") {
                         argument<ItemInput>("tool") { tool ->
-                            runs {
+                            runsAsync {
                                 source.editContent(name(), tool().item.defaultInstance.key(), false, true)
                             }
                         }
                     }
 
                     literal("remove-tool") {
-                        argument<String>("tool") { tool ->
-                            suggestList { info ->
-                                val group = info.getArgument("group", String::class.java)
-                                groupExists(group)?.tools
+                        argument<ItemInput>("tool") { tool ->
+                            suggestListSuspending { ctx ->
+                                val group = ctx.getArgument("group", String::class.java)
+                                ctx.suggestFilteredList(groupExists(group)?.tools)
                             }
-                            runs {
-                                source.editContent(name(), ResourceLocation.tryParse(tool()), false, false)
+                            runsAsync {
+                                source.editContent(name(), tool().item.defaultInstance.key(), false, false)
                             }
                         }
                     }
@@ -249,13 +249,13 @@ object VeinminerCommand {
 
     private fun <T> LiteralCommandBuilder<CommandSourceStack>.applySetting(name: String, currentConsumer: () -> T, consumer: (T) -> Unit) {
         literal(name) {
-            runs {
+            runsAsync {
                 source.msg("$name is currently set to ${currentConsumer.invoke()}", cBase)
             }
 
             when (currentConsumer.invoke()) {
                 is Boolean -> argument<Boolean>("new") { new ->
-                    runs {
+                    runsAsync {
                         val value = new() as T
                         consumer.invoke(value)
                         ConfigManager.save()
@@ -264,7 +264,7 @@ object VeinminerCommand {
                 }
 
                 is Int -> argument<Int>("new") { new ->
-                    runs {
+                    runsAsync {
                         val value = new() as T
                         consumer.invoke(value)
                         ConfigManager.save()
@@ -283,5 +283,10 @@ object VeinminerCommand {
         } catch (_: Exception) {
             LOGGER.info("Messages cannot be sent in this version")
         }
+    }
+
+    private fun CommandContext<CommandSourceStack>.suggestFilteredList(list: Collection<ResourceLocation>?): List<ResourceLocation> {
+        val input = input.split(' ').lastOrNull() ?: ""
+        return list?.filter { input.isEmpty() || it.toString().startsWith(input) || it.path.startsWith(input) } ?: emptyList()
     }
 }
