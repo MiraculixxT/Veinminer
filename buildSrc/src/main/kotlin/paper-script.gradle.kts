@@ -49,7 +49,7 @@ tasks {
 
 bukkit {
     main = "$group.${projectName.lowercase()}.${projectName}"
-    apiVersion = "1.16"
+    apiVersion = "1.17"
     foliaSupported = foliaSupport
     name = projectName
     println(name + projectName)
