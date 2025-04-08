@@ -1,5 +1,6 @@
 package de.miraculixx.veinminer.config
 
+import de.miraculixx.veinminer.config.utils.json
 import net.kyori.adventure.text.format.TextColor
 import java.nio.file.Path
 import kotlin.io.path.createFile

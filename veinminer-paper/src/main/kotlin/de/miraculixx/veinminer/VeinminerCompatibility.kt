@@ -1,7 +1,5 @@
 package de.miraculixx.veinminer
 
-import de.miraculixx.veinminer.config.ConfigManager
-
 object VeinminerCompatibility {
     private val logger = INSTANCE.logger
 

@@ -15,6 +15,8 @@ import kotlinx.coroutines.launch
 import org.bukkit.*
 import org.bukkit.block.Block
 import org.bukkit.block.BlockState
+import org.bukkit.craftbukkit.block.CraftBlock
+import org.bukkit.craftbukkit.inventory.CraftItemStack
 import org.bukkit.entity.ExperienceOrb
 import org.bukkit.entity.Player
 import org.bukkit.event.Event
@@ -24,12 +26,7 @@ import org.bukkit.inventory.ItemStack
 import java.util.*
 import kotlin.time.Duration.Companion.milliseconds
 
-// 1.20.5+ only
-import org.bukkit.craftbukkit.block.CraftBlock
-import org.bukkit.craftbukkit.inventory.CraftItemStack
-
-
-class VeinMinerEvent {
+object VeinMinerEvent {
     private val cooldown = mutableSetOf<UUID>()
     var enabled: Boolean = true
 
@@ -66,7 +63,8 @@ class VeinMinerEvent {
             // Veinminer will drop the items that are still in the list and the remaining amount of experience
             val tool = player.inventory.itemInMainHand
             val drops = block.getDrops(tool, player).toMutableList<ItemStack>()
-            val dropItemEvent = VeinminerDropEvent(block, block.state, player, drops, it.expToDrop).also(Event::callEvent)
+            val dropItemEvent =
+                VeinminerDropEvent(block, block.state, player, drops, it.expToDrop).also(Event::callEvent)
 
             // Use source location as drop pos if setting is enabled
             val location = if (settings.mergeItemDrops) it.sourceLocation else block.location.toCenterLocation()
@@ -74,8 +72,8 @@ class VeinMinerEvent {
             drops.forEach { drop ->
                 block.world.dropItem(location, drop)
             }
-            if (dropItemEvent.exp > 0)
-                block.world.spawn(location, ExperienceOrb::class.java).experience = dropItemEvent.exp
+            if (dropItemEvent.exp > 0) block.world.spawn(location, ExperienceOrb::class.java).experience =
+                dropItemEvent.exp
 
             it.isDropItems = false
             it.expToDrop = 0
@@ -117,13 +115,13 @@ class VeinMinerEvent {
 
         val settings = ConfigManager.settings
         if (settings.permissionRestricted && !player.hasPermission(permissionVeinmine)) return null
-        val hasClientBypass = settings.client.allBlocks && PaperNetworking.registeredPlayers.containsKey(player.uniqueId)
+        val hasClientBypass =
+            settings.client.allBlocks && PaperNetworking.registeredPlayers.containsKey(player.uniqueId)
         val blockGroup = material.groupedBlocks()
         val isGroupBlock = blockGroup.blocks.isNotEmpty()
         val isWhitelisted = isGroupBlock || ConfigManager.veinBlocks.contains(material)
 
         if (!isWhitelisted && !hasClientBypass) return null
-
 
         // Check for sneak config
         if (settings.mustSneak && !player.isSneaking) return null
@@ -131,18 +129,10 @@ class VeinMinerEvent {
         // Check for cooldown
         if (cooldown.contains(player.uniqueId)) return null
 
-        // Perform veinminer
-        val blocks = if (isGroupBlock) blockGroup.blocks else setOf(material)
-        VeinmineAction(
-            it.block,
-            blocks,
-            item,
-            mutableSetOf(),
-            player,
-            it.block.location.toCenterLocation(),
-            settings
-        ).breakAdjusted()
-        it.isCancelled = true // Cancel the original event
+        // Check for correct tool (if block group tools are empty, it means all tools are allowed)
+        val item = player.inventory.itemInMainHand
+        if (settings.needCorrectTool && (block.getDrops(item).isEmpty() || item.isEmpty)) return null
+        if (isGroupBlock && !blockGroup.tools.isEmpty() && !blockGroup.tools.contains(item.type.key)) return null
 
         // Check for enchantment if active
         if (Veinminer.enchantmentActive && !item.enchantments.any { it.key.key == VEINMINE }) return null
@@ -177,8 +167,14 @@ class VeinMinerEvent {
                     }
 
                     // Check if other plugins cancel the event
-                    if (!VeinminerEvent(block, player, sourceLocation).callEvent()) return@taskRunLater
-                    block.destroy(tool, !settings.mergeItemDrops)
+                    if (!VeinminerEvent(
+                            block,
+                            player,
+                            sourceLocation,
+                            block.getXP(tool)
+                        ).callEvent()
+                    ) return@taskRunLater
+                    block.destroy()
                     if (settings.decreaseDurability) damageItem(tool, 1, player)
                 }
             }
@@ -186,9 +182,9 @@ class VeinMinerEvent {
 
             // Process blocks around the current block
             val searchRadius = settings.searchRadius
-            (-searchRadius..searchRadius).forEach { x ->
-                (-searchRadius..searchRadius).forEach { y ->
-                    (-searchRadius..searchRadius).forEach z@{ z ->
+            (-searchRadius .. searchRadius).forEach { x ->
+                (-searchRadius .. searchRadius).forEach { y ->
+                    (-searchRadius .. searchRadius).forEach z@{ z ->
                         if (x == 0 && y == 0 && z == 0) return@z
                         val newBlock = block.world.getBlockAt(block.x + x, block.y + y, block.z + z)
 
@@ -225,8 +221,6 @@ class VeinMinerEvent {
         return nmsState.block.getExpDrop(nmsState, craftBlock.handle.minecraftWorld, craftBlock.position, nmsItem, true)
     }
 
-    private class VeinminerEvent(block: Block, breaker: Player, val sourceLocation: Location) : BlockBreakEvent(block, breaker)
-
     /**
      * Custom block break event that is only triggered by Veinminer before each block break attempt.
      * Cancelling this event will prevent Veinminer from breaking the block and continuing in this direction.
@@ -255,14 +249,10 @@ class VeinMinerEvent {
      * @param exp the amount of experience that will be dropped
      */
     class VeinminerDropEvent(
-        block: Block,
-        val blockState: BlockState,
-        val player: Player,
-        var items: MutableList<ItemStack>,
-        var exp: Int
+        block: Block, val blockState: BlockState, val player: Player, var items: MutableList<ItemStack>, var exp: Int
     ) : BlockExpEvent(block, exp)
 
-    private data class VeinmineAction(
+    data class VeinmineAction(
         val currentBlock: Block,
         val targetTypes: Set<NamespacedKey>,
         val tool: ItemStack,
@@ -273,7 +263,6 @@ class VeinMinerEvent {
     )
 
     data class VeinmineBlock(
-        val block: Block,
-        val distance: Int
+        val block: Block, val distance: Int
     )
 }
