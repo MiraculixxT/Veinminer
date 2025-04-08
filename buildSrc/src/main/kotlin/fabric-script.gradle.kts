@@ -1,4 +1,3 @@
-
 plugins {
     id("fabric-loom")
     id("io.github.dexman545.outlet")
@@ -27,8 +26,11 @@ dependencies {
     //
     minecraft("com.mojang", "minecraft", gameVersion)
     mappings(loom.officialMojangMappings())
-    modImplementation("net.fabricmc", "fabric-loader", outlet.loaderVersion())
-    modImplementation("net.fabricmc.fabric-api", "fabric-api", outlet.fapiVersion())
+//    println("FabricLoader: " + outlet.loaderVersion() + ", " + outlet.fapiVersion())
+//    modImplementation("net.fabricmc", "fabric-loader", outlet.loaderVersion())
+//    modImplementation("net.fabricmc.fabric-api", "fabric-api", outlet.fapiVersion())
+    modImplementation("net.fabricmc", "fabric-loader", "0.16.12")
+    modImplementation("net.fabricmc.fabric-api", "fabric-api", "0.119.9+1.21.5")
 
     //
     // Kotlin libraries
@@ -41,14 +43,13 @@ dependencies {
     //
     // Silk configuration (optional)
     //
-    val useSilk = properties["useSilk"] as String == "true"
-    if (useSilk) {
-        val silkVersion = outlet.latestModrinthModVersion("silk", outlet.mcVersions())
-        println("Silk: $silkVersion")
-        modImplementation("net.silkmc", "silk-core", silkVersion)
-        modImplementation("net.silkmc", "silk-commands", silkVersion) // easy command registration
-        modImplementation("net.silkmc", "silk-nbt", silkVersion) // item simplification
-    }
+    val silkVersion = properties["silkVersion"] as String
+    println("Silk: $silkVersion")
+    modImplementation("net.silkmc", "silk-core", silkVersion)
+    modImplementation("net.silkmc", "silk-commands", silkVersion) // easy command registration
+    modImplementation("net.silkmc", "silk-nbt", silkVersion) // item simplification
+    modImplementation("net.silkmc", "silk-network", silkVersion)
+
 
     //
     // Permissions configuration (optional)

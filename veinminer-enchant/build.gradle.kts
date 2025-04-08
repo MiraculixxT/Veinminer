@@ -10,10 +10,10 @@ plugins {
     id("de.eldoria.plugin-yml.paper")
 }
 
-val gameVersion by properties
+val paperVersion by properties
 
 dependencies {
-    paperweight.paperDevBundle("$gameVersion-R0.1-SNAPSHOT")
+    paperweight.paperDevBundle("$paperVersion-no-moonrise-SNAPSHOT")
 }
 
 modrinth {
@@ -51,7 +51,7 @@ paper {
     website = "https://mutils.net"
 
     foliaSupported = true
-    apiVersion = "1.19"
+    apiVersion = "1.21"
     load = BukkitPluginDescription.PluginLoadOrder.STARTUP
 
     serverDependencies {

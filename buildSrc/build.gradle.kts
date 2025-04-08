@@ -23,10 +23,10 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.+")
 
     // Fabric implementation
-    implementation("net.fabricmc:fabric-loom:1.9-SNAPSHOT")
+    implementation("net.fabricmc:fabric-loom:1.10-SNAPSHOT")
 
     // Paper implementation
-    implementation(pluginDep("io.papermc.paperweight.userdev", "2.0.0-beta.14"))
+    implementation(pluginDep("io.papermc.paperweight.userdev", "2.0.0-beta.16"))
     implementation(pluginDep("xyz.jpenilla.run-paper", "2.3.1"))
     implementation(pluginDep("de.eldoria.plugin-yml.paper", "0.7.+"))
 

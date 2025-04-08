@@ -7,7 +7,7 @@ plugins {
 }
 
 dependencies {
-    implementation(include(project(":core"))!!)
+    implementation(include(project(":core", configuration = "namedElements"))!!)
 }
 
 modrinth {
@@ -26,10 +26,7 @@ modrinth {
         required.project("fabric-api")
         required.project("fabric-language-kotlin")
 
-        val useSilk = properties["useSilk"] as String == "true"
-        if (useSilk) {
-            required.project("silk")
-        }
+        required.project("silk")
 
         val useConfig = properties["useConfig"] as String == "true"
         if (useConfig) {

@@ -1,14 +1,12 @@
 package de.miraculixx.veinminer
 
-import de.miraculixx.kpaper.extensions.bukkit.cmp
-import de.miraculixx.kpaper.extensions.pluginManager
 import de.miraculixx.veinminer.config.ConfigManager
-import net.kyori.adventure.text.Component
 
 object VeinminerCompatibility {
     private val logger = INSTANCE.logger
 
     val platform by lazy { checkPlatform() }
+    var runsAsync = false
 
     enum class Platform {
         Bukkit,
@@ -45,10 +43,11 @@ object VeinminerCompatibility {
                 logger.severe("Veinminer will shut down now...")
                 return false
             }
+
             Platform.Paper, Platform.Purpur -> return true
             Platform.Folia -> {
-                logger.info("Veinminer running in Folia-compatible mode")
-                ConfigManager.settings.delay = 0
+                logger.info("Veinminer running in Folia-compatible mode, please report any issues!")
+                runsAsync = true
                 return true
             }
         }
