@@ -7,7 +7,7 @@ plugins {
     `fabric-script`
     `publish-script`
     id("io.papermc.paperweight.userdev")
-    id("net.minecrell.plugin-yml.paper")
+    id("de.eldoria.plugin-yml.paper")
 }
 
 val paperVersion by properties

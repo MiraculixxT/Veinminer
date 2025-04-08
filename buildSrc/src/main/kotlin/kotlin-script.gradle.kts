@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
@@ -8,8 +10,8 @@ repositories {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlinx", "kotlinx-serialization-json", "1.6.+")
-    implementation("org.jetbrains.kotlinx", "kotlinx-coroutines-core", "1.8.+")
+    implementation("org.jetbrains.kotlinx", "kotlinx-serialization-json", "1.8.+")
+    implementation("org.jetbrains.kotlinx", "kotlinx-coroutines-core", "1.10.+")
 }
 
 java {
@@ -24,6 +26,8 @@ tasks {
         options.release.set(21)
     }
     compileKotlin {
-        kotlinOptions.jvmTarget = "21"
+        compilerOptions {
+            jvmTarget = JvmTarget.JVM_21
+        }
     }
 }
