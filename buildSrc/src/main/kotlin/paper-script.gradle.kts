@@ -23,7 +23,7 @@ repositories {
 paperweight.reobfArtifactConfiguration = io.papermc.paperweight.userdev.ReobfArtifactConfiguration.MOJANG_PRODUCTION
 
 dependencies {
-    paperweight.paperDevBundle("$paperVersion-no-moonrise-SNAPSHOT")
+    paperweight.paperDevBundle("$paperVersion-SNAPSHOT")
 
     // Kotlin libraries
     library(kotlin("stdlib"))

@@ -13,7 +13,7 @@ plugins {
 val paperVersion by properties
 
 dependencies {
-    paperweight.paperDevBundle("$paperVersion-no-moonrise-SNAPSHOT")
+    paperweight.paperDevBundle("$paperVersion-SNAPSHOT")
 }
 
 modrinth {

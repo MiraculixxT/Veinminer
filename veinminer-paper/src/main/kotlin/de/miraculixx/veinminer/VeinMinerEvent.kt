@@ -63,8 +63,7 @@ object VeinMinerEvent {
             // Veinminer will drop the items that are still in the list and the remaining amount of experience
             val tool = player.inventory.itemInMainHand
             val drops = block.getDrops(tool, player).toMutableList<ItemStack>()
-            val dropItemEvent =
-                VeinminerDropEvent(block, block.state, player, drops, it.expToDrop).also(Event::callEvent)
+            val dropItemEvent = VeinminerDropEvent(block, block.state, player, drops, it.expToDrop).also(Event::callEvent)
 
             // Use source location as drop pos if setting is enabled
             val location = if (settings.mergeItemDrops) it.sourceLocation else block.location.toCenterLocation()
@@ -115,8 +114,7 @@ object VeinMinerEvent {
 
         val settings = ConfigManager.settings
         if (settings.permissionRestricted && !player.hasPermission(permissionVeinmine)) return null
-        val hasClientBypass =
-            settings.client.allBlocks && PaperNetworking.registeredPlayers.containsKey(player.uniqueId)
+        val hasClientBypass = settings.client.allBlocks && PaperNetworking.registeredPlayers.containsKey(player.uniqueId)
         val blockGroup = material.groupedBlocks()
         val isGroupBlock = blockGroup.blocks.isNotEmpty()
         val isWhitelisted = isGroupBlock || ConfigManager.veinBlocks.contains(material)
@@ -167,13 +165,8 @@ object VeinMinerEvent {
                     }
 
                     // Check if other plugins cancel the event
-                    if (!VeinminerEvent(
-                            block,
-                            player,
-                            sourceLocation,
-                            block.getXP(tool)
-                        ).callEvent()
-                    ) return@taskRunLater
+                    val veinminerEvent = VeinminerEvent(block, player, sourceLocation, block.getXP(tool))
+                    if (!veinminerEvent.callEvent()) return@taskRunLater
                     block.destroy()
                     if (settings.decreaseDurability) damageItem(tool, 1, player)
                 }
