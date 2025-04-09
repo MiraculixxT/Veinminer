@@ -28,7 +28,7 @@ object VeinminerCommand {
             sender.sendMessage(
                 cmp(
                     "Veinminer Version: ${INSTANCE.description.version} (paper)\n" +
-                            "Game Version: ${INSTANCE.server.version}" +
+                            "Game Version: ${INSTANCE.server.version}\n" +
                             "Download: "
                 ) + cmp("modrinth.com/project/veinminer").addUrl("https://modrinth.com/project/veinminer")
             )

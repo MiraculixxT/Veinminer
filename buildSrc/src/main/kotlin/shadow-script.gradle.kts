@@ -11,4 +11,7 @@ tasks {
             }
         }
     }
+    assemble {
+        dependsOn(shadowJar)
+    }
 }
