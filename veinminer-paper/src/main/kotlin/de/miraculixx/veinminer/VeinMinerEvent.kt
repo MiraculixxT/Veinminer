@@ -158,17 +158,16 @@ object VeinMinerEvent {
 
             // Only break if action is mining
             if (shouldBreak) {
-                taskRunLater((settings.delay * vBlock.distance).toLong(), !VeinminerCompatibility.runsAsync) {
-                    // Delay if necessary & check again if the block is still valid
-                    if (settings.delay != 0) {
-                        if (!targetTypes.contains(block.type.key)) return@taskRunLater
+                val tickDelay = (settings.delay * vBlock.distance).toLong()
+                if (VeinminerCompatibility.runsAsync) { // folia
+                    CoroutineScope(Dispatchers.Default).launch {
+                        delay(tickDelay.milliseconds * 20)
+                        triggerBreaking(block)
                     }
-
-                    // Check if other plugins cancel the event
-                    val veinminerEvent = VeinminerEvent(block, player, sourceLocation, block.getXP(tool))
-                    if (!veinminerEvent.callEvent()) return@taskRunLater
-                    block.destroy()
-                    if (settings.decreaseDurability) damageItem(tool, 1, player)
+                } else {
+                    taskRunLater((settings.delay * vBlock.distance).toLong(), true) {
+                        triggerBreaking(block)
+                    }
                 }
             }
             processedBlocks.add(block)
@@ -187,6 +186,19 @@ object VeinMinerEvent {
             }
         }
         return processedBlocks.size
+    }
+
+    private fun VeinmineAction.triggerBreaking(block: Block) {
+        // Delay if necessary & check again if the block is still valid
+        if (settings.delay != 0) {
+            if (!targetTypes.contains(block.type.key)) return
+        }
+
+        // Check if other plugins cancel the event
+        val veinminerEvent = VeinminerEvent(block, player, sourceLocation, block.getXP(tool))
+        if (!veinminerEvent.callEvent()) return
+        block.destroy()
+        if (settings.decreaseDurability) damageItem(tool, 1, player)
     }
 
     /**

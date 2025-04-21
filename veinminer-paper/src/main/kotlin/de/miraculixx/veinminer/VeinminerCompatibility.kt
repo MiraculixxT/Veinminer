@@ -27,6 +27,7 @@ object VeinminerCompatibility {
         if (runCatching { Class.forName("org.bukkit.Bukkit") }.isFailure)
             throw IllegalStateException("How did we get here?")
 
+        logger.info("Detected platform: $platform")
         return platform
     }
 

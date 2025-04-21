@@ -25,7 +25,7 @@ class Veinminer : KPaper() {
     override fun load() {
         INSTANCE = this
         if (!VeinminerCompatibility.isCompatible()) {
-           shouldDisable = true
+            shouldDisable = true
             pluginManager.disablePlugin(this)
             return
         }
