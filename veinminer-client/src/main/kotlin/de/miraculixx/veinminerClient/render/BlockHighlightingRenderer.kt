@@ -1,5 +1,7 @@
 package de.miraculixx.veinminerClient.render
 
+import com.mojang.blaze3d.pipeline.RenderPipeline
+import com.mojang.blaze3d.platform.LogicOp
 import com.mojang.blaze3d.vertex.DefaultVertexFormat
 import com.mojang.blaze3d.vertex.VertexConsumer
 import com.mojang.blaze3d.vertex.VertexFormat
@@ -8,6 +10,7 @@ import de.miraculixx.veinminerClient.KeyBindManager
 import de.miraculixx.veinminerClient.VeinminerClient
 import de.miraculixx.veinminerClient.network.NetworkManager
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext
+import net.minecraft.client.renderer.RenderPipelines
 import net.minecraft.client.renderer.RenderStateShard
 import net.minecraft.client.renderer.RenderType
 import net.minecraft.core.BlockPos
@@ -21,36 +24,68 @@ import kotlin.text.toFloat
 object BlockHighlightingRenderer {
     private var highlightingShape: VoxelShape = Shapes.empty()
 
-    private val renderDefault = RenderType.create(
-        "${VeinminerClient.MOD_ID}_highlight",
-        DefaultVertexFormat.POSITION_COLOR,
-        VertexFormat.Mode.DEBUG_LINES,
-        256,
-        RenderType.CompositeState.builder()
-            .setLineState(RenderStateShard.LineStateShard(OptionalDouble.empty()))
-            .setLayeringState(RenderStateShard.LayeringStateShard.NO_LAYERING)
-            .setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
-            .setWriteMaskState(RenderStateShard.COLOR_WRITE)
-            .setCullState(RenderStateShard.CULL)
-            .setShaderState(RenderStateShard.POSITION_COLOR_SHADER)
-            .createCompositeState(false)
-    )
+    private val renderDefault
+        get() = RenderType.create(
+                "${VeinminerClient.MOD_ID}_highlight",
+                256,
+                RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
+                    .withColorLogic(LogicOp.NONE)
+                    .withColorWrite(true)
+                    .withVertexFormat(DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.DEBUG_LINES)
+                    .withDepthWrite(true)
+                    .withLocation("pipeline/wireframe")
+                    .build(),
+                RenderType.CompositeState.builder()
+                    .setLineState(RenderStateShard.DEFAULT_LINE)
+                    .createCompositeState(RenderType.OutlineProperty.IS_OUTLINE)
+            )
 
-    private val rendererTransparentOverlay = RenderType.create(
-        "${VeinminerClient.MOD_ID}_highlight_transparent",
-        DefaultVertexFormat.POSITION_COLOR,
-        VertexFormat.Mode.DEBUG_LINES,
-        256,
-        RenderType.CompositeState.builder()
-            .setLineState(RenderStateShard.LineStateShard(OptionalDouble.empty()))
-            .setLayeringState(RenderStateShard.LayeringStateShard.NO_LAYERING)
-            .setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
-            .setWriteMaskState(RenderStateShard.COLOR_DEPTH_WRITE)
-            .setCullState(RenderStateShard.CULL)
-            .setDepthTestState(RenderStateShard.NO_DEPTH_TEST)
-            .setShaderState(RenderStateShard.POSITION_COLOR_SHADER)
-            .createCompositeState(false)
-    )
+    private val renderDefaultTranslucent
+        get() = RenderType.create(
+            "${VeinminerClient.MOD_ID}_highlight_translucent",
+            256,
+            RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
+                .withColorLogic(LogicOp.NONE)
+                .withColorWrite(true)
+                .withVertexFormat(DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.DEBUG_LINES)
+                .withDepthWrite(false)
+                .withLocation("pipeline/wireframe")
+                .build(),
+            RenderType.CompositeState.builder()
+                .setLineState(RenderStateShard.DEFAULT_LINE)
+                .createCompositeState(RenderType.OutlineProperty.NONE)
+        )
+
+//    private val renderDefault = RenderType.create(
+//        "${VeinminerClient.MOD_ID}_highlight",
+//        DefaultVertexFormat.POSITION_COLOR,
+//        VertexFormat.Mode.DEBUG_LINES,
+//        256,
+//        RenderType.CompositeState.builder()
+//            .setLineState(RenderStateShard.LineStateShard(OptionalDouble.empty()))
+//            .setLayeringState(RenderStateShard.LayeringStateShard.NO_LAYERING)
+//            .setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
+//            .setWriteMaskState(RenderStateShard.COLOR_WRITE)
+//            .setCullState(RenderStateShard.CULL)
+//            .setShaderState(RenderStateShard.POSITION_COLOR_SHADER)
+//            .createCompositeState(false)
+//    )
+
+//    private val rendererTransparentOverlay = RenderType.create(
+//        "${VeinminerClient.MOD_ID}_highlight_transparent",
+//        DefaultVertexFormat.POSITION_COLOR,
+//        VertexFormat.Mode.DEBUG_LINES,
+//        256,
+//        RenderType.CompositeState.builder()
+//            .setLineState(RenderStateShard.LineStateShard(OptionalDouble.empty()))
+//            .setLayeringState(RenderStateShard.LayeringStateShard.NO_LAYERING)
+//            .setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
+//            .setWriteMaskState(RenderStateShard.COLOR_DEPTH_WRITE)
+//            .setCullState(RenderStateShard.CULL)
+//            .setDepthTestState(RenderStateShard.NO_DEPTH_TEST)
+//            .setShaderState(RenderStateShard.POSITION_COLOR_SHADER)
+//            .createCompositeState(false)
+//    )
 
     fun render(context: WorldRenderContext) {
         val targetBlock = KeyBindManager.lastTarget
@@ -73,9 +108,9 @@ object BlockHighlightingRenderer {
 
         // Translucent drawing
         if (NetworkManager.translucentBlockHighlight) {
-            val bufferTransparent = source.getBuffer(rendererTransparentOverlay)
+            val bufferTransparent = source.getBuffer(renderDefaultTranslucent)
             renderBlocks(bufferTransparent, matrix, highlightingShape, 20)
-            source.endBatch(rendererTransparentOverlay)
+            source.endBatch(renderDefaultTranslucent)
         }
 
         stack.popPose()
