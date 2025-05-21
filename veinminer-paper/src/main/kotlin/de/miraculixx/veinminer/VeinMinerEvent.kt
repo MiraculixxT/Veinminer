@@ -110,6 +110,9 @@ object VeinMinerEvent {
     }
 
     fun allowedToVeinmine(player: Player, block: Block): VeinmineAction? {
+        // Check if player is in creative
+        if (player.gameMode == GameMode.CREATIVE) return null
+
         val material = block.type.key
 
         val settings = ConfigManager.settings

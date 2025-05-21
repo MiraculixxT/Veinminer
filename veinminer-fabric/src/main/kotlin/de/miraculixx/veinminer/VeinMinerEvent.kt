@@ -19,6 +19,7 @@ import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.EquipmentSlot
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.GameType
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.BaseFireBlock
 import net.minecraft.world.level.block.Block
@@ -95,6 +96,10 @@ object VeinMinerEvent {
      */
     fun allowedToVeinmine(world: Level, player: Player, pos: BlockPos, state: BlockState): VeinmineAction? {
         if (!active) return null
+
+        // Check if player is in creative
+        if (player.gameMode() == GameType.CREATIVE) return null
+
         val material = state.key()
         if (state.isAir) return null
 
