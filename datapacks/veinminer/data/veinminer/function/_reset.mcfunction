@@ -42,3 +42,5 @@ function veinminer:tool_add {namespace: "minecraft", id: "netherite_pickaxe", ca
 scoreboard players set sneak veinminer.settings 0
 scoreboard players set disabled veinminer.settings 0
 scoreboard players set default veinminer.cooldown 10
+
+tellraw @s {"text":"\n\n\n\nAll veinminer settings are resetted to the default values"}
