@@ -1,5 +1,5 @@
 {
   "values":[
-	"veinminer:main"
+	  "veinminer:internal/tick"
   ]
 }
