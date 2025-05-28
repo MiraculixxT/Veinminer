@@ -4,6 +4,7 @@
 # Condition:    mined with tool
 #
 
+#$tellraw @a " - HIT: $(namespace):$(id)"
 # Reset score
 $scoreboard players reset @s veinminer.t.$(namespace).$(id)
 
@@ -12,7 +13,7 @@ execute if score init veinminer.enchantment matches 1 unless score @s veinminer.
 scoreboard players set @s veinminer.enchantment 0
 
 # Check sneaking
-execute if score sneaking veinminer.settings matches 1 unless predicate veinminer:sneaking run return fail
+execute if score sneak veinminer.settings matches 1 unless predicate veinminer:sneaking run return fail
 
 # Check cooldown
 execute if entity @s[scores={veinminer.cooldown=1..}] run return fail
@@ -25,4 +26,5 @@ execute if entity @s[nbt={SelectedItem:{components:{"minecraft:enchantments":{"m
 execute if entity @s[nbt={SelectedItem:{components:{"minecraft:enchantments":{"minecraft:silk_touch": 1}}}}] run scoreboard players set @s veinminer.silk 10
 
 # Loop for mined ore
-function veinminer:internal/check/perform_mine with storage veinminer:data temp
+#tellraw @a " - HIT VALID"
+function veinminer:internal/check/perform_mine with storage veinminer:data temp0

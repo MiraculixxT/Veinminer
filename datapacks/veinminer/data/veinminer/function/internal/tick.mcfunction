@@ -1,7 +1,7 @@
 # Check if disabled
 execute if score disabled veinminer.settings matches 1 run return 0
 
-# Check for each player
+# Check for block breaking
 function veinminer:internal/check/_general
 
 # Cooldown Handling
