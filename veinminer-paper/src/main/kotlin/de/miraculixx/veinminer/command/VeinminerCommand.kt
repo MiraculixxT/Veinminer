@@ -60,20 +60,16 @@ object VeinminerCommand {
             }
 
             literalArgument("remove") {
-                stringArgument("block") {
+                blockStateArgument("block") {
                     replaceSuggestions(ArgumentSuggestions.stringCollection { ConfigManager.veinBlocks.map { it.asString() } })
                     anyExecutor { sender, args ->
-                        val string = args[0] as String
-                        val material = NamespacedKey.fromString(string)
-                        if (material == null) {
-                            sender.sendMessage(cmp("$string is not a valid block", cRed.color()))
-                            return@anyExecutor
-                        }
+                        val block = args[0] as BlockData
+                        val material = block.material.key
                         if (ConfigManager.veinBlocks.remove(material)) {
-                            sender.sendMessage(cmp("Removed $string from veinminer blocks", cGreen.color()))
+                            sender.sendMessage(cmp("Removed ${material.asString()} from veinminer blocks", cGreen.color()))
                             ConfigManager.save()
                         } else {
-                            sender.sendMessage(cmp("$string is not a veinminer block", cRed.color()))
+                            sender.sendMessage(cmp("${material.asString()} is not a veinminer block", cRed.color()))
                         }
                     }
                 }
@@ -207,6 +203,10 @@ object VeinminerCommand {
 
                     literalArgument("remove-block") {
                         blockStateArgument("block") {
+                            replaceSuggestions(ArgumentSuggestions.stringCollection {
+                                val group = it.previousArgs[0] as String
+                                ConfigManager.groups.firstOrNull { g -> g.name == group }?.blocks?.map { b -> b.asString() } ?: emptyList()
+                            })
                             anyExecutor { sender, args ->
                                 sender.editContent(args, (args[1] as BlockData).material.key, true, false)
                             }
@@ -223,6 +223,10 @@ object VeinminerCommand {
 
                     literalArgument("remove-tool") {
                         itemStackArgument("tool") {
+                            replaceSuggestions(ArgumentSuggestions.stringCollection {
+                                val group = it.previousArgs[0] as String
+                                ConfigManager.groups.firstOrNull { g -> g.name == group }?.tools?.map { b -> b.asString() } ?: emptyList()
+                            })
                             anyExecutor { sender, args ->
                                 sender.editContent(args, (args[1] as ItemStack).type.key, false, false)
                             }
