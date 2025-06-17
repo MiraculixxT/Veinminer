@@ -1,10 +1,7 @@
 package de.miraculixx.veinminerClient.render
 
 import com.mojang.blaze3d.pipeline.RenderPipeline
-import com.mojang.blaze3d.platform.LogicOp
-import com.mojang.blaze3d.vertex.DefaultVertexFormat
 import com.mojang.blaze3d.vertex.VertexConsumer
-import com.mojang.blaze3d.vertex.VertexFormat
 import de.miraculixx.veinminer.config.data.BlockPosition
 import de.miraculixx.veinminerClient.KeyBindManager
 import de.miraculixx.veinminerClient.VeinminerClient
@@ -13,79 +10,52 @@ import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext
 import net.minecraft.client.renderer.RenderPipelines
 import net.minecraft.client.renderer.RenderStateShard
 import net.minecraft.client.renderer.RenderType
-import net.minecraft.core.BlockPos
+import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.phys.shapes.Shapes
 import net.minecraft.world.phys.shapes.VoxelShape
 import org.joml.Matrix4f
 import java.util.*
-import kotlin.text.toFloat
 
-// TODO: Check for optimization, Copilot threw this at me
+
 object BlockHighlightingRenderer {
     private var highlightingShape: VoxelShape = Shapes.empty()
 
-    private val renderDefault
+    private val renderHighlighting
         get() = RenderType.create(
-                "${VeinminerClient.MOD_ID}_highlight",
-                256,
+            "${VeinminerClient.MOD_ID}:highlight",
+            512,
+            RenderPipelines.register(
                 RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
-                    .withColorLogic(LogicOp.NONE)
-                    .withColorWrite(true)
-                    .withVertexFormat(DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.DEBUG_LINES)
-                    .withDepthWrite(true)
-                    .withLocation("pipeline/wireframe")
-                    .build(),
-                RenderType.CompositeState.builder()
-                    .setLineState(RenderStateShard.DEFAULT_LINE)
-                    .createCompositeState(RenderType.OutlineProperty.IS_OUTLINE)
-            )
-
-    private val renderDefaultTranslucent
-        get() = RenderType.create(
-            "${VeinminerClient.MOD_ID}_highlight_translucent",
-            256,
-            RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
-                .withColorLogic(LogicOp.NONE)
-                .withColorWrite(true)
-                .withVertexFormat(DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.DEBUG_LINES)
-                .withDepthWrite(false)
-                .withLocation("pipeline/wireframe")
-                .build(),
+                    .withLocation(ResourceLocation.fromNamespaceAndPath("veinminer-client", "pipeline/highlight"))
+                    .withDepthWrite(false)
+                    .withCull(false)
+                    .withColorWrite(true, true)
+                    .build()
+            ),
             RenderType.CompositeState.builder()
-                .setLineState(RenderStateShard.DEFAULT_LINE)
-                .createCompositeState(RenderType.OutlineProperty.NONE)
+                .setLineState(RenderStateShard.LineStateShard(OptionalDouble.of(1.0)))
+                .setLayeringState(RenderStateShard.LayeringStateShard.NO_LAYERING)
+                .createCompositeState(false)
         )
 
-//    private val renderDefault = RenderType.create(
-//        "${VeinminerClient.MOD_ID}_highlight",
-//        DefaultVertexFormat.POSITION_COLOR,
-//        VertexFormat.Mode.DEBUG_LINES,
-//        256,
-//        RenderType.CompositeState.builder()
-//            .setLineState(RenderStateShard.LineStateShard(OptionalDouble.empty()))
-//            .setLayeringState(RenderStateShard.LayeringStateShard.NO_LAYERING)
-//            .setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
-//            .setWriteMaskState(RenderStateShard.COLOR_WRITE)
-//            .setCullState(RenderStateShard.CULL)
-//            .setShaderState(RenderStateShard.POSITION_COLOR_SHADER)
-//            .createCompositeState(false)
-//    )
+    private val renderHighlightingTranslucent
+        get() = RenderType.create(
+            "${VeinminerClient.MOD_ID}:highlight_translucent",
+            512,
+            RenderPipelines.register(
+                RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
+                    .withLocation(ResourceLocation.fromNamespaceAndPath("veinminer-client", "pipeline/highlight_translucent"))
+                    .withDepthWrite(true)
+                    .withCull(false)
+                    .withColorWrite(true, true)
+                    .build()
+            ),
+            RenderType.CompositeState.builder()
+                .setLineState(RenderStateShard.LineStateShard(OptionalDouble.of(1.0)))
+                .setLayeringState(RenderStateShard.LayeringStateShard.NO_LAYERING)
+                .createCompositeState(false)
+        )
 
-//    private val rendererTransparentOverlay = RenderType.create(
-//        "${VeinminerClient.MOD_ID}_highlight_transparent",
-//        DefaultVertexFormat.POSITION_COLOR,
-//        VertexFormat.Mode.DEBUG_LINES,
-//        256,
-//        RenderType.CompositeState.builder()
-//            .setLineState(RenderStateShard.LineStateShard(OptionalDouble.empty()))
-//            .setLayeringState(RenderStateShard.LayeringStateShard.NO_LAYERING)
-//            .setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
-//            .setWriteMaskState(RenderStateShard.COLOR_DEPTH_WRITE)
-//            .setCullState(RenderStateShard.CULL)
-//            .setDepthTestState(RenderStateShard.NO_DEPTH_TEST)
-//            .setShaderState(RenderStateShard.POSITION_COLOR_SHADER)
-//            .createCompositeState(false)
-//    )
 
     fun render(context: WorldRenderContext) {
         val targetBlock = KeyBindManager.lastTarget
@@ -102,15 +72,15 @@ object BlockHighlightingRenderer {
         val source = client.renderBuffers().bufferSource()
 
         // Default drawing
-        val consumer = source.getBuffer(renderDefault)
+        val consumer = source.getBuffer(renderHighlighting)
         renderBlocks(consumer, matrix, highlightingShape, 255)
-        source.endBatch(renderDefault)
+        source.endBatch(renderHighlighting)
 
         // Translucent drawing
         if (NetworkManager.translucentBlockHighlight) {
-            val bufferTransparent = source.getBuffer(renderDefaultTranslucent)
+            val bufferTransparent = source.getBuffer(renderHighlightingTranslucent)
             renderBlocks(bufferTransparent, matrix, highlightingShape, 20)
-            source.endBatch(renderDefaultTranslucent)
+            source.endBatch(renderHighlightingTranslucent)
         }
 
         stack.popPose()
@@ -133,7 +103,7 @@ object BlockHighlightingRenderer {
 
         val splines = positions.map {
             val box = Shapes.box(-0.010, -0.010, -0.010, 1.010, 1.010, 1.010) // Outline
-            //val box = Shapes.box(0.35, 0.35, 0.35, 0.65, 0.65, 0.65) // Inline Box
+            //val box = Shapes.box(0.35, 0.35, 0.35, 0.65, 0.65, 0.65) // Inline Box (more clutter)
             val dx = it.x - source.x
             val dy = it.y - source.y
             val dz = it.z - source.z
