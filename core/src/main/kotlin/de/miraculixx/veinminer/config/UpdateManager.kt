@@ -10,17 +10,27 @@ import java.net.URI
 object UpdateManager {
     private const val DEBUG = true
 
-    fun checkForUpdates(module: Module, platform: String, serverVersion: String, modVersion: String?) {
+    fun checkForUpdates(module: Module, platform: String, serverVersion: String, modVersion: String?): VersionInfo {
         val target = URI("https://api.modrinth.com/v2/project/${module.id}/version?loaders=%5B%22${platform}%22%5D&game_versions=%5B%22$serverVersion%22%5D").toURL()
         val con = target.openConnection() as HttpURLConnection
         val content = con.inputStream.readAllBytes().decodeToString()
         val latest = json.decodeFromString<List<ModrinthVersion>>(content).firstOrNull()
-            ?: return println("[VeinminerUpdater] No version found for ${module.modID}${if (DEBUG) " (${target.path})" else ""}")
+        if (latest == null) {
+            println("[VeinminerUpdater] No version found for ${module.modID}${if (DEBUG) " (${target.path})" else ""}")
+            return VersionInfo(false, modVersion ?: "unknown", "unknown", module)
+        }
 
-        if (latest.version_number == modVersion) println("[VeinminerUpdater] ${module.modID} is up to date")
-        else if (modVersion != null) println("[VeinminerUpdater] ${module.modID} is outdated. Installed: $modVersion -> Latest: ${latest.version_number}")
+        val outdated = if (latest.version_number == modVersion) {
+            println("[VeinminerUpdater] ${module.modID} is up to date")
+            false
+        } else if (modVersion != null) {
+            println("[VeinminerUpdater] ${module.modID} is outdated. Installed: $modVersion -> Latest: ${latest.version_number}")
+            true
+        } else false
 
         if (DEBUG) update(module, latest.files.first(), platform)
+
+        return VersionInfo(outdated, modVersion ?: "unknown", latest.version_number, module)
     }
 
     private fun update(module: Module, file: ModrinthFile, platform: String) {
@@ -38,4 +48,11 @@ object UpdateManager {
         VEINMINER_ENCHANTMENT("4sP0LXxp", "veinminer-enchantment"),
         VEINMINER_CLIENT("dxa0Bm8m", "veinminer-client"),
     }
+
+    data class VersionInfo(
+        val outdated: Boolean,
+        val currentVersion: String,
+        val latestVersion: String,
+        val module: Module
+    )
 }

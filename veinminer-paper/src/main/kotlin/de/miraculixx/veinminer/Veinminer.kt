@@ -1,10 +1,17 @@
 package de.miraculixx.veinminer
 
+import de.miraculixx.kpaper.event.listen
+import de.miraculixx.kpaper.extensions.bukkit.addUrl
+import de.miraculixx.kpaper.extensions.bukkit.cmp
+import de.miraculixx.kpaper.extensions.bukkit.plus
 import de.miraculixx.kpaper.extensions.pluginManager
 import de.miraculixx.kpaper.main.KPaper
 import de.miraculixx.veinminer.command.VeinminerCommand
 import de.miraculixx.veinminer.config.ConfigManager
 import de.miraculixx.veinminer.config.UpdateManager
+import de.miraculixx.veinminer.config.extensions.color
+import de.miraculixx.veinminer.config.utils.cGreen
+import de.miraculixx.veinminer.config.utils.cRed
 import de.miraculixx.veinminer.networking.PaperNetworking
 import dev.jorel.commandapi.CommandAPI
 import dev.jorel.commandapi.CommandAPIBukkitConfig
@@ -12,6 +19,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.bukkit.NamespacedKey
+import org.bukkit.event.player.PlayerJoinEvent
 
 class Veinminer : KPaper() {
     companion object {
@@ -48,7 +56,18 @@ class Veinminer : KPaper() {
         CoroutineScope(Dispatchers.Default).launch {
             listOf(UpdateManager.Module.VEINMINER, UpdateManager.Module.VEINMINER_ENCHANTMENT).forEach { module ->
                 try {
-                    UpdateManager.checkForUpdates(module, "paper", server.minecraftVersion, pluginManager.getPlugin(module.modID)?.pluginMeta?.version)
+                    val updateInfo = UpdateManager.checkForUpdates(module, "paper", server.minecraftVersion, pluginManager.getPlugin(module.modID)?.pluginMeta?.version)
+                    if (updateInfo.outdated) {
+                        // Update notification
+                        listen<PlayerJoinEvent> {
+                            if (it.player.isOp) {
+                                it.player.sendMessage(
+                                    cmp("${module.modID} is outdated! Click here to download the latest version").addUrl("https://modrinth.com/project/${module.modID}") +
+                                    cmp("\n - (Current: ") + cmp(updateInfo.currentVersion, cRed.color()) + cmp(", Latest: ") + cmp(updateInfo.latestVersion, cGreen.color()) + cmp(")")
+                                )
+                            }
+                        }
+                    }
                 } catch (e: Exception) {
                     println("[VeinminerUpdater] Error while checking for updates: ${e.message}")
                 }
