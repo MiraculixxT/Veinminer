@@ -33,7 +33,7 @@ object VeinminerCommand {
         runsAsync {
             source.msg(
                 "Veinminer Version: ${Veinminer.INSTANCE.metadata.version} (fabric)\n" +
-                        "Game Version: ${DetectedVersion.tryDetectVersion().name}", cBase
+                        "Game Version: ${DetectedVersion.tryDetectVersion().name()}", cBase
             )
         }
 

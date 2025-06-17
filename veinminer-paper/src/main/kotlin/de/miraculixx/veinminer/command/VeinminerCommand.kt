@@ -84,7 +84,7 @@ object VeinminerCommand {
                     sender.sendMessage(cmp("Veinminer functions disabled", cRed.color()))
                     return@anyExecutor
                 }
-                sender.sendMessage(cmp("Veinminer functions enabled", cRed.color()))
+                sender.sendMessage(cmp("Veinminer functions enabled", cGreen.color()))
                 VeinMinerEvent.enabled = true
             }
         }
