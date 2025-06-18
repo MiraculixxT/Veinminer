@@ -44,7 +44,6 @@ dependencies {
     // Silk configuration (optional)
     //
     val silkVersion = properties["silkVersion"] as String
-    println("Silk: $silkVersion")
     modImplementation("net.silkmc", "silk-core", silkVersion)
     modImplementation("net.silkmc", "silk-commands", silkVersion) // easy command registration
     modImplementation("net.silkmc", "silk-nbt", silkVersion) // item simplification
@@ -56,7 +55,7 @@ dependencies {
     //
     val usePermissions = properties["usePermissions"] as String == "true"
     if (usePermissions) {
-        modImplementation(include("me.lucko", "fabric-permissions-api", "0.3.3"))
+        modImplementation(include("me.lucko", "fabric-permissions-api", "0.4.0-SNAPSHOT"))
     }
 
     //
@@ -79,7 +78,7 @@ dependencies {
 }
 
 tasks.processResources {
-    println("-----" + outlet.mcVersionRange + " - ${properties["version"]}")
+    println("Version Range: " + outlet.mcVersionRange + " - ${properties["version"]}")
     filesMatching("fabric.mod.json") {
         val modrinthSlug = properties["modrinthProjectId"] as? String ?: properties["modid"] as String
         expand(
