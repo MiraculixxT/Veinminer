@@ -1,12 +1,14 @@
 package de.miraculixx.veinminerClient.render
 
 import com.mojang.blaze3d.pipeline.RenderPipeline
+import com.mojang.blaze3d.platform.DepthTestFunction
 import com.mojang.blaze3d.vertex.VertexConsumer
 import de.miraculixx.veinminer.config.data.BlockPosition
 import de.miraculixx.veinminerClient.KeyBindManager
 import de.miraculixx.veinminerClient.VeinminerClient
 import de.miraculixx.veinminerClient.network.NetworkManager
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext
+import net.minecraft.client.renderer.MultiBufferSource
 import net.minecraft.client.renderer.RenderPipelines
 import net.minecraft.client.renderer.RenderStateShard
 import net.minecraft.client.renderer.RenderType
@@ -14,12 +16,18 @@ import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.phys.shapes.Shapes
 import net.minecraft.world.phys.shapes.VoxelShape
 import org.joml.Matrix4f
+import org.joml.Vector3f
 import java.util.*
 
 
 object BlockHighlightingRenderer {
     private var highlightingShape: VoxelShape = Shapes.empty()
 
+    /**
+     * Render type for block highlighting.
+     *
+     * RenderType.create(namespace, bufferSize, pipeline, state)
+     */
     private val renderHighlighting
         get() = RenderType.create(
             "${VeinminerClient.MOD_ID}:highlight",
@@ -48,6 +56,7 @@ object BlockHighlightingRenderer {
                     .withDepthWrite(true)
                     .withCull(false)
                     .withColorWrite(true, true)
+                    .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST) // Render always on top
                     .build()
             ),
             RenderType.CompositeState.builder()
@@ -72,26 +81,38 @@ object BlockHighlightingRenderer {
         val source = client.renderBuffers().bufferSource()
 
         // Default drawing
-        val consumer = source.getBuffer(renderHighlighting)
-        renderBlocks(consumer, matrix, highlightingShape, 255)
-        source.endBatch(renderHighlighting)
+        renderBlocks(source, renderHighlighting, matrix, highlightingShape, 255)
 
         // Translucent drawing
         if (NetworkManager.translucentBlockHighlight) {
-            val bufferTransparent = source.getBuffer(renderHighlightingTranslucent)
-            renderBlocks(bufferTransparent, matrix, highlightingShape, 20)
-            source.endBatch(renderHighlightingTranslucent)
+            renderBlocks(source, renderHighlightingTranslucent, matrix, highlightingShape, 20)
         }
 
         stack.popPose()
     }
 
-    private fun renderBlocks(buffer: VertexConsumer, matrix: Matrix4f, shape: VoxelShape, transparency: Int) {
+    private fun renderBlocks(source: MultiBufferSource.BufferSource, renderer: RenderType, matrix: Matrix4f, shape: VoxelShape, transparency: Int) {
+        val buffer = source.getBuffer(renderer)
         shape.forAllEdges { x, y, z, dx, dy, dz ->
+            val x = x.toFloat()
+            val y = y.toFloat()
+            val z = z.toFloat()
+            val dx = dx.toFloat()
+            val dy = dy.toFloat()
+            val dz = dz.toFloat()
+            val relX = dx - x
+            val relY = dy - y
+            val relZ = dz - z
+
             // Outline
-            buffer.addVertex(matrix, x.toFloat(), y.toFloat(), z.toFloat()).setColor(255, 255, 255, transparency)
-            buffer.addVertex(matrix, dx.toFloat(), dy.toFloat(), dz.toFloat()).setColor(255, 255, 255, transparency)
+            buffer.addVertex(matrix, x, y, z)
+                .setColor(255, 255, 255, transparency)
+                .setNormal(relX, relY, relZ)
+            buffer.addVertex(matrix, dx, dy, dz)
+                .setColor(255, 255, 255, transparency)
+                .setNormal(relX, relY, relZ)
         }
+        source.endLastBatch()
     }
 
     fun setShape(positions: List<BlockPosition>) {
