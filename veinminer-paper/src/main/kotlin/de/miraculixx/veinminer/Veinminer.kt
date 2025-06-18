@@ -63,7 +63,7 @@ class Veinminer : KPaper() {
                             if (it.player.isOp) {
                                 it.player.sendMessage(
                                     cmp("${module.modID} is outdated! Click here to download the latest version").addUrl("https://modrinth.com/project/${module.modID}") +
-                                    cmp("\n - (Current: ") + cmp(updateInfo.currentVersion, cRed.color()) + cmp(", Latest: ") + cmp(updateInfo.latestVersion, cGreen.color()) + cmp(")")
+                                    cmp(" (Current: ") + cmp(updateInfo.currentVersion, cRed.color()) + cmp(", Latest: ") + cmp(updateInfo.latestVersion, cGreen.color()) + cmp(")")
                                 )
                             }
                         }

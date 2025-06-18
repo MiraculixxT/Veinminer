@@ -58,7 +58,7 @@ class Veinminer : ModInitializer {
                 player.sendText(
                     Component.literal("${info.module.modID} is outdated! Click here to download the latest version")
                         .setStyle(Style.EMPTY.withClickEvent(ClickEvent.OpenUrl(URI("https://modrinth.com/project/${info.module.modID}"))))
-                        .append("\n - (Current: ").append(Component.literal(info.currentVersion).withColor(cRed))
+                        .append(" (Current: ").append(Component.literal(info.currentVersion).withColor(cRed))
                         .append(", Latest: ").append(Component.literal(info.latestVersion).withColor(cGreen)).append(")")
                 )
             }
