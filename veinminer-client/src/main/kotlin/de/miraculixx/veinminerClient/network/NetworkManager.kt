@@ -2,7 +2,6 @@
 
 package de.miraculixx.veinminerClient.network
 
-import de.miraculixx.veinminer.config.extensions.toVeinminer
 import de.miraculixx.veinminer.config.network.BlockHighlighting
 import de.miraculixx.veinminer.config.network.JoinInformation
 import de.miraculixx.veinminer.config.network.KeyPress
@@ -14,6 +13,7 @@ import de.miraculixx.veinminerClient.VeinminerClient
 import de.miraculixx.veinminerClient.constants.*
 import de.miraculixx.veinminerClient.render.BlockHighlightingRenderer
 import de.miraculixx.veinminerClient.render.HUDRenderer
+import de.miraculixx.veinminerClient.utils.toVeinminer
 import net.fabricmc.fabric.impl.networking.RegistrationPayload
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.toasts.SystemToast

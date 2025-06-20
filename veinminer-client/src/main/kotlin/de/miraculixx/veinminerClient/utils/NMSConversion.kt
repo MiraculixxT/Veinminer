@@ -1,7 +1,12 @@
-package de.miraculixx.veinminer.config.extensions
+package de.miraculixx.veinminerClient.utils
 
+import de.miraculixx.veinminer.config.data.BlockPosition
 import de.miraculixx.veinminer.config.pattern.Surface
+import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
+
+fun BlockPosition.toNMS() = BlockPos(x, y, z)
+fun BlockPos.toVeinminer() = BlockPosition(x, y, z)
 
 fun Direction.toVeinminer() = when (this) {
     Direction.DOWN -> Surface.DOWN

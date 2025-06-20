@@ -8,14 +8,14 @@ import de.miraculixx.veinminer.Veinminer
 import de.miraculixx.veinminer.config.ConfigManager
 import de.miraculixx.veinminer.config.data.BlockPosition
 import de.miraculixx.veinminer.config.data.VeinminerSettings
-import de.miraculixx.veinminer.config.extensions.toNMS
-import de.miraculixx.veinminer.config.extensions.toVeinminer
 import de.miraculixx.veinminer.config.network.BlockHighlighting
 import de.miraculixx.veinminer.config.network.JoinInformation
 import de.miraculixx.veinminer.config.network.KeyPress
 import de.miraculixx.veinminer.config.network.RequestBlockVein
 import de.miraculixx.veinminer.config.network.ServerConfiguration
 import de.miraculixx.veinminer.config.utils.debug
+import de.miraculixx.veinminer.utils.toNMS
+import de.miraculixx.veinminer.utils.toVeinminer
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.server.network.ServerGamePacketListenerImpl
