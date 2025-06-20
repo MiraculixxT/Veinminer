@@ -47,7 +47,11 @@ public class VeinminerEnchantmentLoader implements PluginLoader {
 
         public Stream<RemoteRepository> asRepositories() {
             return repositories.entrySet().stream()
-                .map(e -> new RemoteRepository.Builder(e.getKey(), "default", e.getValue()).build());
+                    .map(e -> {
+                        var url = e.getValue();
+                        if (url.matches("https://repo.maven.apache.org/maven2/")) url = MavenLibraryResolver.MAVEN_CENTRAL_DEFAULT_MIRROR;
+                        return new RemoteRepository.Builder(e.getKey(), "default", url).build();
+                    });
         }
     }
 }
