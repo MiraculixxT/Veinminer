@@ -24,7 +24,7 @@ object UpdateManager {
             println("[VeinminerUpdater] ${module.modID} is up to date")
             false
         } else if (modVersion != null) {
-            println("[VeinminerUpdater] ${module.modID} is outdated. Installed: $modVersion -> Latest: ${latest.version_number}")
+            println("[VeinminerUpdater] ${module.modID} is outdated ($serverVersion). Installed: $modVersion -> Latest: ${latest.version_number}")
             true
         } else false
 

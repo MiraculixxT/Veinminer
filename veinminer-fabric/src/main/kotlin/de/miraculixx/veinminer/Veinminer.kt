@@ -10,6 +10,7 @@ import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.api.ModContainer
+import net.fabricmc.loader.impl.FabricLoaderImpl
 import net.minecraft.core.registries.Registries
 import net.minecraft.network.chat.ClickEvent
 import net.minecraft.network.chat.Component
@@ -17,12 +18,12 @@ import net.minecraft.network.chat.Style
 import net.minecraft.resources.ResourceKey
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.item.enchantment.Enchantment
-import net.silkmc.silk.core.Silk.server
 import net.silkmc.silk.core.event.EventPriority
 import net.silkmc.silk.core.event.PlayerEvents
 import net.silkmc.silk.core.task.mcCoroutineTask
 import net.silkmc.silk.core.text.sendText
 import java.net.URI
+import java.util.function.Function
 import kotlin.jvm.optionals.getOrNull
 
 
@@ -44,6 +45,7 @@ class Veinminer : ModInitializer {
         fabricLoader = FabricLoader.getInstance()
         INSTANCE = fabricLoader.getModContainer(MOD_ID).get()
         LOGGER.info("Veinminer Version: ${INSTANCE.metadata.version} (fabric)")
+        val mcVersion = (FabricLoader.getInstance() as FabricLoaderImpl).gameProvider.rawGameVersion
 
         val enchantmentContainer = fabricLoader.getModContainer("veinminer-enchantment").getOrNull()
         enchantmentActive = enchantmentContainer != null
@@ -65,17 +67,16 @@ class Veinminer : ModInitializer {
         }
 
         VeinminerCommand
+        VeinMinerEvent
 
         // Updater
         mcCoroutineTask(false) {
             listOf(UpdateManager.Module.VEINMINER, UpdateManager.Module.VEINMINER_CLIENT).forEach { module ->
                 try {
-                    val info = UpdateManager.checkForUpdates(module, "fabric", server?.serverVersion ?: "1.21.4", fabricLoader.getModContainer(module.modID).getOrNull()?.metadata?.version?.friendlyString)
+                    val info = UpdateManager.checkForUpdates(module, "fabric", mcVersion, fabricLoader.getModContainer(module.modID).getOrNull()?.metadata?.version?.friendlyString)
                     if (info.outdated) updateInfo = info
                 } catch (e: Exception) { println("[VeinminerUpdater] Error while checking for updates: ${e.message}") }
             }
         }
-
-        VeinMinerEvent
     }
 }
