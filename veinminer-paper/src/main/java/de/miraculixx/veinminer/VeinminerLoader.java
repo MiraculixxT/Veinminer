@@ -50,7 +50,7 @@ public class VeinminerLoader implements PluginLoader {
                 .map(e -> {
                     var url = e.getValue();
                     if (url.matches("https://repo.maven.apache.org/maven2/")) url = MavenLibraryResolver.MAVEN_CENTRAL_DEFAULT_MIRROR;
-                    System.out.println("Adding repository: " + e.getKey() + " -> " + url);
+//                    System.out.println("Adding repository: " + e.getKey() + " -> " + url);
                     return new RemoteRepository.Builder(e.getKey(), "default", url).build();
                 });
         }
