@@ -39,7 +39,7 @@ class Veinminer : KPaper() {
         }
 
 
-        CommandAPI.onLoad(CommandAPIBukkitConfig(this).silentLogs(true))
+        CommandAPI.onLoad(CommandAPIBukkitConfig(this).silentLogs(true).beLenientForMinorVersions(true))
         ConfigManager
         VeinminerCommand
     }
