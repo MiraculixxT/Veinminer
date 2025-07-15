@@ -9,6 +9,10 @@ repositories {
     maven("https://maven.shedaniel.me/")
     maven("https://maven.terraformersmc.com/releases/")
     maven("https://oss.sonatype.org/content/repositories/snapshots")
+    maven {
+        name = "pauli.fyiReleases"
+        url = uri("https://repo.pauli.fyi/releases")
+    }
 }
 
 val transitiveInclude: Configuration by configurations.creating {
