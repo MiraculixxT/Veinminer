@@ -20,6 +20,7 @@ import org.bukkit.craftbukkit.inventory.CraftItemStack
 import org.bukkit.entity.ExperienceOrb
 import org.bukkit.entity.Player
 import org.bukkit.event.Event
+import org.bukkit.event.EventPriority
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockExpEvent
 import org.bukkit.inventory.ItemStack
@@ -48,7 +49,7 @@ object VeinMinerEvent {
         return FixedBlockGroup(blocks.toSet(), tools.toSet())
     }
 
-    private val onBlockBreak = listen<BlockBreakEvent> {
+    private val onBlockBreak = listen<BlockBreakEvent>(priority = EventPriority.HIGH) {
         if (it.isCancelled || !enabled) return@listen
 
         val player = it.player
