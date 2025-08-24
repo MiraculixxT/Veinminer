@@ -1,6 +1,7 @@
 package de.miraculixx.veinminer
 
 import de.miraculixx.kpaper.event.listen
+import de.miraculixx.kpaper.extensions.server
 import de.miraculixx.kpaper.runnables.taskRunLater
 import de.miraculixx.veinminer.Veinminer.Companion.VEINMINE
 import de.miraculixx.veinminer.config.ConfigManager
@@ -164,12 +165,17 @@ object VeinMinerEvent {
             if (shouldBreak) {
                 val tickDelay = (settings.delay * vBlock.distance).toLong()
                 if (VeinminerCompatibility.runsAsync) { // folia
-                    CoroutineScope(Dispatchers.Default).launch {
-                        delay(tickDelay.milliseconds * 20)
-                        triggerBreaking(block)
+                    if (tickDelay == 0L) {
+                        server.regionScheduler.execute(Veinminer.INSTANCE, block.location) {
+                            triggerBreaking(block)
+                        }
+                    } else {
+                        server.regionScheduler.runDelayed(Veinminer.INSTANCE, block.location, {
+                            triggerBreaking(block)
+                        }, tickDelay)
                     }
                 } else {
-                    taskRunLater((settings.delay * vBlock.distance).toLong(), true) {
+                    taskRunLater(tickDelay, true) {
                         triggerBreaking(block)
                     }
                 }
@@ -194,10 +200,11 @@ object VeinMinerEvent {
 
     private fun VeinmineAction.triggerBreaking(block: Block) {
         // Delay if necessary & check again if the block is still valid
-        if (settings.delay != 0) {
-            if (!targetTypes.contains(block.type.key)) return
+        if(!VeinminerCompatibility.runsAsync) {
+            if (settings.delay != 0) {
+                if (!targetTypes.contains(block.type.key)) return
+            }
         }
-
         // Check if other plugins cancel the event
         val veinminerEvent = VeinminerEvent(block, player, sourceLocation, block.getXP(tool))
         if (!veinminerEvent.callEvent()) return

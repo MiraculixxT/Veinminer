@@ -38,3 +38,6 @@ modrinth {
 //        required.project("fabric-api")
     }
 }
+
+//To have a runFolia next to the runServer task for easier testing
+runPaper.folia.registerTask()
