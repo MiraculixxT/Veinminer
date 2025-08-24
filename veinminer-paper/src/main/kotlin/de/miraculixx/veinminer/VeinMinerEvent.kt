@@ -165,9 +165,15 @@ object VeinMinerEvent {
             if (shouldBreak) {
                 val tickDelay = (settings.delay * vBlock.distance).toLong()
                 if (VeinminerCompatibility.runsAsync) { // folia
-                    server.regionScheduler.runDelayed(Veinminer.INSTANCE, block.location, {
-                        triggerBreaking(block)
-                    }, if (tickDelay == 0L) 1L else tickDelay)
+                    if (tickDelay == 0L) {
+                        server.regionScheduler.execute(Veinminer.INSTANCE, block.location) {
+                            triggerBreaking(block)
+                        }
+                    } else {
+                        server.regionScheduler.runDelayed(Veinminer.INSTANCE, block.location, {
+                            triggerBreaking(block)
+                        }, tickDelay)
+                    }
                 } else {
                     taskRunLater(tickDelay, true) {
                         triggerBreaking(block)
