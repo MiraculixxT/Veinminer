@@ -1,16 +1,11 @@
 package de.miraculixx.veinminer.config
 
-import de.miraculixx.veinminer.Veinminer
 import de.miraculixx.veinminer.config.data.BlockGroup
 import de.miraculixx.veinminer.config.data.VeinminerSettings
 import de.miraculixx.veinminer.config.extensions.load
-import de.miraculixx.veinminer.config.utils.json
 import de.miraculixx.veinminer.networking.FabricNetworking
-import kotlinx.coroutines.withContext
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
-import net.minecraft.client.Minecraft
 import net.minecraft.resources.ResourceLocation
 import net.silkmc.silk.core.Silk
 import kotlin.io.path.Path
@@ -62,6 +57,7 @@ object ConfigManager {
         val defaultGroups = json.decodeFromString<MutableSet<BlockGroup<ResourceLocation>>>(defaultSource)
         return groupsFile.load<MutableSet<BlockGroup<ResourceLocation>>>(defaultGroups, json)
     }
+
     private fun loadBlocks() = blocksFile.load<MutableSet<ResourceLocation>>(mutableSetOf(), json)
 
 }
