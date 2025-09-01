@@ -44,9 +44,14 @@ object ConfigManager {
     }
 
     fun save() {
+        // Save to file
         blocksFile.writeText(json.encodeToString(veinBlocks))
         settingsFile.writeText(json.encodeToString(settings))
         groupsFile.writeText(json.encodeToString(groups))
+
+        // Parse raw data into NamespacedKeys
+        loadBlocks()
+        loadGroups()
     }
 
     private fun loadBlocks() {
