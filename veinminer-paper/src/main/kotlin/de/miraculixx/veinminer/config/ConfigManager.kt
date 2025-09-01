@@ -3,6 +3,7 @@ package de.miraculixx.veinminer.config
 import de.miraculixx.veinminer.config.data.BlockGroup
 import de.miraculixx.veinminer.config.data.VeinminerSettings
 import de.miraculixx.veinminer.config.extensions.load
+import de.miraculixx.veinminer.config.utils.debug
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import org.bukkit.NamespacedKey
@@ -36,6 +37,9 @@ object ConfigManager {
     var groups: Set<BlockGroup<NamespacedKey>> = emptySet()
         private set
 
+    init {
+        reload()
+    }
 
     fun reload() {
         settings = loadSettings()
@@ -45,9 +49,9 @@ object ConfigManager {
 
     fun save() {
         // Save to file
-        blocksFile.writeText(json.encodeToString(veinBlocks))
         settingsFile.writeText(json.encodeToString(settings))
-        groupsFile.writeText(json.encodeToString(groups))
+        blocksFile.writeText(json.encodeToString(veinBlocksRaw))
+        groupsFile.writeText(json.encodeToString(groupsRaw))
 
         // Parse raw data into NamespacedKeys
         loadBlocks()
@@ -67,15 +71,21 @@ object ConfigManager {
         groupsRaw = groupsFile.load<MutableSet<BlockGroup<String>>>(defaultGroups, json)
         groups = buildSet {
             groupsRaw.forEach { groupRaw ->
-                BlockGroup(
-                    groupRaw.name,
-                    ConfigSerializer.parseList(groupRaw.blocks, ConfigSerializer.MaterialType.BLOCK).toMutableSet(),
-                    ConfigSerializer.parseList(groupRaw.tools, ConfigSerializer.MaterialType.ITEM).toMutableSet()
+                add(
+                    BlockGroup(
+                        groupRaw.name,
+                        ConfigSerializer.parseList(groupRaw.blocks, ConfigSerializer.MaterialType.BLOCK).toMutableSet(),
+                        ConfigSerializer.parseList(groupRaw.tools, ConfigSerializer.MaterialType.ITEM).toMutableSet()
+                    )
                 )
             }
         }
+
+        // DEBUG
+        if (!debug) return
+        println(" - Raw Groups:\n$groupsRaw")
+        println(" - Parsed Groups:\n$groups")
     }
 
     private fun loadSettings() = settingsFile.load<VeinminerSettings>(VeinminerSettings())
-
 }
