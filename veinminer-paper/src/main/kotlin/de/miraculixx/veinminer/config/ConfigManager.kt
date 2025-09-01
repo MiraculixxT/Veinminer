@@ -10,8 +10,8 @@ import kotlin.io.path.Path
 import kotlin.io.path.writeText
 
 object ConfigManager {
-    private val blocksFile = Path("plugins/Veinminer/blocks.json")
     private val settingsFile = Path("plugins/Veinminer/settings.json")
+    private val blocksFile = Path("plugins/Veinminer/blocks.json")
     private val groupsFile = Path("plugins/Veinminer/groups.json")
     private val json = Json {
         prettyPrint = true
@@ -23,18 +23,24 @@ object ConfigManager {
         }
     }
 
-    var veinBlocks: MutableSet<NamespacedKey> = loadBlocks()
-        private set
     var settings: VeinminerSettings = loadSettings()
         private set
-    var groups: MutableSet<BlockGroup<NamespacedKey>> = loadGroups()
+
+    var veinBlocksRaw: MutableSet<String> = mutableSetOf()
+        private set
+    var veinBlocks: Set<NamespacedKey> = emptySet()
+        private set
+
+    var groupsRaw: MutableSet<BlockGroup<String>> = mutableSetOf()
+        private set
+    var groups: Set<BlockGroup<NamespacedKey>> = emptySet()
         private set
 
 
     fun reload() {
         settings = loadSettings()
-        veinBlocks = loadBlocks()
-        groups = loadGroups()
+        loadBlocks()
+        loadGroups()
     }
 
     fun save() {
@@ -43,11 +49,26 @@ object ConfigManager {
         groupsFile.writeText(json.encodeToString(groups))
     }
 
-    private fun loadBlocks() = blocksFile.load<MutableSet<NamespacedKey>>(mutableSetOf(), json)
-    private fun loadGroups(): MutableSet<BlockGroup<NamespacedKey>> {
+    private fun loadBlocks() {
+        veinBlocksRaw = blocksFile.load<MutableSet<String>>(mutableSetOf(), json)
+        veinBlocks = ConfigSerializer.parseList(veinBlocksRaw, ConfigSerializer.MaterialType.BLOCK)
+    }
+
+    private fun loadGroups() {
+        // Load default group in case of missing file
         val defaultSource = this::class.java.classLoader.getResourceAsStream("default_groups.json")?.readAllBytes()?.decodeToString() ?: "[]"
-        val defaultGroups = json.decodeFromString<MutableSet<BlockGroup<NamespacedKey>>>(defaultSource)
-        return groupsFile.load<MutableSet<BlockGroup<NamespacedKey>>>(defaultGroups, json)
+        val defaultGroups = json.decodeFromString<MutableSet<BlockGroup<String>>>(defaultSource)
+
+        groupsRaw = groupsFile.load<MutableSet<BlockGroup<String>>>(defaultGroups, json)
+        groups = buildSet {
+            groupsRaw.forEach { groupRaw ->
+                BlockGroup(
+                    groupRaw.name,
+                    ConfigSerializer.parseList(groupRaw.blocks, ConfigSerializer.MaterialType.BLOCK).toMutableSet(),
+                    ConfigSerializer.parseList(groupRaw.tools, ConfigSerializer.MaterialType.ITEM).toMutableSet()
+                )
+            }
+        }
     }
 
     private fun loadSettings() = settingsFile.load<VeinminerSettings>(VeinminerSettings())
