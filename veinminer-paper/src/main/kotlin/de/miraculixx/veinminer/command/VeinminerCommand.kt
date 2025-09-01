@@ -17,10 +17,8 @@ import dev.jorel.commandapi.arguments.ArgumentSuggestions
 import dev.jorel.commandapi.executors.CommandArguments
 import dev.jorel.commandapi.kotlindsl.*
 import net.kyori.adventure.text.format.NamedTextColor
-import org.bukkit.NamespacedKey
 import org.bukkit.block.data.BlockData
 import org.bukkit.command.CommandSender
-import org.bukkit.inventory.ItemStack
 
 object VeinminerCommand {
     private val command = commandTree("veinminer") {
@@ -121,10 +119,10 @@ object VeinminerCommand {
                 sendMessage(cmp("Created group '$name'\nAdd blocks with '/veinminer groups edit $name add ...'", cGreen.color()))
             }
 
-            fun CommandSender.editContent(args: CommandArguments, material: NamespacedKey, isBlock: Boolean, isAdd: Boolean) {
+            fun CommandSender.editContent(args: CommandArguments, rawKey: String?, isBlock: Boolean, isAdd: Boolean) {
                 val groupName = args[0] as String
-                val rawKey = material.asString()
                 val group = groupExists(groupName) ?: return sendMessage(cmp("Group '$groupName' does not exist", cRed.color()))
+                if (rawKey == null) return sendMessage(cmp("Key can not be null", cRed.color()))
                 val set = if (isBlock) group.blocks else group.tools
 
                 if (isAdd) {
@@ -162,13 +160,13 @@ object VeinminerCommand {
             literalArgument("create") {
                 stringArgument("name") {
                     anyExecutor { sender, args -> sender.createGroup(args[0] as String, mutableSetOf()) }
-                    blockStateArgument("block1") {
+                    blockPredicateArgument("block1") {
                         anyExecutor { sender, args ->
-                            sender.createGroup(args[0] as String, mutableSetOf((args[1] as BlockData).material.key.asString()))
+                            sender.createGroup(args[0] as String, args.getRaw(1)?.let { mutableSetOf(it) } ?: mutableSetOf())
                         }
-                        blockStateArgument("block2") {
+                        blockPredicateArgument("block2") {
                             anyExecutor { sender, args ->
-                                sender.createGroup(args[0] as String, mutableSetOf((args[1] as BlockData).material.key.asString(), (args[2] as BlockData).material.key.asString()))
+                                sender.createGroup(args[0] as String, setOf(args.getRaw(1), args.getRaw(2)).mapNotNull { it }.toMutableSet())
                             }
                         }
                     }
@@ -184,7 +182,7 @@ object VeinminerCommand {
 
                         ConfigManager.groupsRaw.remove(group)
                         ConfigManager.save()
-                        sender.sendMessage(cmp("Removed group '$name'", cGreen.color()))
+                        sender.sendMessage(cmp("Removed group '$groupName'", cGreen.color()))
                     }
                 }
             }
@@ -193,41 +191,41 @@ object VeinminerCommand {
                 stringArgument("group") {
                     replaceSuggestions(ArgumentSuggestions.stringCollection { ConfigManager.groupsRaw.map { it.name } })
                     literalArgument("add-block") {
-                        blockStateArgument("block") {
+                        blockPredicateArgument("block") {
                             anyExecutor { sender, args ->
-                                sender.editContent(args, (args[1] as BlockData).material.key, true, true)
+                                sender.editContent(args, args.getRaw(1), true, true)
                             }
                         }
                     }
 
                     literalArgument("remove-block") {
-                        blockStateArgument("block") {
+                        blockPredicateArgument("block") {
                             replaceSuggestions(ArgumentSuggestions.stringCollection {
                                 val groupName = it.previousArgs[0] as String
                                 groupExists(groupName)?.blocks ?: return@stringCollection emptyList()
                             })
                             anyExecutor { sender, args ->
-                                sender.editContent(args, (args[1] as BlockData).material.key, true, false)
+                                sender.editContent(args, args.getRaw(1), true, false)
                             }
                         }
                     }
 
                     literalArgument("add-tool") {
-                        itemStackArgument("tool") {
+                        itemStackPredicateArgument("tool") {
                             anyExecutor { sender, args ->
-                                sender.editContent(args, (args[1] as ItemStack).type.key, false, true)
+                                sender.editContent(args, args.getRaw(1), false, true)
                             }
                         }
                     }
 
                     literalArgument("remove-tool") {
-                        itemStackArgument("tool") {
+                        itemStackPredicateArgument("tool") {
                             replaceSuggestions(ArgumentSuggestions.stringCollection {
                                 val groupName = it.previousArgs[0] as String
                                 groupExists(groupName)?.tools ?: return@stringCollection emptyList()
                             })
                             anyExecutor { sender, args ->
-                                sender.editContent(args, (args[1] as ItemStack).type.key, false, false)
+                                sender.editContent(args, args.getRaw(1), false, false)
                             }
                         }
                     }
