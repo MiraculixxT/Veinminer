@@ -2,6 +2,7 @@ package de.miraculixx.veinminer
 
 import com.mojang.logging.LogUtils
 import de.miraculixx.veinminer.command.VeinminerCommand
+import de.miraculixx.veinminer.config.ConfigManager
 import de.miraculixx.veinminer.config.UpdateManager
 import de.miraculixx.veinminer.config.utils.cGreen
 import de.miraculixx.veinminer.config.utils.cRed
@@ -19,11 +20,12 @@ import net.minecraft.resources.ResourceKey
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.item.enchantment.Enchantment
 import net.silkmc.silk.core.event.EventPriority
+import net.silkmc.silk.core.event.Events
 import net.silkmc.silk.core.event.PlayerEvents
+import net.silkmc.silk.core.event.Server
 import net.silkmc.silk.core.task.mcCoroutineTask
 import net.silkmc.silk.core.text.sendText
 import java.net.URI
-import java.util.function.Function
 import kotlin.jvm.optionals.getOrNull
 
 
@@ -42,14 +44,26 @@ class Veinminer : ModInitializer {
 
     @Suppress("OPT_IN_USAGE")
     override fun onInitialize() {
+        // Initializing
         fabricLoader = FabricLoader.getInstance()
         INSTANCE = fabricLoader.getModContainer(MOD_ID).get()
         LOGGER.info("Veinminer Version: ${INSTANCE.metadata.version} (fabric)")
         val mcVersion = (FabricLoader.getInstance() as FabricLoaderImpl).gameProvider.rawGameVersion
 
+        // Check for Veinminer-Enchantment
         val enchantmentContainer = fabricLoader.getModContainer("veinminer-enchantment").getOrNull()
         enchantmentActive = enchantmentContainer != null
 
+        // Registration
+        VeinminerCommand
+        VeinMinerEvent
+
+        // Config hook
+        Events.Server.preStart.listen {
+            ConfigManager.reload(true)
+        }
+
+        // Networking
         ServerPlayConnectionEvents.DISCONNECT.register(FabricNetworking::onDisconnect)
 
         // Update notification
@@ -65,9 +79,6 @@ class Veinminer : ModInitializer {
                 )
             }
         }
-
-        VeinminerCommand
-        VeinMinerEvent
 
         // Updater
         mcCoroutineTask(false) {
