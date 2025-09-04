@@ -38,54 +38,75 @@ object ConfigManager {
         private set
 
     init {
-        reload()
+        reload(true)
     }
 
-    fun reload() {
-        settings = loadSettings()
-        loadBlocks()
-        loadGroups()
+    /**
+     * Reparses the raw config entries into NamespacedKeys.
+     * If `fromDisc` is true, it will also reload the raw data from the disc first
+     */
+    fun reload(fromDisc: Boolean) {
+        if (fromDisc) settings = loadSettings()
+        if (loadBlocks(fromDisc)) saveBlocks()
+        if (loadGroups(fromDisc)) saveGroups()
     }
 
+    /**
+     * Saves the current config to the disc and reparses the raw data into NamespacedKeys
+     */
     fun save() {
-        // Save to file
-        settingsFile.writeText(json.encodeToString(settings))
-        blocksFile.writeText(json.encodeToString(veinBlocksRaw))
-        groupsFile.writeText(json.encodeToString(groupsRaw))
-
         // Parse raw data into NamespacedKeys
-        loadBlocks()
-        loadGroups()
+        loadBlocks(false)
+        loadGroups(false)
+
+        // Save to file
+        saveSettings()
+        saveBlocks()
+        saveGroups()
     }
 
-    private fun loadBlocks() {
-        veinBlocksRaw = blocksFile.load<MutableSet<String>>(mutableSetOf(), json)
-        veinBlocks = ConfigSerializer.parseList(veinBlocksRaw, ConfigSerializer.MaterialType.BLOCK)
+    /**
+     * Loads the blocks from the config file and parses them into NamespacedKeys.
+     * @return true if any invalid entries were found and removed, false otherwise
+     */
+    private fun loadBlocks(fromDisc: Boolean): Boolean {
+        if (fromDisc) veinBlocksRaw = blocksFile.load<MutableSet<String>>(mutableSetOf(), json)
+        val parsed = ConfigSerializer.parseList(veinBlocksRaw, ConfigSerializer.MaterialType.BLOCK)
+
+        veinBlocks = parsed.parsed
+        return if (parsed.invalid.isNotEmpty()) {
+            veinBlocksRaw.removeAll(parsed.invalid)
+            true
+        } else false
     }
 
-    private fun loadGroups() {
-        // Load default group in case of missing file
-        val defaultSource = this::class.java.classLoader.getResourceAsStream("default_groups.json")?.readAllBytes()?.decodeToString() ?: "[]"
-        val defaultGroups = json.decodeFromString<MutableSet<BlockGroup<String>>>(defaultSource)
-
-        groupsRaw = groupsFile.load<MutableSet<BlockGroup<String>>>(defaultGroups, json)
-        groups = buildSet {
-            groupsRaw.forEach { groupRaw ->
-                add(
-                    BlockGroup(
-                        groupRaw.name,
-                        ConfigSerializer.parseList(groupRaw.blocks, ConfigSerializer.MaterialType.BLOCK).toMutableSet(),
-                        ConfigSerializer.parseList(groupRaw.tools, ConfigSerializer.MaterialType.ITEM).toMutableSet()
-                    )
-                )
-            }
+    private fun loadGroups(fromDisc: Boolean): Boolean {
+        if (fromDisc) {
+            val defaultSource = this::class.java.classLoader.getResourceAsStream("default_groups.json")?.readAllBytes()?.decodeToString() ?: "[]"
+            val defaultGroups = json.decodeFromString<MutableSet<BlockGroup<String>>>(defaultSource)
+            groupsRaw = groupsFile.load<MutableSet<BlockGroup<String>>>(defaultGroups, json)
         }
 
-        // DEBUG
-        if (!debug) return
-        println(" - Raw Groups:\n$groupsRaw")
-        println(" - Parsed Groups:\n$groups")
+        var save = false
+        groups = buildSet {
+            groupsRaw.forEach { groupRaw ->
+                val parsedBlocks = ConfigSerializer.parseList(groupRaw.blocks, ConfigSerializer.MaterialType.BLOCK)
+                val parsedTools = ConfigSerializer.parseList(groupRaw.tools, ConfigSerializer.MaterialType.ITEM)
+                add(BlockGroup(groupRaw.name, parsedBlocks.parsed.toMutableSet(), parsedTools.parsed.toMutableSet()))
+
+                if (parsedBlocks.invalid.isNotEmpty() || parsedTools.invalid.isNotEmpty()) {
+                    groupRaw.blocks.removeAll(parsedBlocks.invalid)
+                    groupRaw.tools.removeAll(parsedTools.invalid)
+                    save = true
+                }
+            }
+        }
+        return save
     }
 
     private fun loadSettings() = settingsFile.load<VeinminerSettings>(VeinminerSettings())
+
+    private fun saveBlocks() = blocksFile.writeText(json.encodeToString(veinBlocksRaw))
+    private fun saveGroups() = groupsFile.writeText(json.encodeToString(groupsRaw))
+    private fun saveSettings() = settingsFile.writeText(json.encodeToString(settings))
 }

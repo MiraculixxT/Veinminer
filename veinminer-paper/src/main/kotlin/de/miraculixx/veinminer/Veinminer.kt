@@ -1,5 +1,6 @@
 package de.miraculixx.veinminer
 
+import com.mojang.logging.LogUtils
 import de.miraculixx.kpaper.event.listen
 import de.miraculixx.kpaper.extensions.bukkit.addUrl
 import de.miraculixx.kpaper.extensions.bukkit.cmp
@@ -24,6 +25,7 @@ import org.bukkit.event.player.PlayerJoinEvent
 class Veinminer : KPaper() {
     companion object {
         lateinit var INSTANCE: Veinminer
+        val LOGGER = LogUtils.getLogger()
         val VEINMINE = NamespacedKey("veinminer-enchantment", "veinminer")
         var enchantmentActive = false
     }
@@ -53,6 +55,7 @@ class Veinminer : KPaper() {
         val enchantmentContainer = server.pluginManager.getPlugin("veinminer-enchantment")
         enchantmentActive = enchantmentContainer != null
 
+        // Update checker
         CoroutineScope(Dispatchers.Default).launch {
             listOf(UpdateManager.Module.VEINMINER, UpdateManager.Module.VEINMINER_ENCHANTMENT).forEach { module ->
                 try {

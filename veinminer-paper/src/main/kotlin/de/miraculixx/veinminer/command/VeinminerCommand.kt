@@ -17,7 +17,6 @@ import dev.jorel.commandapi.arguments.ArgumentSuggestions
 import dev.jorel.commandapi.executors.CommandArguments
 import dev.jorel.commandapi.kotlindsl.*
 import net.kyori.adventure.text.format.NamedTextColor
-import org.bukkit.block.data.BlockData
 import org.bukkit.command.CommandSender
 
 object VeinminerCommand {
@@ -35,7 +34,7 @@ object VeinminerCommand {
         literalArgument("reload") {
             withPermission(permissionReload)
             anyExecutor { sender, _ ->
-                ConfigManager.reload()
+                ConfigManager.reload(true)
                 sender.sendMessage(cmp("Veinminer config reloaded!", cGreen.color()))
             }
         }
@@ -43,31 +42,29 @@ object VeinminerCommand {
         literalArgument("blocks") {
             withPermission(permissionBlocks)
             literalArgument("add") {
-                blockStateArgument("block") {
+                blockPredicateArgument("block") {
                     anyExecutor { sender, args ->
-                        val block = args[0] as BlockData
-                        val name = block.material.key.asString()
-                        if (ConfigManager.veinBlocksRaw.add(block.material.key.asString())) {
-                            sender.sendMessage(cmp("Added $name to veinminer blocks", cGreen.color()))
+                        val block = args.getRaw(0) ?: return@anyExecutor sender.sendMessage(cmp("Block can not be null", cRed.color()))
+                        if (ConfigManager.veinBlocksRaw.add(block)) {
+                            sender.sendMessage(cmp("Added $block to veinminer blocks", cGreen.color()))
                             ConfigManager.save()
                         } else {
-                            sender.sendMessage(cmp("$name is already a veinminer block", cRed.color()))
+                            sender.sendMessage(cmp("$block is already a veinminer block", cRed.color()))
                         }
                     }
                 }
             }
 
             literalArgument("remove") {
-                blockStateArgument("block") {
-                    replaceSuggestions(ArgumentSuggestions.stringCollection { ConfigManager.veinBlocks.map { it.asString() } })
+                blockPredicateArgument("block") {
+                    replaceSuggestions(ArgumentSuggestions.stringCollection { ConfigManager.veinBlocksRaw })
                     anyExecutor { sender, args ->
-                        val block = args[0] as BlockData
-                        val material = block.material.key
-                        if (ConfigManager.veinBlocksRaw.remove(material.asString())) {
-                            sender.sendMessage(cmp("Removed ${material.asString()} from veinminer blocks", cGreen.color()))
+                        val block = args.getRaw(0) ?: return@anyExecutor sender.sendMessage(cmp("Block can not be null", cRed.color()))
+                        if (ConfigManager.veinBlocksRaw.remove(block)) {
+                            sender.sendMessage(cmp("Removed $block from veinminer blocks", cGreen.color()))
                             ConfigManager.save()
                         } else {
-                            sender.sendMessage(cmp("${material.asString()} is not a veinminer block", cRed.color()))
+                            sender.sendMessage(cmp("$block is not a veinminer block", cRed.color()))
                         }
                     }
                 }
