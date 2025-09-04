@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package de.miraculixx.veinminer
 
 import de.miraculixx.veinminer.Veinminer.Companion.VEINMINE

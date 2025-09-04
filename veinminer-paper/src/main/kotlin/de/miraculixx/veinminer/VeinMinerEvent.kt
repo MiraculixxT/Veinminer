@@ -50,6 +50,7 @@ object VeinMinerEvent {
         return FixedBlockGroup(blocks.toSet(), tools.toSet())
     }
 
+    @Suppress("unused")
     private val onBlockBreak = listen<BlockBreakEvent>(priority = EventPriority.HIGH) {
         if (it.isCancelled || !enabled) return@listen
 
@@ -200,7 +201,7 @@ object VeinMinerEvent {
 
     private fun VeinmineAction.triggerBreaking(block: Block) {
         // Delay if necessary & check again if the block is still valid
-        if(!VeinminerCompatibility.runsAsync) {
+        if (!VeinminerCompatibility.runsAsync) {
             if (settings.delay != 0) {
                 if (!targetTypes.contains(block.type.key)) return
             }
