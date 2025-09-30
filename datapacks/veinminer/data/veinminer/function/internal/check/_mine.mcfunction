@@ -9,7 +9,7 @@
 $scoreboard players reset @s veinminer.t.$(namespace).$(id)
 
 # Check if enchantment addon is installed and active
-execute if score init veinminer.enchantment matches 1 unless score @s veinminer.enchantment matches 1 run return fail
+execute if score init veinminer.enchantment matches 1 unless entity @s[nbt={SelectedItem:{components:{"minecraft:enchantments":{"veinminer-enchantment:veinminer": 1}}}}] run return fail
 scoreboard players set @s veinminer.enchantment 0
 
 # Check sneaking
