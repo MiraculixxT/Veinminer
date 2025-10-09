@@ -33,8 +33,8 @@ dependencies {
 //    println("FabricLoader: " + outlet.loaderVersion() + ", " + outlet.fapiVersion())
 //    modImplementation("net.fabricmc", "fabric-loader", outlet.loaderVersion())
 //    modImplementation("net.fabricmc.fabric-api", "fabric-api", outlet.fapiVersion())
-    modImplementation("net.fabricmc", "fabric-loader", "0.16.12")
-    modImplementation("net.fabricmc.fabric-api", "fabric-api", "0.130.0+1.21.8")
+    modImplementation("net.fabricmc", "fabric-loader", "0.17.2")
+    modImplementation("net.fabricmc.fabric-api", "fabric-api", "0.133.14+1.21.9")
 
     //
     // Kotlin libraries

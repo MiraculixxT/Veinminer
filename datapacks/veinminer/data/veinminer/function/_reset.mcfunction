@@ -37,6 +37,7 @@ function veinminer:tool_add {namespace: "minecraft", id: "iron_pickaxe", categor
 function veinminer:tool_add {namespace: "minecraft", id: "golden_pickaxe", category: "pickaxe"}
 function veinminer:tool_add {namespace: "minecraft", id: "diamond_pickaxe", category: "pickaxe"}
 function veinminer:tool_add {namespace: "minecraft", id: "netherite_pickaxe", category: "pickaxe"}
+function veinminer:tool_add {namespace: "minecraft", id: "copper_pickaxe", category: "pickaxe"}
 
 # Reset settings
 scoreboard players set sneak veinminer.settings 0

@@ -15,7 +15,7 @@ import de.miraculixx.veinminer.config.utils.cGreen
 import de.miraculixx.veinminer.config.utils.cRed
 import de.miraculixx.veinminer.networking.PaperNetworking
 import dev.jorel.commandapi.CommandAPI
-import dev.jorel.commandapi.CommandAPIBukkitConfig
+import dev.jorel.commandapi.CommandAPIPaperConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -41,7 +41,7 @@ class Veinminer : KPaper() {
         }
 
 
-        CommandAPI.onLoad(CommandAPIBukkitConfig(this).silentLogs(true).beLenientForMinorVersions(true))
+        CommandAPI.onLoad(CommandAPIPaperConfig(this).silentLogs(true).fallbackToLatestNMS(true))
         ConfigManager
         VeinminerCommand
     }

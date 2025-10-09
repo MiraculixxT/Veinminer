@@ -5,6 +5,7 @@ import io.papermc.paper.plugin.bootstrap.PluginBootstrap;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.Objects;
 
@@ -13,18 +14,20 @@ public class VeinminerBootstrapper implements PluginBootstrap {
 
     @Override
     public void bootstrap(@NotNull BootstrapContext context) {
-
-        context.getLifecycleManager().registerEventHandler(
-                LifecycleEvents.DATAPACK_DISCOVERY.newHandler(event -> {
-                    try {
-                        URI uri = Objects.requireNonNull(getClass().getResource("/veinminer_dp")).toURI();
-                        event.registrar().discoverPack(uri, "provided-c-tags");
-                    } catch (Exception e) {
-                        throw new RuntimeException("Failed to discover c: tags datapack", e);
-                    }
-                })
-        );
-
+        try {
+            context.getLifecycleManager().registerEventHandler(
+                    LifecycleEvents.DATAPACK_DISCOVERY.newHandler(event -> {
+                        try {
+                            URI uri = Objects.requireNonNull(getClass().getResource("/veinminer_dp")).toURI();
+                            event.registrar().discoverPack(uri, "provided-c-tags");
+                        } catch (Exception e) {
+                            throw new RuntimeException("Failed to discover c: tags datapack", e);
+                        }
+                    })
+            );
+        } catch (Exception e) {
+            throw new RuntimeException("Paper version does not support datapack loading!", e);
+        }
     }
 
 }

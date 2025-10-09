@@ -2,6 +2,8 @@
        "pack": {
            "pack_format": 48,
            "description": "§6§lVeinminer Enchantment §7| §61.21+\n§eBy Miraculixx",
-           "supported_formats": [42,99]
+           "supported_formats": [48,81],
+           "min_format": 48,
+           "max_format": 99
        }
    }

@@ -1,7 +1,7 @@
 {
   "pack": {
     "pack_format": 41,
-    "supported_formats": [41, 999],
+    "supported_formats": [41, 81],
     "description": "Veinminer data pack that adds a few of fabrics common tags for feature parity"
   }
 }

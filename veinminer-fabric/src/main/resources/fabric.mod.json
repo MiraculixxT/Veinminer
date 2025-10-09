@@ -9,6 +9,7 @@
   ],
   "license": "${license}",
   "icon": "assets/veinminer/icon.png",
+  "accessWidener": "veinminer.accesswidener",
   "contact": {
     "homepage": "https://modrinth.com/mod/${modrinth}",
     "issues": "https://dc.mutils.net"

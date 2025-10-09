@@ -34,8 +34,8 @@ dependencies {
     // Utility libraries (optional)
     val useBrigadier = properties["useBrigadier"] as String == "true"
     if (useBrigadier) {
-        implementation(library("dev.jorel:commandapi-bukkit-shade-mojang-mapped:10.1.2")!!)
-        implementation(library("dev.jorel:commandapi-bukkit-kotlin:10.1.2")!!)
+        implementation(library("dev.jorel:commandapi-paper-shade:11.0.0")!!)
+        implementation(library("dev.jorel:commandapi-kotlin-paper:11.0.0")!!)
     }
 
     library("de.miraculixx:kpaper:1.+")
