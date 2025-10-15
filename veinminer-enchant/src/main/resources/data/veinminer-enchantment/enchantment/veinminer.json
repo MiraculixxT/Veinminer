@@ -1,6 +1,6 @@
 {
   "description": {
-    "translate": "enchantment.veinmine",
+    "translate": "enchantment.veinminer",
     "fallback": "Veinmine"
   },
   "supported_items": "#minecraft:enchantable/mining",
