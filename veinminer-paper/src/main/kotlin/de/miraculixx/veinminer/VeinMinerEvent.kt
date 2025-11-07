@@ -206,6 +206,12 @@ object VeinMinerEvent {
                 if (!targetTypes.contains(block.type.key)) return
             }
         }
+
+        // Check if the tool would break, skip check if first block
+        println("IsNotEmpty: ${processedBlocks.isNotEmpty()} (${block.type.name})")
+        if (settings.preventToolBreaking && settings.decreaseDurability
+            && processedBlocks.isNotEmpty() && damageItem(tool.clone(), 1, player)) return
+
         // Check if other plugins cancel the event
         val veinminerEvent = VeinminerEvent(block, player, sourceLocation, block.getXP(tool))
         if (!veinminerEvent.callEvent()) return

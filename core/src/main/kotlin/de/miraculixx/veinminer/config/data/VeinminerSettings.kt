@@ -14,6 +14,7 @@ data class VeinminerSettings(
     var mergeItemDrops: Boolean = false,
     var autoUpdate: Boolean = false,
     var decreaseDurability: Boolean = true,
+    var preventToolBreaking: Boolean = false,
     val client: VeinminerClientSettings = VeinminerClientSettings()
 )
 

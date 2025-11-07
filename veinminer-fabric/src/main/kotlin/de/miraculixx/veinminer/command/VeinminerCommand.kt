@@ -88,6 +88,7 @@ object VeinminerCommand {
             applySetting("permissionRestricted", { ConfigManager.settings.permissionRestricted }) { ConfigManager.settings.permissionRestricted = it }
             applySetting("mergeItemDrops", { ConfigManager.settings.mergeItemDrops }) { ConfigManager.settings.mergeItemDrops = it }
             applySetting("decreaseDurability", { ConfigManager.settings.decreaseDurability }) { ConfigManager.settings.decreaseDurability = it }
+            applySetting("preventToolBreaking", { ConfigManager.settings.preventToolBreaking }) { ConfigManager.settings.preventToolBreaking = it }
             applySetting("debug", { debug }) { debug = it }
             literal("client") {
                 applySetting("allow", { ConfigManager.settings.client.allow }) { ConfigManager.settings.client.allow = it }
