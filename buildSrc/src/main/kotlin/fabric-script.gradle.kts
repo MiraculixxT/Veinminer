@@ -28,30 +28,30 @@ dependencies {
     //
     // Fabric configuration
     //
-    minecraft("com.mojang", "minecraft", gameVersion)
+    minecraft("com.mojang:minecraft:$gameVersion")
     mappings(loom.officialMojangMappings())
-//    println("FabricLoader: " + outlet.loaderVersion() + ", " + outlet.fapiVersion())
-//    modImplementation("net.fabricmc", "fabric-loader", outlet.loaderVersion())
-//    modImplementation("net.fabricmc.fabric-api", "fabric-api", outlet.fapiVersion())
-    modImplementation("net.fabricmc", "fabric-loader", "0.17.2")
-    modImplementation("net.fabricmc.fabric-api", "fabric-api", "0.133.14+1.21.9")
+//    println("FabricLoader: " + outlet.loaderVersion() + : + outlet.fapiVersion())
+//    modImplementation("net.fabricmc:fabric-loader", outlet.loaderVersion())
+//    modImplementation("net.fabricmc.fabric-api:fabric-api", outlet.fapiVersion())
+    modImplementation("net.fabricmc:fabric-loader:0.18.1")
+    modImplementation("net.fabricmc.fabric-api:fabric-api:0.138.3+1.21.10")
 
     //
     // Kotlin libraries
     //
     val flkVersion = outlet.latestModrinthModVersion("fabric-language-kotlin", outlet.mcVersions())
-    modImplementation("net.fabricmc", "fabric-language-kotlin", flkVersion)
-    implementation("org.jetbrains.kotlinx", "kotlinx-serialization-json", "1.+")
-    implementation("org.jetbrains.kotlinx", "kotlinx-coroutines-core", "1.+")
+    modImplementation("net.fabricmc:fabric-language-kotlin:$flkVersion")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.+")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.+")
 
     //
     // Silk configuration (optional)
     //
     val silkVersion = properties["silkVersion"] as String
-    modImplementation("net.silkmc", "silk-core", silkVersion)
-    modImplementation("net.silkmc", "silk-commands", silkVersion) // easy command registration
-    modImplementation("net.silkmc", "silk-nbt", silkVersion) // item simplification
-    modImplementation("net.silkmc", "silk-network", silkVersion)
+    modImplementation("net.silkmc:silk-core:$silkVersion") // core utilities
+    modImplementation("net.silkmc:silk-commands:$silkVersion") // easy command registration
+    modImplementation("net.silkmc:silk-nbt:$silkVersion") // item simplification
+    modImplementation("net.silkmc:silk-network:$silkVersion") // networking utilities
 
 
     //
@@ -59,7 +59,7 @@ dependencies {
     //
     val usePermissions = properties["usePermissions"] as String == "true"
     if (usePermissions) {
-        modImplementation(include("me.lucko", "fabric-permissions-api", "0.4.0"))
+        modImplementation(include("me.lucko:fabric-permissions-api:0.4.0")!!)
     }
 
     //
@@ -67,11 +67,11 @@ dependencies {
     //
     val useConfig = properties["useConfig"] as String == "true"
     if (useConfig) {
-        modApi("com.terraformersmc", "modmenu", "9.+")
-        modApi("me.shedaniel.cloth", "cloth-config-fabric", "13.+") {
+        modApi("com.terraformersmc:modmenu:9.+")
+        modApi("me.shedaniel.cloth:cloth-config-fabric:13.+") {
             exclude("net.fabricmc.fabric-api")
         }
-        transitiveInclude(implementation("org.yaml", "snakeyaml", "2.2"))
+        transitiveInclude(implementation("org.yaml:snakeyaml:2.2")!!)
     }
 
 
