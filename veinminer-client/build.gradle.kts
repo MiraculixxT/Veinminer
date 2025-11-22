@@ -9,6 +9,9 @@ dependencies {
     implementation(project(":veinminer-fabric", configuration = "namedElements"))
 }
 
+loom {
+    accessWidenerPath = file("src/main/resources/veinminerClient.accesswidener")
+}
 
 sourceSets {
     main {

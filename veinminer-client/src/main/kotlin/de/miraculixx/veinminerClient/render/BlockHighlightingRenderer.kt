@@ -2,21 +2,20 @@ package de.miraculixx.veinminerClient.render
 
 import com.mojang.blaze3d.pipeline.RenderPipeline
 import com.mojang.blaze3d.platform.DepthTestFunction
-import com.mojang.blaze3d.vertex.VertexConsumer
+import com.mojang.blaze3d.vertex.PoseStack
 import de.miraculixx.veinminer.config.data.BlockPosition
 import de.miraculixx.veinminerClient.KeyBindManager
 import de.miraculixx.veinminerClient.VeinminerClient
 import de.miraculixx.veinminerClient.network.NetworkManager
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext
 import net.minecraft.client.renderer.MultiBufferSource
 import net.minecraft.client.renderer.RenderPipelines
 import net.minecraft.client.renderer.RenderStateShard
 import net.minecraft.client.renderer.RenderType
 import net.minecraft.resources.ResourceLocation
+import net.minecraft.world.phys.Vec3
 import net.minecraft.world.phys.shapes.Shapes
 import net.minecraft.world.phys.shapes.VoxelShape
 import org.joml.Matrix4f
-import org.joml.Vector3f
 import java.util.*
 
 
@@ -66,26 +65,35 @@ object BlockHighlightingRenderer {
         )
 
 
-    fun render(context: WorldRenderContext) {
+    // OrderedSubmitNodeCollector
+    fun render(stack: PoseStack,
+               source: MultiBufferSource.BufferSource,
+               camPos: Vec3,
+               isTranslucentPass: Boolean) {
         val targetBlock = KeyBindManager.lastTarget
         if (highlightingShape.isEmpty || targetBlock == null) return
-
-        val client = VeinminerClient.client
-        val stack = context.matrixStack() ?: return // Interfering render mod?
-        val camPos = client.entityRenderDispatcher.camera.position
 
         stack.pushPose()
         stack.translate(targetBlock.x - camPos.x, targetBlock.y - camPos.y, targetBlock.z - camPos.z)
 
         val matrix = stack.last().pose()
-        val source = client.renderBuffers().bufferSource()
 
-        // Default drawing
-        renderBlocks(source, renderHighlighting, matrix, highlightingShape, 255)
+        if (!isTranslucentPass) {
+            // First Pass (Solid/Normal): Render standard lines that respect depth
+            renderBlocks(source, renderHighlighting, matrix, highlightingShape, 255)
+        } else {
+            // Second Pass (Translucent): Render "Always on Top" lines
+            // Render last so they overlay water/translucent blocks
+            if (NetworkManager.translucentBlockHighlight) {
+                renderBlocks(source, renderHighlightingTranslucent, matrix, highlightingShape, 20)
+            }
+        }
 
-        // Translucent drawing
-        if (NetworkManager.translucentBlockHighlight) {
-            renderBlocks(source, renderHighlightingTranslucent, matrix, highlightingShape, 20)
+        // Force draw the lines immediately
+        if (!isTranslucentPass) {
+            source.endBatch(renderHighlighting)
+        } else if (NetworkManager.translucentBlockHighlight) {
+            source.endBatch(renderHighlightingTranslucent)
         }
 
         stack.popPose()

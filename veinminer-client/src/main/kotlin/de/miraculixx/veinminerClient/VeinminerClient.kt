@@ -4,13 +4,11 @@ import com.mojang.logging.LogUtils
 import de.miraculixx.veinminer.config.UpdateManager
 import de.miraculixx.veinminerClient.constants.KEY_VEINMINE
 import de.miraculixx.veinminerClient.network.NetworkManager
-import de.miraculixx.veinminerClient.render.BlockHighlightingRenderer
 import de.miraculixx.veinminerClient.render.HUDRenderer
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.toasts.SystemToast
@@ -64,7 +62,6 @@ class VeinminerClient : ClientModInitializer {
             KeyBindManager.onDisconnect()
         }
 
-        WorldRenderEvents.AFTER_TRANSLUCENT.register(BlockHighlightingRenderer::render)
         ClientTickEvents.END_CLIENT_TICK.register {
             KeyBindManager.tick()
         }

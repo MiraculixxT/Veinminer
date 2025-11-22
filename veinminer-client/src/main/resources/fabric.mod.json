@@ -9,6 +9,7 @@
   ],
   "license": "${license}",
   "icon": "assets/veinminer-client/icon.png",
+  "accessWidener": "veinminerClient.accesswidener",
   "contact": {
     "homepage": "https://modrinth.com/mod/${modrinth}",
     "issues": "https://dc.mutils.net"
@@ -19,7 +20,12 @@
       "de.miraculixx.veinminerClient.VeinminerClient"
     ]
   },
-  "mixins": [],
+  "mixins": [
+    {
+      "config": "veinminer-client.mixins.json",
+      "environment": "client"
+    }
+  ],
   "custom": {
     "modmenu": {
       "parent": {
@@ -28,7 +34,7 @@
     }
   },
   "depends": {
-    "fabricloader": ">=0.16.1",
+    "fabricloader": ">=0.17.2",
     "minecraft": ">=1.21.1",
     "java": ">=21",
     "fabric-api": "*",
