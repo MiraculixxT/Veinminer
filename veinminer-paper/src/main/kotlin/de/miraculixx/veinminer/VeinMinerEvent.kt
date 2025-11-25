@@ -7,6 +7,7 @@ import de.miraculixx.veinminer.Veinminer.Companion.VEINMINE
 import de.miraculixx.veinminer.config.ConfigManager
 import de.miraculixx.veinminer.config.data.FixedBlockGroup
 import de.miraculixx.veinminer.config.data.VeinminerSettings
+import de.miraculixx.veinminer.config.utils.debug
 import de.miraculixx.veinminer.config.utils.permissionVeinmine
 import de.miraculixx.veinminer.networking.PaperNetworking
 import kotlinx.coroutines.CoroutineScope
@@ -113,6 +114,8 @@ object VeinMinerEvent {
     }
 
     fun allowedToVeinmine(player: Player, block: Block): VeinmineAction? {
+        if (debug) Veinminer.LOGGER.info("Checking if ${player.name} is allowed to veinmine ${block.type.key}")
+
         // Check if player is in creative
         if (player.gameMode == GameMode.CREATIVE) return null
 
@@ -124,6 +127,7 @@ object VeinMinerEvent {
         val blockGroup = material.groupedBlocks()
         val isGroupBlock = blockGroup.blocks.isNotEmpty()
         val isWhitelisted = isGroupBlock || ConfigManager.veinBlocks.contains(material)
+        if (debug) Veinminer.LOGGER.info(" - Group: $blockGroup, Global: ${ConfigManager.veinBlocks}, isWhitelisted: $isWhitelisted")
 
         if (!isWhitelisted && !hasClientBypass) return null
 
@@ -135,6 +139,7 @@ object VeinMinerEvent {
 
         // Check for correct tool (if block group tools are empty, it means all tools are allowed)
         val item = player.inventory.itemInMainHand
+        if (debug) Veinminer.LOGGER.info(" - Tool: ${item.type.key}")
         if (settings.needCorrectTool && (block.getDrops(item).isEmpty() || item.isEmpty)) return null
         if (isGroupBlock && !blockGroup.tools.isEmpty() && !blockGroup.tools.contains(item.type.key)) return null
 
@@ -143,6 +148,7 @@ object VeinMinerEvent {
 
         // Perform veinminer
         val blocks = if (isGroupBlock) blockGroup.blocks else setOf(material)
+        if (debug) Veinminer.LOGGER.info(" - Allowed with $blocks")
         return VeinmineAction(block, blocks, item, mutableSetOf(), player, block.location.toCenterLocation(), settings)
     }
 
