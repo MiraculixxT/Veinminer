@@ -5,7 +5,7 @@ import de.miraculixx.veinminer.config.data.VeinminerSettings
 import de.miraculixx.veinminer.config.extensions.load
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import kotlin.io.path.Path
 import kotlin.io.path.writeText
 
@@ -19,7 +19,7 @@ object ConfigManager {
         isLenient = true
         encodeDefaults = true
         serializersModule = SerializersModule {
-            contextual(ResourceLocation::class, ResourceLocationSerializer)
+            contextual(Identifier::class, ResourceLocationSerializer)
         }
     }
 
@@ -28,12 +28,12 @@ object ConfigManager {
 
     var veinBlocksRaw: MutableSet<String> = mutableSetOf()
         private set
-    var veinBlocks: Set<ResourceLocation> = emptySet()
+    var veinBlocks: Set<Identifier> = emptySet()
         private set
 
     var groupsRaw: MutableSet<BlockGroup<String>> = mutableSetOf()
         private set
-    var groups: Set<BlockGroup<ResourceLocation>> = emptySet()
+    var groups: Set<BlockGroup<Identifier>> = emptySet()
         private set
 
 

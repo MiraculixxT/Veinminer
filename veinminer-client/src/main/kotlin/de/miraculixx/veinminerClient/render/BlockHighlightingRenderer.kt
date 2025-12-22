@@ -9,9 +9,9 @@ import de.miraculixx.veinminerClient.VeinminerClient
 import de.miraculixx.veinminerClient.network.NetworkManager
 import net.minecraft.client.renderer.MultiBufferSource
 import net.minecraft.client.renderer.RenderPipelines
-import net.minecraft.client.renderer.RenderStateShard
-import net.minecraft.client.renderer.RenderType
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.client.renderer.rendertype.RenderSetup
+import net.minecraft.client.renderer.rendertype.RenderType
+import net.minecraft.resources.Identifier
 import net.minecraft.world.phys.Vec3
 import net.minecraft.world.phys.shapes.Shapes
 import net.minecraft.world.phys.shapes.VoxelShape
@@ -30,38 +30,45 @@ object BlockHighlightingRenderer {
     private val renderHighlighting
         get() = RenderType.create(
             "${VeinminerClient.MOD_ID}:highlight",
-            512,
-            RenderPipelines.register(
-                RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
-                    .withLocation(ResourceLocation.fromNamespaceAndPath("veinminer-client", "pipeline/highlight"))
-                    .withDepthWrite(false)
-                    .withCull(false)
-                    .withColorWrite(true, true)
-                    .build()
-            ),
-            RenderType.CompositeState.builder()
-                .setLineState(RenderStateShard.LineStateShard(OptionalDouble.of(1.0)))
-                .setLayeringState(RenderStateShard.LayeringStateShard.NO_LAYERING)
-                .createCompositeState(false)
+            RenderSetup.builder(
+                RenderPipelines.register(
+                    RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
+                        .withLocation(Identifier.fromNamespaceAndPath("veinminer-client", "pipeline/highlight"))
+                        .withDepthWrite(false)
+                        .withCull(false)
+                        .withColorWrite(true, true)
+                        .build()
+                )
+            ).bufferSize(1536)
+                .createRenderSetup()
         )
+
+
+//        RenderType.CompositeState.builder()
+//                .setLineState(RenderStateShard.LineStateShard(OptionalDouble.of(1.0)))
+//                .setLayeringState(RenderStateShard.LayeringStateShard.NO_LAYERING)
+//                .createCompositeState(false)
+
+//    RenderType.CompositeState.builder()
+//      .setLineState(RenderStateShard.LineStateShard(OptionalDouble.of(1.0)))
+//      .setLayeringState(RenderStateShard.LayeringStateShard.NO_LAYERING)
+//      .createCompositeState(false)
 
     private val renderHighlightingTranslucent
         get() = RenderType.create(
             "${VeinminerClient.MOD_ID}:highlight_translucent",
-            512,
-            RenderPipelines.register(
-                RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
-                    .withLocation(ResourceLocation.fromNamespaceAndPath("veinminer-client", "pipeline/highlight_translucent"))
-                    .withDepthWrite(true)
-                    .withCull(false)
-                    .withColorWrite(true, true)
-                    .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST) // Render always on top
-                    .build()
-            ),
-            RenderType.CompositeState.builder()
-                .setLineState(RenderStateShard.LineStateShard(OptionalDouble.of(1.0)))
-                .setLayeringState(RenderStateShard.LayeringStateShard.NO_LAYERING)
-                .createCompositeState(false)
+            RenderSetup.builder(
+                RenderPipelines.register(
+                    RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
+                        .withLocation(Identifier.fromNamespaceAndPath("veinminer-client", "pipeline/highlight_translucent"))
+                        .withDepthWrite(true)
+                        .withCull(false)
+                        .withColorWrite(true, true)
+                        .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST) // Render always on top
+                        .build()
+                )
+            ).bufferSize(1536)
+                .createRenderSetup()
         )
 
 
@@ -116,9 +123,11 @@ object BlockHighlightingRenderer {
             buffer.addVertex(matrix, x, y, z)
                 .setColor(255, 255, 255, transparency)
                 .setNormal(relX, relY, relZ)
+                .setLineWidth(1.0f)
             buffer.addVertex(matrix, dx, dy, dz)
                 .setColor(255, 255, 255, transparency)
                 .setNormal(relX, relY, relZ)
+                .setLineWidth(1.0f)
         }
         source.endLastBatch()
     }

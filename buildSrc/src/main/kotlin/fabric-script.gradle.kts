@@ -34,7 +34,7 @@ dependencies {
 //    modImplementation("net.fabricmc:fabric-loader", outlet.loaderVersion())
 //    modImplementation("net.fabricmc.fabric-api:fabric-api", outlet.fapiVersion())
     modImplementation("net.fabricmc:fabric-loader:0.18.1")
-    modImplementation("net.fabricmc.fabric-api:fabric-api:0.138.3+1.21.10")
+    modImplementation("net.fabricmc.fabric-api:fabric-api:0.139.5+1.21.11")
 
     //
     // Kotlin libraries
@@ -59,7 +59,7 @@ dependencies {
     //
     val usePermissions = properties["usePermissions"] as String == "true"
     if (usePermissions) {
-        modImplementation(include("me.lucko:fabric-permissions-api:0.4.0")!!)
+        modImplementation(include("me.lucko:fabric-permissions-api:0.6.1")!!)
     }
 
     //

@@ -14,7 +14,7 @@ import me.lucko.fabric.api.permissions.v0.Permissions
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents
 import net.minecraft.core.BlockPos
 import net.minecraft.core.registries.BuiltInRegistries
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.tags.BlockTags
 import net.minecraft.world.entity.Entity
@@ -38,9 +38,9 @@ object VeinMinerEvent {
     /**
      * @return a set of all blocks in the same group as this material. If the material is not in a group, it will return an empty set
      */
-    private fun ResourceLocation.groupedBlocks(): FixedBlockGroup<ResourceLocation> {
-        val blocks = mutableSetOf<ResourceLocation>()
-        val tools = mutableSetOf<ResourceLocation>()
+    private fun Identifier.groupedBlocks(): FixedBlockGroup<Identifier> {
+        val blocks = mutableSetOf<Identifier>()
+        val tools = mutableSetOf<Identifier>()
         ConfigManager.groups.forEach {
             if (it.blocks.contains(this)) {
                 blocks.addAll(it.blocks); tools.addAll(it.tools)
@@ -232,7 +232,7 @@ object VeinMinerEvent {
     data class VeinmineAction(
         val currentBlock: BlockState,
         val currentPosition: BlockPos,
-        val targetTypes: Set<ResourceLocation>,
+        val targetTypes: Set<Identifier>,
         val tool: ItemStack,
         val processedBlocks: MutableSet<BlockPos>,
         val player: Player,

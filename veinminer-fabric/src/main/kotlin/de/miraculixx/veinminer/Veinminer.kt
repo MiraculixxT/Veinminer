@@ -16,8 +16,8 @@ import net.minecraft.core.registries.Registries
 import net.minecraft.network.chat.ClickEvent
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.Style
+import net.minecraft.resources.Identifier
 import net.minecraft.resources.ResourceKey
-import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.item.enchantment.Enchantment
 import net.silkmc.silk.core.event.EventPriority
 import net.silkmc.silk.core.event.Events
@@ -35,7 +35,7 @@ class Veinminer : ModInitializer {
         val LOGGER = LogUtils.getLogger()
         lateinit var INSTANCE: ModContainer
         var active = true
-        val VEINMINE = ResourceKey.create<Enchantment>(Registries.ENCHANTMENT, ResourceLocation.fromNamespaceAndPath("veinminer-enchantment", "veinminer"))
+        val VEINMINE = ResourceKey.create<Enchantment>(Registries.ENCHANTMENT, Identifier.fromNamespaceAndPath("veinminer-enchantment", "veinminer"))
         var enchantmentActive = false
         var updateInfo: UpdateManager.VersionInfo? = null
     }
@@ -70,7 +70,8 @@ class Veinminer : ModInitializer {
         PlayerEvents.postLogin.listen(EventPriority.NORMAL, true) { event ->
             val player = event.player
             val info = updateInfo
-            if (info != null && (player.permissionLevel > 1 || player.server?.isDedicatedServer == false)) {
+            val permission = player.server.getProfilePermissions(player.nameAndId())
+            if (info != null && (permission.level().id() > 1 || !player.server.isDedicatedServer)) {
                 player.sendText(
                     Component.literal("${info.module.modID} is outdated! Click here to download the latest version")
                         .setStyle(Style.EMPTY.withClickEvent(ClickEvent.OpenUrl(URI("https://modrinth.com/project/${info.module.modID}"))))

@@ -3,7 +3,7 @@ package de.miraculixx.veinminer.config
 import de.miraculixx.veinminer.VeinMinerEvent.key
 import de.miraculixx.veinminer.Veinminer
 import net.minecraft.core.registries.Registries
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import net.minecraft.tags.TagKey
 import net.silkmc.silk.core.Silk.server
 
@@ -16,7 +16,7 @@ object ConfigSerializer {
      * @param type Used to specify if it's a block or item tag
      */
     fun parseList(rawList: Set<String>, type: MaterialType): ParsedData {
-        val parsed = mutableSetOf<ResourceLocation>()
+        val parsed = mutableSetOf<Identifier>()
         val invalid = mutableSetOf<String>()
 
         rawList.forEach { raw ->
@@ -37,12 +37,12 @@ object ConfigSerializer {
      * Turns any raw input either into a single material, all materials in a tag or empty list if invalid
      * @param type Used to specify if it's a block or item tag
      */
-    private fun parseEntry(raw: String, type: MaterialType): Set<ResourceLocation>? {
+    private fun parseEntry(raw: String, type: MaterialType): Set<Identifier>? {
         val isTag = raw.startsWith("#")
         val name = if (isTag) raw.substring(1) else raw // remove trailing #
 
         // Parse raw into a NamespacedKey
-        val key = ResourceLocation.tryParse(name) ?: return emptySet()
+        val key = Identifier.tryParse(name) ?: return emptySet()
 
         return if (isTag) { // '#minecraft:logs' tag parsed into all materials in that tag
             when (type) {
@@ -72,7 +72,7 @@ object ConfigSerializer {
     }
 
     data class ParsedData(
-        val parsed: Set<ResourceLocation>,
+        val parsed: Set<Identifier>,
         val invalid: Set<String>
     )
 }
