@@ -80,8 +80,6 @@ class Veinminer : KPaper() {
 
     override fun shutdown() {
         if (shouldDisable) return // Safeguard because disabling isn't actually instantaneous
-        // Soft fix for /reload command. Still not a good idea to use /reload
-        //CommandAPI.unregister("veinminer") // Errors in newer versions
         CommandAPI.onDisable()
 
         // Unregister packet channel
