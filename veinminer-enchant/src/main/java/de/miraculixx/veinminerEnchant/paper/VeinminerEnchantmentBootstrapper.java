@@ -10,11 +10,13 @@ import io.papermc.paper.registry.data.EnchantmentRegistryEntry;
 import io.papermc.paper.registry.event.RegistryEvents;
 import io.papermc.paper.registry.keys.tags.EnchantmentTagKeys;
 import io.papermc.paper.registry.keys.tags.ItemTypeTagKeys;
+import io.papermc.paper.registry.tag.TagKey;
 import io.papermc.paper.tag.PostFlattenTagRegistrar;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.EquipmentSlotGroup;
+import org.bukkit.inventory.ItemType;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Set;
@@ -29,15 +31,21 @@ public class VeinminerEnchantmentBootstrapper implements PluginBootstrap {
         // Add new enchantment
         final var VEINMINE = TypedKey.create(RegistryKey.ENCHANTMENT, Key.key("veinminer-enchantment:veinminer"));
 
+        // Config
+        final var config = VeinminerEnchantmentSettings.Companion.get();
+        TagKey<ItemType> itemTag;
+        if (config.getPickaxeOnly()) itemTag = ItemTypeTagKeys.PICKAXES;
+        else itemTag = ItemTypeTagKeys.ENCHANTABLE_MINING;
+
         manager.registerEventHandler(RegistryEvents.ENCHANTMENT.compose().newHandler(event -> event.registry().register(
             VEINMINE,
             builder -> builder.description(Component.translatable("enchantment.veinmine", "Veinmine"))
-                .supportedItems(event.getOrCreateTag(ItemTypeTagKeys.ENCHANTABLE_MINING))
+                .supportedItems(event.getOrCreateTag(itemTag))
                 .weight(1)
                 .maxLevel(1)
-                .minimumCost(EnchantmentRegistryEntry.EnchantmentCost.of(15, 0))
-                .maximumCost(EnchantmentRegistryEntry.EnchantmentCost.of(65, 0))
-                .anvilCost(7)
+                .minimumCost(EnchantmentRegistryEntry.EnchantmentCost.of(config.getMinCost(), 0))
+                .maximumCost(EnchantmentRegistryEntry.EnchantmentCost.of(config.getMaxCost(), 0))
+                .anvilCost(config.getAnvilCost())
                 .activeSlots(EquipmentSlotGroup.MAINHAND)
         )));
 

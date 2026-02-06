@@ -28,7 +28,7 @@ public class VeinminerEnchantmentLoader implements PluginLoader {
         classpathBuilder.addLibrary(resolver);
     }
 
-    public PluginLibraries load() {
+    private PluginLibraries load() {
         try (var in = getClass().getResourceAsStream("/paper-libraries.json")) {
             return new Gson().fromJson(new InputStreamReader(in, StandardCharsets.UTF_8), PluginLibraries.class);
         } catch (IOException e) {

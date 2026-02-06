@@ -13,6 +13,7 @@ plugins {
 val paperVersion by properties
 
 dependencies {
+    implementation(include(project(":core", configuration = "namedElements"))!!)
     paperweight.paperDevBundle("$paperVersion-SNAPSHOT")
 }
 
