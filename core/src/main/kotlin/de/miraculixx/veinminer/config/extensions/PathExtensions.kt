@@ -2,7 +2,6 @@ package de.miraculixx.veinminer.config.extensions
 
 import de.miraculixx.veinminer.config.utils.debug
 import de.miraculixx.veinminer.config.utils.json
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import net.kyori.adventure.text.format.TextColor
 import java.nio.file.Path
