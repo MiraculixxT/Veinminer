@@ -14,6 +14,7 @@ import net.minecraft.commands.CommandSourceStack
 import net.minecraft.commands.arguments.blocks.BlockInput
 import net.minecraft.commands.arguments.blocks.BlockPredicateArgument
 import net.minecraft.commands.arguments.item.ItemPredicateArgument
+import net.minecraft.server.permissions.PermissionLevel
 import net.silkmc.silk.commands.LiteralCommandBuilder
 import net.silkmc.silk.commands.command
 import net.silkmc.silk.core.text.literal
@@ -29,7 +30,7 @@ object VeinminerCommand {
         }
 
         literal("reload") {
-            requires { Permissions.require(permissionReload, 3).test(it) }
+            requires { Permissions.require(permissionReload, PermissionLevel.ADMINS).test(it) }
             runsAsync {
                 ConfigManager.reload(true)
                 source.msg("Veinminer config reloaded!", cGreen)
@@ -37,7 +38,7 @@ object VeinminerCommand {
         }
 
         literal("blocks") { // 1
-            requires { Permissions.require(permissionBlocks, 3).test(it) }
+            requires { Permissions.require(permissionBlocks, PermissionLevel.ADMINS).test(it) }
             literal("add") { // 2
                 argument<BlockPredicateArgument.Result>("block", BlockPredicateArgument::blockPredicate) { block -> // 3
                     runsAsync {
@@ -69,7 +70,7 @@ object VeinminerCommand {
         }
 
         literal("toggle") {
-            requires { Permissions.require(permissionToggle, 3).test(it) }
+            requires { Permissions.require(permissionToggle, PermissionLevel.ADMINS).test(it) }
             runsAsync {
                 if (Veinminer.active) source.msg("Veinminer functions disabled", cRed)
                 else source.msg("Veinminer functions enabled", cGreen)
@@ -78,7 +79,7 @@ object VeinminerCommand {
         }
 
         literal("settings") {
-            requires { Permissions.require(permissionSettings, 3).test(it) }
+            requires { Permissions.require(permissionSettings, PermissionLevel.ADMINS).test(it) }
             applySetting("mustSneak", { ConfigManager.settings.mustSneak }) { ConfigManager.settings.mustSneak = it }
             applySetting("cooldown", { ConfigManager.settings.cooldown }) { ConfigManager.settings.cooldown = it }
             applySetting("delay", { ConfigManager.settings.delay }) { ConfigManager.settings.delay = it }
@@ -98,8 +99,8 @@ object VeinminerCommand {
 
 
         literal("groups") { // 1
-            requires { Permissions.require(permissionGroups, 3).test(it) }
-            fun groupExists(group: String) = ConfigManager.groupsRaw.firstOrNull { it.name.lowercase() == group.lowercase() }
+            requires { Permissions.require(permissionGroups, PermissionLevel.ADMINS).test(it) }
+            fun groupExists(group: String) = ConfigManager.groupsRaw.firstOrNull { it.name.equals(group, ignoreCase = true) }
             fun BlockInput.id() = state.block.descriptionId
             fun CommandSourceStack.createGroup(name: String, content: MutableSet<String>) {
                 if (groupExists(name) != null) {

@@ -1,5 +1,3 @@
-import dex.plugins.outlet.v2.util.ReleaseType
-
 plugins {
     `kotlin-script`
     `fabric-script`

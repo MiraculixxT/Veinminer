@@ -1,5 +1,5 @@
 plugins {
-    `kotlin-dsl`
+    `kotlin-dsl` version "6.5.2"
     kotlin("plugin.serialization") version "2.3.0"
 }
 
@@ -20,7 +20,7 @@ dependencies {
     runtimeOnly(kotlin("gradle-plugin", kotlinVersion))
     compileOnly(pluginDep("org.jetbrains.kotlin.plugin.serialization", kotlinVersion))
     runtimeOnly(pluginDep("org.jetbrains.kotlin.plugin.serialization", kotlinVersion))
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.+")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.+")
 
     // Fabric implementation
     implementation("net.fabricmc:fabric-loom:1.14-SNAPSHOT")
@@ -31,7 +31,7 @@ dependencies {
     implementation(pluginDep("de.eldoria.plugin-yml.paper", "0.7.+"))
 
     // Project configuration
-    implementation(pluginDep("com.gradleup.shadow", "9.0.0-beta9"))
+    implementation(pluginDep("com.gradleup.shadow", "9.0.0"))
     implementation(pluginDep("com.modrinth.minotaur", "2.+"))
     implementation(pluginDep("io.github.dexman545.outlet", "1.6.+"))
 }

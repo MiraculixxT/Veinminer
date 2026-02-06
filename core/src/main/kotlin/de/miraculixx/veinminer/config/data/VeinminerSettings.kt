@@ -23,10 +23,3 @@ data class VeinminerClientSettings(
     var translucentBlockHighlight: Boolean = true,
     var allBlocks: Boolean = false,
 )
-
-@Serializable
-data class VeinminerEnchantmentSettings(
-    var min_cost : Int = 15,
-    var max_cost : Int = 65,
-    var anvil_cost : Int = 7
-)
