@@ -240,7 +240,7 @@ object VeinMinerEvent {
     private fun Block.getXP(tool: ItemStack): Int {
         val craftBlock = this as CraftBlock
         val nmsState = craftBlock.nms
-        val nmsItem = (tool as CraftItemStack).handle
+        val nmsItem = (tool as CraftItemStack).handle ?: net.minecraft.world.item.ItemStack.EMPTY
         return nmsState.block.getExpDrop(nmsState, craftBlock.handle.minecraftWorld, craftBlock.position, nmsItem, true)
     }
 
