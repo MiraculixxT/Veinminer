@@ -5,7 +5,6 @@ import net.minecrell.pluginyml.paper.PaperPluginDescription
 plugins {
     `kotlin-script`
     `fabric-script`
-    `publish-script`
     id("io.papermc.paperweight.userdev")
     id("de.eldoria.plugin-yml.paper")
 }
@@ -13,30 +12,8 @@ plugins {
 val paperVersion by properties
 
 dependencies {
-    implementation(include(project(":core", configuration = "namedElements"))!!)
+    implementation(include(project(":core"))!!)
     paperweight.paperDevBundle("$paperVersion-SNAPSHOT")
-}
-
-modrinth {
-    uploadFile.set(tasks.remapJar)
-    outlet.mcVersionRange = properties["fabricSupportedVersions"] as String
-    outlet.allowedReleaseTypes = setOf(ReleaseType.RELEASE)
-    gameVersions.addAll(outlet.mcVersions())
-    loaders.addAll(buildList {
-        add("fabric")
-        add("quilt")
-    })
-    dependencies {
-        // The scope can be `required`, `optional`, `incompatible`, or `embedded`
-        // The type can either be `project` or `version`
-        required.project("fabric-api")
-        required.project("fabric-language-kotlin")
-
-        val useConfig = properties["useConfig"] as String == "true"
-        if (useConfig) {
-            optional.project("cloth-config")
-        }
-    }
 }
 
 paper {

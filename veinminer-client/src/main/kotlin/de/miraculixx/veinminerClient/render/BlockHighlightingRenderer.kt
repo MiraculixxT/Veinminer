@@ -1,7 +1,9 @@
 package de.miraculixx.veinminerClient.render
 
+import com.mojang.blaze3d.pipeline.ColorTargetState
+import com.mojang.blaze3d.pipeline.DepthStencilState
 import com.mojang.blaze3d.pipeline.RenderPipeline
-import com.mojang.blaze3d.platform.DepthTestFunction
+import com.mojang.blaze3d.platform.CompareOp
 import com.mojang.blaze3d.vertex.PoseStack
 import de.miraculixx.veinminer.config.data.BlockPosition
 import de.miraculixx.veinminerClient.KeyBindManager
@@ -34,9 +36,9 @@ object BlockHighlightingRenderer {
                 RenderPipelines.register(
                     RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
                         .withLocation(Identifier.fromNamespaceAndPath("veinminer-client", "pipeline/highlight"))
-                        .withDepthWrite(false)
+                        .withDepthStencilState(DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, false))
                         .withCull(false)
-                        .withColorWrite(true, true)
+                        .withColorTargetState(ColorTargetState.DEFAULT)
                         .build()
                 )
             ).bufferSize(1536)
@@ -61,10 +63,10 @@ object BlockHighlightingRenderer {
                 RenderPipelines.register(
                     RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
                         .withLocation(Identifier.fromNamespaceAndPath("veinminer-client", "pipeline/highlight_translucent"))
-                        .withDepthWrite(true)
+                        // Ignore the depth buffer so the outline renders through blocks
+                        .withDepthStencilState(DepthStencilState(CompareOp.ALWAYS_PASS, false))
                         .withCull(false)
-                        .withColorWrite(true, true)
-                        .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST) // Render always on top
+                        .withColorTargetState(ColorTargetState.DEFAULT)
                         .build()
                 )
             ).bufferSize(1536)

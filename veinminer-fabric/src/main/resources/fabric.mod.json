@@ -23,8 +23,8 @@
   "mixins": [],
   "depends": {
     "fabricloader": ">=0.16.3",
-    "minecraft": ">=1.21.10",
-    "java": ">=21",
+    "minecraft": ">=26.1",
+    "java": ">=25",
     "fabric-api": "*",
     "fabric-language-kotlin": "*",
 
