@@ -1,5 +1,3 @@
-import dex.plugins.outlet.v2.util.ReleaseType
-
 plugins {
     `kotlin-script`
     `fabric-script`
@@ -7,7 +5,7 @@ plugins {
 }
 
 dependencies {
-    implementation(include(project(":core", configuration = "namedElements"))!!)
+    implementation(include(project(":core"))!!)
 }
 
 loom {

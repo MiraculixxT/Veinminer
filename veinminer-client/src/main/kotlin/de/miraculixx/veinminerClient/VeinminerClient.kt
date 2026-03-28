@@ -8,11 +8,13 @@ import de.miraculixx.veinminerClient.render.HUDRenderer
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElement
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.toasts.SystemToast
 import net.minecraft.network.chat.Component
+import net.minecraft.resources.Identifier
 import net.silkmc.silk.core.task.mcCoroutineTask
 import org.slf4j.Logger
 import kotlin.jvm.optionals.getOrNull
@@ -66,8 +68,8 @@ class VeinminerClient : ClientModInitializer {
             KeyBindManager.tick()
         }
 
-        // Use for backwards compatibility
-        HudRenderCallback.EVENT.register(HUDRenderer::render)
+        // Crosshair info
+        HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(MOD_ID, "target-info"), HUDRenderer)
 
         // Updater
         mcCoroutineTask(false) {

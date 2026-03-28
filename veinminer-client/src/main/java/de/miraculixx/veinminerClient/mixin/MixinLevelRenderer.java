@@ -4,7 +4,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import de.miraculixx.veinminerClient.render.BlockHighlightingRenderer;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.state.LevelRenderState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -19,14 +18,14 @@ public class MixinLevelRenderer {
     )
     private void renderVeinminerHighlights(MultiBufferSource.BufferSource bufferSource,
                                            PoseStack poseStack,
-                                           boolean isTransparentPass,
-                                           LevelRenderState levelRenderState,
+                                           boolean onlyTranslucentBlocks,
+                                           net.minecraft.client.renderer.state.level.LevelRenderState levelRenderState,
                                            CallbackInfo ci) {
         BlockHighlightingRenderer.INSTANCE.render(
                 poseStack,
                 bufferSource,
                 levelRenderState.cameraRenderState.pos,
-                isTransparentPass
+                onlyTranslucentBlocks
         );
     }
 
