@@ -8,6 +8,7 @@ import de.miraculixx.veinminer.Veinminer.Companion.enchantmentActive
 import de.miraculixx.veinminer.config.ConfigManager
 import de.miraculixx.veinminer.config.data.FixedBlockGroup
 import de.miraculixx.veinminer.config.data.VeinminerSettings
+import de.miraculixx.veinminer.config.data.VeinminerSettingsOverride
 import de.miraculixx.veinminer.config.utils.permissionVeinmine
 import de.miraculixx.veinminer.networking.FabricNetworking
 import me.lucko.fabric.api.permissions.v0.Permissions
@@ -41,12 +42,16 @@ object VeinMinerEvent {
     private fun Identifier.groupedBlocks(): FixedBlockGroup<Identifier> {
         val blocks = mutableSetOf<Identifier>()
         val tools = mutableSetOf<Identifier>()
+        var override: VeinminerSettingsOverride? = null
+
         ConfigManager.groups.forEach {
             if (it.blocks.contains(this)) {
-                blocks.addAll(it.blocks); tools.addAll(it.tools)
+                if (override == null) override = it.override // Capture first override. This behavior may need improvement
+                blocks.addAll(it.blocks)
+                tools.addAll(it.tools)
             }
         }
-        return FixedBlockGroup(blocks.toSet(), tools.toSet())
+        return FixedBlockGroup(blocks.toSet(), tools.toSet(), override)
     }
 
     fun BlockState.key() = block.key()
@@ -57,18 +62,14 @@ object VeinMinerEvent {
         val veinmineInfo = allowedToVeinmine(world, player, pos, state)
         if (veinmineInfo == null) return@register true
 
-        val settings = ConfigManager.settings
         val uuid = player.uuid
 
-        // Check if player has the client mod and pressed the key
-        if (FabricNetworking.registeredPlayers.contains(uuid) && !FabricNetworking.readyToVeinmine.contains(uuid)) return@register true
-
-        mcCoroutineTask(delay = settings.delay.ticks) {
+        mcCoroutineTask(delay = veinmineInfo.settings.delay.ticks) {
             veinmineInfo.veinmine(true)
         }
 
         // Check for cooldown config
-        val cooldownTime = settings.cooldown
+        val cooldownTime = veinmineInfo.settings.cooldown
         if (cooldownTime > 0) {
             cooldown.add(player.uuid)
 
@@ -102,16 +103,26 @@ object VeinMinerEvent {
         // Check if player is in creative
         if (player.gameMode() == GameType.CREATIVE) return null
 
-        val material = state.key()
-        if (state.isAir) return null
+        val uuid = player.uuid
+        val hasClient = FabricNetworking.registeredPlayers.contains(uuid)
+        val material = state.key().takeIf { !state.isAir } ?: return null
 
-        val settings = ConfigManager.settings
-        if (settings.permissionRestricted && !Permissions.check(player, permissionVeinmine)) return null
-        val hasClientBypass = settings.client.allBlocks && FabricNetworking.registeredPlayers.containsKey(player.uuid)
+        // Check if player has the client mod and pressed the key
+        if (hasClient && !FabricNetworking.readyToVeinmine.contains(uuid)) return null
+
+        // Gater correct settings layer
         val blockGroup = material.groupedBlocks()
         val isGroupBlock = blockGroup.blocks.isNotEmpty()
+        val settings = ConfigManager.settings.applyOverrides(hasClient, blockGroup.override)
+
+        if (settings.permissionRestricted && !Permissions.check(player, permissionVeinmine)) return null
+        val hasClientBypass = settings.client.allBlocks && FabricNetworking.registeredPlayers.containsKey(player.uuid)
         val isWhitelisted = isGroupBlock || ConfigManager.veinBlocks.contains(material)
 
+        // Check if client is required
+        if (settings.client.require && !hasClient) return null
+
+        // Check if the block is allowed at all
         if (!isWhitelisted && !hasClientBypass) return null
 
         // Check for sneak config

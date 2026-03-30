@@ -7,6 +7,7 @@ import de.miraculixx.veinminer.Veinminer
 import de.miraculixx.veinminer.Veinminer.Companion.LOGGER
 import de.miraculixx.veinminer.config.ConfigManager
 import de.miraculixx.veinminer.config.data.BlockGroup
+import de.miraculixx.veinminer.config.data.VeinminerSettingsOverride
 import de.miraculixx.veinminer.config.utils.*
 import me.lucko.fabric.api.permissions.v0.Permissions
 import net.minecraft.DetectedVersion
@@ -14,9 +15,11 @@ import net.minecraft.commands.CommandSourceStack
 import net.minecraft.commands.arguments.blocks.BlockInput
 import net.minecraft.commands.arguments.blocks.BlockPredicateArgument
 import net.minecraft.commands.arguments.item.ItemPredicateArgument
+import net.minecraft.server.permissions.PermissionLevel
 import net.silkmc.silk.commands.LiteralCommandBuilder
 import net.silkmc.silk.commands.command
 import net.silkmc.silk.core.text.literal
+import kotlin.reflect.typeOf
 
 object VeinminerCommand {
 
@@ -29,7 +32,7 @@ object VeinminerCommand {
         }
 
         literal("reload") {
-            requires { Permissions.require(permissionReload, 3).test(it) }
+            requires { Permissions.require(permissionReload, PermissionLevel.GAMEMASTERS).test(it) }
             runsAsync {
                 ConfigManager.reload(true)
                 source.msg("Veinminer config reloaded!", cGreen)
@@ -37,7 +40,7 @@ object VeinminerCommand {
         }
 
         literal("blocks") { // 1
-            requires { Permissions.require(permissionBlocks, 3).test(it) }
+            requires { Permissions.require(permissionBlocks, PermissionLevel.GAMEMASTERS).test(it) }
             literal("add") { // 2
                 argument<BlockPredicateArgument.Result>("block", BlockPredicateArgument::blockPredicate) { block -> // 3
                     runsAsync {
@@ -69,7 +72,7 @@ object VeinminerCommand {
         }
 
         literal("toggle") {
-            requires { Permissions.require(permissionToggle, 3).test(it) }
+            requires { Permissions.require(permissionToggle, PermissionLevel.GAMEMASTERS).test(it) }
             runsAsync {
                 if (Veinminer.active) source.msg("Veinminer functions disabled", cRed)
                 else source.msg("Veinminer functions enabled", cGreen)
@@ -78,28 +81,32 @@ object VeinminerCommand {
         }
 
         literal("settings") {
-            requires { Permissions.require(permissionSettings, 3).test(it) }
-            applySetting("mustSneak", { ConfigManager.settings.mustSneak }) { ConfigManager.settings.mustSneak = it }
-            applySetting("cooldown", { ConfigManager.settings.cooldown }) { ConfigManager.settings.cooldown = it }
-            applySetting("delay", { ConfigManager.settings.delay }) { ConfigManager.settings.delay = it }
-            applySetting("maxChain", { ConfigManager.settings.maxChain }) { ConfigManager.settings.maxChain = it }
-            applySetting("needCorrectTool", { ConfigManager.settings.needCorrectTool }) { ConfigManager.settings.needCorrectTool = it }
-            applySetting("searchRadius", { ConfigManager.settings.searchRadius }) { ConfigManager.settings.searchRadius = it }
-            applySetting("permissionRestricted", { ConfigManager.settings.permissionRestricted }) { ConfigManager.settings.permissionRestricted = it }
-            applySetting("mergeItemDrops", { ConfigManager.settings.mergeItemDrops }) { ConfigManager.settings.mergeItemDrops = it }
-            applySetting("decreaseDurability", { ConfigManager.settings.decreaseDurability }) { ConfigManager.settings.decreaseDurability = it }
-            applySetting("debug", { debug }) { debug = it }
+            requires { Permissions.require(permissionSettings, PermissionLevel.GAMEMASTERS).test(it) }
+            applySetting("mustSneak", { ConfigManager.settings.mustSneak }) { x,_ -> ConfigManager.settings.mustSneak = x }
+            applySetting("cooldown", { ConfigManager.settings.cooldown }) { x,_ -> ConfigManager.settings.cooldown = x }
+            applySetting("delay", { ConfigManager.settings.delay }) { x,_ -> ConfigManager.settings.delay = x }
+            applySetting("maxChain", { ConfigManager.settings.maxChain }) { x,_ -> ConfigManager.settings.maxChain = x }
+            applySetting("needCorrectTool", { ConfigManager.settings.needCorrectTool }) { x,_ -> ConfigManager.settings.needCorrectTool = x }
+            applySetting("searchRadius", { ConfigManager.settings.searchRadius }) { x,_ -> ConfigManager.settings.searchRadius = x }
+            applySetting("permissionRestricted", { ConfigManager.settings.permissionRestricted }) { x,_ -> ConfigManager.settings.permissionRestricted = x }
+            applySetting("mergeItemDrops", { ConfigManager.settings.mergeItemDrops }) { x,_ -> ConfigManager.settings.mergeItemDrops = x }
+            applySetting("decreaseDurability", { ConfigManager.settings.decreaseDurability }) { x,_ -> ConfigManager.settings.decreaseDurability = x }
+            applySetting("debug", { debug }) { x,_ -> debug = x }
             literal("client") {
-                applySetting("allow", { ConfigManager.settings.client.allow }) { ConfigManager.settings.client.allow = it }
-                applySetting("translucentBlockHighlight", { ConfigManager.settings.client.translucentBlockHighlight }) { ConfigManager.settings.client.translucentBlockHighlight = it }
-                applySetting("allowAllBlocks", { ConfigManager.settings.client.allBlocks }) { ConfigManager.settings.client.allBlocks = it }
+                applySetting("allow", { ConfigManager.settings.client.allow }) { x,_ -> ConfigManager.settings.client.allow = x }
+                applySetting("require", { ConfigManager.settings.client.require }) { x,_ -> ConfigManager.settings.client.require = x }
+                applySetting("translucentBlockHighlight", { ConfigManager.settings.client.translucentBlockHighlight }) { x,_ -> ConfigManager.settings.client.translucentBlockHighlight = x }
+                applySetting("allowAllBlocks", { ConfigManager.settings.client.allBlocks }) { x,_ -> ConfigManager.settings.client.allBlocks = x }
+                literal("override") {
+                    overrides { _ -> ConfigManager.settings.client.overrides }
+                }
             }
         }
 
 
         literal("groups") { // 1
-            requires { Permissions.require(permissionGroups, 3).test(it) }
-            fun groupExists(group: String) = ConfigManager.groupsRaw.firstOrNull { it.name.lowercase() == group.lowercase() }
+            requires { Permissions.require(permissionGroups, PermissionLevel.GAMEMASTERS).test(it) }
+            fun groupExists(group: String) = ConfigManager.groupsRaw.firstOrNull { it.name.equals(group, ignoreCase = true) }
             fun BlockInput.id() = state.block.descriptionId
             fun CommandSourceStack.createGroup(name: String, content: MutableSet<String>) {
                 if (groupExists(name) != null) {
@@ -231,31 +238,38 @@ object VeinminerCommand {
                             }
                         }
                     }
+
+                    literal("override") { // 4
+                        overrides { name -> groupExists(name)?.override }
+                    }
                 }
             }
         }
     }
 
-    private fun <T> LiteralCommandBuilder<CommandSourceStack>.applySetting(name: String, currentConsumer: () -> T, consumer: (T) -> Unit) {
+    private inline fun <reified T> LiteralCommandBuilder<CommandSourceStack>.applySetting(name: String,
+                                                                                          noinline currentConsumer: (CommandContext<CommandSourceStack>) -> T,
+                                                                                          noinline consumer: (T, CommandContext<CommandSourceStack>) -> Unit) {
         literal(name) {
             runsAsync {
-                source.msg("$name is currently set to ${currentConsumer.invoke()}", cBase)
+                val currentString = currentConsumer.invoke(this)?.toString() ?: "unset"
+                source.msg("$name is currently set to $currentString", cBase)
             }
 
-            when (currentConsumer.invoke()) {
-                is Boolean -> argument<Boolean>("new") { new ->
+            when (typeOf<T>()) {
+                typeOf<Boolean>(), typeOf<Boolean?>() -> argument<Boolean>("$name-new") { new ->
                     runsAsync {
                         val value = new() as T
-                        consumer.invoke(value)
+                        consumer.invoke(value, this)
                         ConfigManager.save()
                         source.msg("$name set to $value", cGreen)
                     }
                 }
 
-                is Int -> argument<Int>("new") { new ->
+                typeOf<Int>(), typeOf<Int?>() -> argument<Int>("$name-new") { new ->
                     runsAsync {
                         val value = new() as T
-                        consumer.invoke(value)
+                        consumer.invoke(value, this)
                         ConfigManager.save()
                         source.msg("$name set to $value", cGreen)
                     }
@@ -280,4 +294,41 @@ object VeinminerCommand {
     }
 
     private fun CommandContext<CommandSourceStack>.getRaw(idx: Int) = input.split(' ').getOrNull(idx)
+
+    private fun LiteralCommandBuilder<CommandSourceStack>.overrides(
+        resolver: (String) -> VeinminerSettingsOverride?
+    ) {
+        fun CommandContext<CommandSourceStack>.resolve(): VeinminerSettingsOverride {
+            val name = runCatching { getArgument("group", String::class.java) }.getOrNull() ?: "client"
+            val override = resolver.invoke(name)
+            return if (override == null) {
+                LOGGER.warn("Tried to access override for '${name}', but it does not exist. Changes are not saved!")
+                VeinminerSettingsOverride()
+            } else override
+        }
+
+        literal("unset") {
+            argument<String>("key") { key ->
+                suggestListSuspending { ctx -> ctx.resolve().nonNullKeys() }
+                runsAsync {
+                    val key = key()
+                    if (resolve().unset(key)) {
+                        source.msg("Unset override '$key'", cGreen)
+                        ConfigManager.save()
+                    } else {
+                        source.msg("Override '$key' is not set", cRed)
+                    }
+                }
+            }
+        }
+
+        applySetting("cooldown", { args -> args.resolve().cooldown }) { x, args -> args.resolve().cooldown = x }
+        applySetting("mustSneak", { args -> args.resolve().mustSneak }) { x, args -> args.resolve().mustSneak = x }
+        applySetting("delay", { args -> args.resolve().delay }) { x, args -> args.resolve().delay = x }
+        applySetting("maxChain", { args -> args.resolve().maxChain }) { x, args -> args.resolve().maxChain = x }
+        applySetting("needCorrectTool", { args -> args.resolve().needCorrectTool }) { x, args -> args.resolve().needCorrectTool = x }
+        applySetting("searchRadius", { args -> args.resolve().searchRadius }) { x, args -> args.resolve().searchRadius = x }
+        applySetting("permissionRestricted", { args -> args.resolve().permissionRestricted }) { x, args -> args.resolve().permissionRestricted = x }
+        applySetting("decreaseDurability", { args -> args.resolve().decreaseDurability }) { x, args -> args.resolve().decreaseDurability = x }
+    }
 }
