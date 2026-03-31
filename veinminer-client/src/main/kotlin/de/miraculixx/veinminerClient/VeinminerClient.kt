@@ -2,7 +2,8 @@ package de.miraculixx.veinminerClient
 
 import com.mojang.logging.LogUtils
 import de.miraculixx.veinminer.config.UpdateManager
-import de.miraculixx.veinminerClient.constants.KEY_VEINMINE
+import de.miraculixx.veinminerClient.constants.KEY_VEINMINE_HOLD
+import de.miraculixx.veinminerClient.constants.KEY_VEINMINE_TOGGLE
 import de.miraculixx.veinminerClient.network.NetworkManager
 import de.miraculixx.veinminerClient.render.HUDRenderer
 import net.fabricmc.api.ClientModInitializer
@@ -37,7 +38,8 @@ class VeinminerClient : ClientModInitializer {
         if (veinminerContainer != null) veinminerAvailable = true
 
         // Register keybinds
-        KEY_VEINMINE
+        KEY_VEINMINE_TOGGLE
+        KEY_VEINMINE_HOLD
 
         ClientPlayConnectionEvents.JOIN.register { packet, sender, mc ->
             isSinglePlayer = mc.singleplayerServer != null
@@ -62,7 +64,7 @@ class VeinminerClient : ClientModInitializer {
             KeyBindManager.onDisconnect()
         }
 
-        ClientTickEvents.END_CLIENT_TICK.register {
+        ClientTickEvents.END_CLIENT_TICK.register { client ->
             KeyBindManager.tick()
         }
 

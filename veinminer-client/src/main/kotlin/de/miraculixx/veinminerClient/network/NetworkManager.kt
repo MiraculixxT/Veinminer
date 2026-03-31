@@ -8,6 +8,7 @@ import de.miraculixx.veinminer.config.network.KeyPress
 import de.miraculixx.veinminer.config.network.RequestBlockVein
 import de.miraculixx.veinminer.config.network.ServerConfiguration
 import de.miraculixx.veinminer.config.pattern.Pattern
+import de.miraculixx.veinminer.config.utils.debug
 import de.miraculixx.veinminer.networking.FabricNetworking
 import de.miraculixx.veinminerClient.VeinminerClient
 import de.miraculixx.veinminerClient.constants.*
@@ -58,7 +59,7 @@ object NetworkManager {
     }
 
     fun onHighlight(packet: BlockHighlighting) {
-        VeinminerClient.LOGGER.info("Received block highlight: $packet")
+        if (debug) VeinminerClient.LOGGER.info("Received block highlight: $packet")
         if (!packet.allowed) {
             HUDRenderer.updateTarget("forbidden")
             BlockHighlightingRenderer.setShape(emptyList())
@@ -78,7 +79,7 @@ object NetworkManager {
     // Sending packets to server
     //
     fun sendBlockRequest(position: BlockPos, direction: Direction) {
-        VeinminerClient.LOGGER.info("Sending veinmine request: ($position, $direction)")
+        if (debug) VeinminerClient.LOGGER.info("Sending veinmine request: ($position, $direction)")
         val instance = Minecraft.getInstance()
         instance.connection ?: return notConnected()
 
@@ -102,7 +103,7 @@ object NetworkManager {
     }
 
     fun sendKeyPress(pressed: Boolean) {
-        VeinminerClient.LOGGER.info("Sending key press: $pressed")
+        VeinminerClient.LOGGER.info("Sending veinmine state: $pressed")
         val instance = Minecraft.getInstance()
         instance.connection ?: return notConnected()
 
