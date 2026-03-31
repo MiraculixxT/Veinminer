@@ -3,7 +3,6 @@ package de.miraculixx.veinminer.config
 import de.miraculixx.veinminer.config.data.BlockGroup
 import de.miraculixx.veinminer.config.data.VeinminerSettings
 import de.miraculixx.veinminer.config.extensions.load
-import de.miraculixx.veinminer.config.utils.debug
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import org.bukkit.NamespacedKey
@@ -92,7 +91,7 @@ object ConfigManager {
             groupsRaw.forEach { groupRaw ->
                 val parsedBlocks = ConfigSerializer.parseList(groupRaw.blocks, ConfigSerializer.MaterialType.BLOCK)
                 val parsedTools = ConfigSerializer.parseList(groupRaw.tools, ConfigSerializer.MaterialType.ITEM)
-                add(BlockGroup(groupRaw.name, parsedBlocks.parsed.toMutableSet(), parsedTools.parsed.toMutableSet()))
+                add(BlockGroup(groupRaw.name, parsedBlocks.parsed.toMutableSet(), parsedTools.parsed.toMutableSet(), groupRaw.override))
 
                 if (parsedBlocks.invalid.isNotEmpty() || parsedTools.invalid.isNotEmpty()) {
                     groupRaw.blocks.removeAll(parsedBlocks.invalid)

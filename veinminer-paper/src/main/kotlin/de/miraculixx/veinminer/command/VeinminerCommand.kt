@@ -3,13 +3,16 @@
 package de.miraculixx.veinminer.command
 
 import de.miraculixx.kpaper.chat.KColors
+import de.miraculixx.kpaper.extensions.bukkit.addHover
 import de.miraculixx.kpaper.extensions.bukkit.addUrl
 import de.miraculixx.kpaper.extensions.bukkit.cmp
 import de.miraculixx.kpaper.extensions.bukkit.plus
 import de.miraculixx.veinminer.INSTANCE
 import de.miraculixx.veinminer.VeinMinerEvent
+import de.miraculixx.veinminer.Veinminer
 import de.miraculixx.veinminer.config.ConfigManager
 import de.miraculixx.veinminer.config.data.BlockGroup
+import de.miraculixx.veinminer.config.data.VeinminerSettingsOverride
 import de.miraculixx.veinminer.config.extensions.color
 import de.miraculixx.veinminer.config.utils.*
 import dev.jorel.commandapi.arguments.Argument
@@ -18,6 +21,8 @@ import dev.jorel.commandapi.executors.CommandArguments
 import dev.jorel.commandapi.kotlindsl.*
 import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.command.CommandSender
+import java.util.concurrent.CompletableFuture
+import kotlin.reflect.typeOf
 
 object VeinminerCommand {
     private val command = commandTree("veinminer") {
@@ -86,26 +91,28 @@ object VeinminerCommand {
 
         literalArgument("settings") {
             withPermission(permissionSettings)
-            applySetting("mustSneak", { ConfigManager.settings.mustSneak }) { ConfigManager.settings.mustSneak = it }
-            applySetting("cooldown", { ConfigManager.settings.cooldown }) { ConfigManager.settings.cooldown = it }
-            applySetting("delay", { ConfigManager.settings.delay }) { ConfigManager.settings.delay = it }
-            applySetting("maxChain", { ConfigManager.settings.maxChain }) { ConfigManager.settings.maxChain = it }
-            applySetting("needCorrectTool", { ConfigManager.settings.needCorrectTool }) { ConfigManager.settings.needCorrectTool = it }
-            applySetting("searchRadius", { ConfigManager.settings.searchRadius }) { ConfigManager.settings.searchRadius = it }
-            applySetting("permissionRestricted", { ConfigManager.settings.permissionRestricted }) { ConfigManager.settings.permissionRestricted = it }
-            applySetting("mergeItemDrops", { ConfigManager.settings.mergeItemDrops }) { ConfigManager.settings.mergeItemDrops = it }
-            applySetting("decreaseDurability", { ConfigManager.settings.decreaseDurability }) { ConfigManager.settings.decreaseDurability = it }
-            applySetting("debug", { debug }) { debug = it }
+            applySetting("mustSneak", { ConfigManager.settings.mustSneak }) { x,_ -> ConfigManager.settings.mustSneak = x }
+            applySetting("cooldown", { ConfigManager.settings.cooldown }) { x,_ -> ConfigManager.settings.cooldown = x }
+            applySetting("delay", { ConfigManager.settings.delay }) { x,_ -> ConfigManager.settings.delay = x }
+            applySetting("maxChain", { ConfigManager.settings.maxChain }) { x,_ -> ConfigManager.settings.maxChain = x }
+            applySetting("needCorrectTool", { ConfigManager.settings.needCorrectTool }) { x,_ -> ConfigManager.settings.needCorrectTool = x }
+            applySetting("searchRadius", { ConfigManager.settings.searchRadius }) { x,_ -> ConfigManager.settings.searchRadius = x }
+            applySetting("permissionRestricted", { ConfigManager.settings.permissionRestricted }) { x,_ -> ConfigManager.settings.permissionRestricted = x }
+            applySetting("mergeItemDrops", { ConfigManager.settings.mergeItemDrops }) { x,_ -> ConfigManager.settings.mergeItemDrops = x }
+            applySetting("decreaseDurability", { ConfigManager.settings.decreaseDurability }) { x,_ -> ConfigManager.settings.decreaseDurability = x }
+            applySetting("debug", { debug }) { x,_ -> debug = x }
             literalArgument("client") {
-                applySetting("allow", { ConfigManager.settings.client.allow }) { ConfigManager.settings.client.allow = it }
-                applySetting("translucentBlockHighlight", { ConfigManager.settings.client.translucentBlockHighlight }) { ConfigManager.settings.client.translucentBlockHighlight = it }
-                applySetting("allowAllBlocks", { ConfigManager.settings.client.allBlocks }) { ConfigManager.settings.client.allBlocks = it }
+                applySetting("allow", { ConfigManager.settings.client.allow }) { x,_ -> ConfigManager.settings.client.allow = x }
+                applySetting("require", { ConfigManager.settings.client.require }) { x,_ -> ConfigManager.settings.client.require = x }
+                applySetting("translucentBlockHighlight", { ConfigManager.settings.client.translucentBlockHighlight }) { x,_ -> ConfigManager.settings.client.translucentBlockHighlight = x }
+                applySetting("allowAllBlocks", { ConfigManager.settings.client.allBlocks }) { x,_ -> ConfigManager.settings.client.allBlocks = x }
+                overrides { _ -> ConfigManager.settings.client.overrides }
             }
         }
 
         literalArgument("groups") {
             withPermission(permissionGroups)
-            fun groupExists(group: String) = ConfigManager.groupsRaw.firstOrNull { it.name.lowercase() == group.lowercase() }
+            fun groupExists(group: String) = ConfigManager.groupsRaw.firstOrNull { it.name.equals(group, ignoreCase = true) }
             fun CommandSender.createGroup(name: String, content: MutableSet<String>) {
                 if (groupExists(name) != null) {
                     sendMessage(cmp("Group '$name' already exists", cRed.color()))
@@ -134,10 +141,11 @@ object VeinminerCommand {
 
             literalArgument("list") {
                 fun BlockGroup<String>.print(sender: CommandSender) {
-                    sender.sendMessage(cmp("Group ") + cmp(name, NamedTextColor.WHITE))
+                    sender.sendMessage(cmp("\nGroup ") + cmp(name, NamedTextColor.WHITE))
                     sender.sendMessage(cmp(" -> Blocks: [") + cmp(blocks.joinToString(", "), NamedTextColor.WHITE) + cmp("]"))
                     if (tools.isEmpty()) sender.sendMessage(cmp(" -> Tools: [All]", NamedTextColor.WHITE))
                     else sender.sendMessage(cmp(" -> Tools: [") + cmp(tools.joinToString(", "), NamedTextColor.WHITE) + cmp("]"))
+                    sender.sendMessage(cmp(" -> Overrides: ") + cmp("<hover>").addHover(cmp(override.toString(), NamedTextColor.WHITE)))
                 }
 
                 stringArgument("group") {
@@ -226,35 +234,84 @@ object VeinminerCommand {
                             }
                         }
                     }
+
+                    overrides { name -> groupExists(name)?.override }
                 }
             }
         }
     }
 
-    private fun <T> Argument<*>.applySetting(name: String, currentConsumer: () -> T, consumer: (T) -> Unit) {
+    private inline fun <reified T> Argument<*>.applySetting(name: String,
+                                                            noinline currentConsumer: (CommandArguments) -> T,
+                                                            noinline consumer: (T, CommandArguments) -> Unit) {
         literalArgument(name) {
-            anyExecutor { sender, _ ->
-                sender.sendMessage(cmp(name, KColors.BLUE) + cmp(" is currently set to ") + cmp(currentConsumer.invoke().toString(), KColors.BLUE))
+            anyExecutor { sender, args ->
+                val currentString = currentConsumer.invoke(args)?.toString() ?: "unset"
+                sender.sendMessage(cmp(name, KColors.BLUE) + cmp(" is currently set to ") + cmp(currentString, KColors.BLUE))
             }
 
-            when (currentConsumer.invoke()) {
-                is Boolean -> booleanArgument("new") {
+            when (typeOf<T>()) {
+                typeOf<Boolean>(), typeOf<Boolean?>() -> booleanArgument("$name-new") {
                     applyValue(name, consumer)
                 }
 
-                is Int -> integerArgument("new", min = 0) {
+                typeOf<Int>(), typeOf<Int?>() -> integerArgument("$name-new", min = 0) {
                     applyValue(name, consumer)
                 }
             }
         }
     }
 
-    private fun <T> Argument<*>.applyValue(name: String, consumer: (T) -> Unit) {
+    private fun <T> Argument<*>.applyValue(name: String, consumer: (T, CommandArguments) -> Unit) {
         anyExecutor { sender, args ->
-            val new = args[0] as T
-            consumer.invoke(new)
+            val new = args.get("$name-new") as T
+            consumer.invoke(new, args)
             sender.sendMessage(cmp("$name set to $new", cGreen.color()))
             ConfigManager.save()
+        }
+    }
+
+    private fun Argument<*>.overrides(
+        resolver: (String) -> VeinminerSettingsOverride?
+    ) {
+        literalArgument("override") {
+            fun CommandArguments.resolve(): VeinminerSettingsOverride {
+                val name = getOrDefaultRaw("group", "client")
+                val override = resolver.invoke(name)
+                return if (override == null) {
+                    Veinminer.LOGGER.warn("Tried to access override for '${name}', but it does not exist. Changes are not saved!")
+                    VeinminerSettingsOverride()
+                } else override
+            }
+
+            
+            literalArgument("unset") {
+                stringArgument("key") {
+                    replaceSuggestions(ArgumentSuggestions.stringCollectionAsync {
+                        CompletableFuture.supplyAsync {
+                            return@supplyAsync it.previousArgs.resolve().nonNullKeys()
+                        }
+                    })
+                    anyExecutor { sender, args ->
+                        val key = args[0] as String
+                        if (args.resolve().unset(key)) {
+                            sender.sendMessage(cmp("Unset override '$key'", cGreen.color()))
+                            ConfigManager.save()
+                        } else {
+                            sender.sendMessage(cmp("Override '$key' is not set", cRed.color()))
+                        }
+                    }
+                }
+            }
+
+            applySetting("cooldown", { args ->  args.resolve().cooldown }) { x, args ->  args.resolve().cooldown = x }
+            applySetting("mustSneak", { args ->  args.resolve().mustSneak }) { x, args ->  args.resolve().mustSneak = x }
+            applySetting("delay", { args ->  args.resolve().delay }) { x, args ->  args.resolve().delay = x }
+            applySetting("maxChain", { args ->  args.resolve().maxChain }) { x, args ->  args.resolve().maxChain = x }
+            applySetting("needCorrectTool", { args ->  args.resolve().needCorrectTool }) { x, args ->  args.resolve().needCorrectTool = x }
+            applySetting("searchRadius", { args ->  args.resolve().searchRadius }) { x, args ->  args.resolve().searchRadius = x }
+            applySetting("permissionRestricted", { args ->  args.resolve().permissionRestricted }) { x, args ->  args.resolve().permissionRestricted = x }
+            applySetting("decreaseDurability", { args ->  args.resolve().decreaseDurability }) { x, args ->  args.resolve().decreaseDurability = x }
         }
     }
 }

@@ -12,6 +12,7 @@ repositories {
 dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.+")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.+")
+    implementation(kotlin("reflect"))
 }
 
 java {

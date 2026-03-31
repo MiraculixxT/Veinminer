@@ -7,6 +7,7 @@ import de.miraculixx.veinminer.Veinminer.Companion.VEINMINE
 import de.miraculixx.veinminer.config.ConfigManager
 import de.miraculixx.veinminer.config.data.FixedBlockGroup
 import de.miraculixx.veinminer.config.data.VeinminerSettings
+import de.miraculixx.veinminer.config.data.VeinminerSettingsOverride
 import de.miraculixx.veinminer.config.utils.debug
 import de.miraculixx.veinminer.config.utils.permissionVeinmine
 import de.miraculixx.veinminer.networking.PaperNetworking
@@ -40,15 +41,19 @@ object VeinMinerEvent {
     private fun NamespacedKey.groupedBlocks(): FixedBlockGroup<NamespacedKey> {
         val blocks = mutableSetOf<NamespacedKey>()
         val tools = mutableSetOf<NamespacedKey>()
+        var override: VeinminerSettingsOverride? = null
 
         ConfigManager.groups.forEach {
             if (it.blocks.contains(this)) {
+                if (override == null) { // Capture first override. This behavior may need improvement
+                    override = it.override
+                }
                 blocks.addAll(it.blocks)
                 tools.addAll(it.tools)
             }
         }
 
-        return FixedBlockGroup(blocks.toSet(), tools.toSet())
+        return FixedBlockGroup(blocks.toSet(), tools.toSet(), override)
     }
 
     @Suppress("unused")
@@ -56,12 +61,12 @@ object VeinMinerEvent {
         if (it.isCancelled || !enabled) return@listen
 
         val player = it.player
-        val settings = ConfigManager.settings
         val block = it.block
 
         // Check if the event is triggered by Veinminer
         if (it is VeinminerEvent) {
             if (!it.isDropItems) return@listen
+            var settings = ConfigManager.settings
 
             // Invoke VeinminerDropEvent - allows other plugins to modify the items and exp dropped by Veinminer itself
             // Veinminer will drop the items that are still in the list and the remaining amount of experience
@@ -83,17 +88,13 @@ object VeinMinerEvent {
             return@listen
         }
 
-        // Check if player has the client mod and pressed the key
-        val uuid = player.uniqueId
-        if (PaperNetworking.registeredPlayers.contains(uuid) && !PaperNetworking.readyToVeinmine.contains(uuid)) return@listen
-
         val veinmineInfo = allowedToVeinmine(player, block) ?: return@listen
         it.isCancelled = true // Cancel the original event
 
         veinmineInfo.veinmine(true)
 
         // Check for cooldown config
-        val cooldownTime = settings.cooldown
+        val cooldownTime = veinmineInfo.settings.cooldown
         if (cooldownTime > 0) {
             cooldown.add(player.uniqueId)
 
@@ -119,16 +120,27 @@ object VeinMinerEvent {
         // Check if player is in creative
         if (player.gameMode == GameMode.CREATIVE) return null
 
+        val uuid = player.uniqueId
+        val hasClient = PaperNetworking.registeredPlayers.contains(uuid)
         val material = block.type.key
 
-        val settings = ConfigManager.settings
-        if (settings.permissionRestricted && !player.hasPermission(permissionVeinmine)) return null
-        val hasClientBypass = settings.client.allBlocks && PaperNetworking.registeredPlayers.containsKey(player.uniqueId)
+        // Check if player has the client mod and pressed the key
+        if (hasClient && !PaperNetworking.readyToVeinmine.contains(uuid)) return null
+
+        // Gather correct settings layer
         val blockGroup = material.groupedBlocks()
         val isGroupBlock = blockGroup.blocks.isNotEmpty()
+        val settings = ConfigManager.settings.applyOverrides(hasClient, blockGroup.override)
+
+        if (settings.permissionRestricted && !player.hasPermission(permissionVeinmine)) return null
+        val hasClientBypass = settings.client.allBlocks && PaperNetworking.registeredPlayers.containsKey(player.uniqueId)
         val isWhitelisted = isGroupBlock || ConfigManager.veinBlocks.contains(material)
         if (debug) Veinminer.LOGGER.info(" - Group: $blockGroup, Global: ${ConfigManager.veinBlocks}, isWhitelisted: $isWhitelisted")
 
+        // Check if client is required
+        if (settings.client.require && !hasClient) return null
+
+        // Check if the block is allowed at all
         if (!isWhitelisted && !hasClientBypass) return null
 
         // Check for sneak config

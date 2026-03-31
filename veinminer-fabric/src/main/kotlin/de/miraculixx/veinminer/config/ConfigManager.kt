@@ -88,7 +88,7 @@ object ConfigManager {
             groupsRaw.forEach { groupRaw ->
                 val parsedBlocks = ConfigSerializer.parseList(groupRaw.blocks, ConfigSerializer.MaterialType.BLOCK)
                 val parsedTools = ConfigSerializer.parseList(groupRaw.tools, ConfigSerializer.MaterialType.ITEM)
-                add(BlockGroup(groupRaw.name, parsedBlocks.parsed.toMutableSet(), parsedTools.parsed.toMutableSet()))
+                add(BlockGroup(groupRaw.name, parsedBlocks.parsed.toMutableSet(), parsedTools.parsed.toMutableSet(), groupRaw.override))
 
                 if (parsedBlocks.invalid.isNotEmpty() || parsedTools.invalid.isNotEmpty()) {
                     groupRaw.blocks.removeAll(parsedBlocks.invalid)

@@ -6,13 +6,15 @@ import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper
 import net.minecraft.client.KeyMapping
 import net.minecraft.resources.Identifier
 
-val KEY_VEINMINE = registerKeyBinding("veinmine", InputConstants.KEY_Y)
+val KEY_CATEGORY = KeyMapping.Category.register(Identifier.fromNamespaceAndPath(MOD_ID, "keybinds"))
+val KEY_VEINMINE_HOLD = registerKeyBinding("hold", InputConstants.KEY_Y)
+val KEY_VEINMINE_TOGGLE = registerKeyBinding("toggle", InputConstants.UNKNOWN.value)
 
 private fun registerKeyBinding(id: String, key: Int) = KeyMappingHelper.registerKeyMapping(
     KeyMapping(
         "key.$MOD_ID.$id",
         InputConstants.Type.KEYSYM,
         key,
-        KeyMapping.Category.register(Identifier.fromNamespaceAndPath(MOD_ID, "category"))
+        KEY_CATEGORY
     )
 )

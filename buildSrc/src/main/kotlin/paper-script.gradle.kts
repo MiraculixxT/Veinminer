@@ -27,6 +27,7 @@ dependencies {
 
     // Kotlin libraries
     library(kotlin("stdlib"))
+    library(kotlin("reflect"))
     library("org.jetbrains.kotlinx:kotlinx-serialization-json:1.+")
     library("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.+")
     library("org.jetbrains.kotlinx:kotlinx-serialization-cbor:1.+")
