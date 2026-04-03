@@ -251,9 +251,10 @@ object VeinMinerEvent {
     // 1.20.5+ only
     private fun Block.getXP(tool: ItemStack): Int {
         val craftBlock = this as CraftBlock
-        val nmsState = craftBlock.nms
+        val position = craftBlock.position
+        val nmsState = craftBlock.level.getBlockState(position)
         val nmsItem = (tool as CraftItemStack).handle ?: net.minecraft.world.item.ItemStack.EMPTY
-        return nmsState.block.getExpDrop(nmsState, craftBlock.handle.minecraftWorld, craftBlock.position, nmsItem, true)
+        return nmsState.block.getExpDrop(nmsState, craftBlock.craftWorld.handle, position, nmsItem, true)
     }
 
     /**
