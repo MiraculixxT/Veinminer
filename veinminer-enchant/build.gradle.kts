@@ -1,20 +1,25 @@
-import dex.plugins.outlet.v2.util.ReleaseType
 import net.minecrell.pluginyml.bukkit.BukkitPluginDescription
 import net.minecrell.pluginyml.paper.PaperPluginDescription
 
 plugins {
     `kotlin-script`
     `fabric-script`
-    id("io.papermc.paperweight.userdev")
+//    id("io.papermc.paperweight.userdev")
     id("de.eldoria.plugin-yml.paper")
 }
 
 val paperVersion by properties
 
+repositories {
+    maven("https://repo.papermc.io/repository/maven-public/")
+}
+
 dependencies {
     implementation(include(project(":core"))!!)
-    paperweight.paperDevBundle("$paperVersion-SNAPSHOT")
+    //paperweight.paperDevBundle("$paperVersion")
+    compileOnly("io.papermc.paper:paper-api:$paperVersion")
 }
+
 
 paper {
     main = "$group.veinminerEnchant.paper.VeinminerEnchantment"
