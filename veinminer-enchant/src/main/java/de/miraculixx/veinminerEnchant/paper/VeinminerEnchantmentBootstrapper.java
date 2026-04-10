@@ -32,9 +32,9 @@ public class VeinminerEnchantmentBootstrapper implements PluginBootstrap {
         final var VEINMINE = TypedKey.create(RegistryKey.ENCHANTMENT, Key.key("veinminer-enchantment:veinminer"));
 
         // Config
-        final var config = VeinminerEnchantmentSettings.Companion.get();
+        final var config = VeinminerEnchantmentSettings.get();
         TagKey<ItemType> itemTag;
-        if (config.getPickaxeOnly()) itemTag = ItemTypeTagKeys.PICKAXES;
+        if (config.pickaxeOnly()) itemTag = ItemTypeTagKeys.PICKAXES;
         else itemTag = ItemTypeTagKeys.ENCHANTABLE_MINING;
 
         manager.registerEventHandler(RegistryEvents.ENCHANTMENT.compose().newHandler(event -> event.registry().register(
@@ -43,9 +43,9 @@ public class VeinminerEnchantmentBootstrapper implements PluginBootstrap {
                 .supportedItems(event.getOrCreateTag(itemTag))
                 .weight(1)
                 .maxLevel(1)
-                .minimumCost(EnchantmentRegistryEntry.EnchantmentCost.of(config.getMinCost(), 0))
-                .maximumCost(EnchantmentRegistryEntry.EnchantmentCost.of(config.getMaxCost(), 0))
-                .anvilCost(config.getAnvilCost())
+                .minimumCost(EnchantmentRegistryEntry.EnchantmentCost.of(config.minCost(), 0))
+                .maximumCost(EnchantmentRegistryEntry.EnchantmentCost.of(config.maxCost(), 0))
+                .anvilCost(config.anvilCost())
                 .activeSlots(EquipmentSlotGroup.MAINHAND)
         )));
 
