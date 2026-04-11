@@ -1,3 +1,5 @@
+@file:Suppress("UnstableApiUsage")
+
 package de.miraculixx.veinminer
 
 import de.miraculixx.kpaper.event.listen
@@ -11,6 +13,7 @@ import de.miraculixx.veinminer.config.data.VeinminerSettingsOverride
 import de.miraculixx.veinminer.config.utils.debug
 import de.miraculixx.veinminer.config.utils.permissionVeinmine
 import de.miraculixx.veinminer.networking.PaperNetworking
+import io.papermc.paper.datacomponent.DataComponentTypes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -154,6 +157,8 @@ object VeinMinerEvent {
         if (debug) Veinminer.LOGGER.info(" - Tool: ${item.type.key}")
         if (settings.needCorrectTool && (block.getDrops(item).isEmpty() || item.isEmpty)) return null
         if (isGroupBlock && !blockGroup.tools.isEmpty() && !blockGroup.tools.contains(item.type.key)) return null
+        // Fall back to vanilla break on last durability point so one normal block can still be mined.
+        if (settings.decreaseDurability && item.remainingDurability() <= 1) return null
 
         // Check for enchantment if active
         if (Veinminer.enchantmentActive && !item.enchantments.any { it.key.key == VEINMINE }) return null
@@ -178,10 +183,14 @@ object VeinMinerEvent {
             if (!targetTypes.contains(block.type.key) || processedBlocks.contains(block)) continue
             val size = processedBlocks.size
             if (size >= settings.maxChain) continue
-            if (settings.needCorrectTool && tool.isEmpty) continue
 
             // Only break if action is mining
             if (shouldBreak) {
+                // Mining exclusive checks
+                if (settings.needCorrectTool && tool.isEmpty) continue
+                if (settings.decreaseDurability && tool.remainingDurability() <= 1) continue
+
+
                 val tickDelay = (settings.delay * vBlock.distance).toLong()
                 if (VeinminerCompatibility.runsAsync) { // folia
                     if (tickDelay == 0L) {
@@ -224,6 +233,9 @@ object VeinMinerEvent {
                 if (!targetTypes.contains(block.type.key)) return
             }
         }
+        // Re-check remaining durability at execution time to prevent queued tasks from breaking the tool.
+        if (settings.decreaseDurability && tool.remainingDurability() <= 1) return
+
         // Check if other plugins cancel the event
         val veinminerEvent = VeinminerEvent(block, player, sourceLocation, block.getXP(tool))
         if (!veinminerEvent.callEvent()) return
@@ -237,8 +249,15 @@ object VeinMinerEvent {
     @Suppress("SameParameterValue")
     private fun damageItem(item: ItemStack, amount: Int, player: Player): Boolean {
         if (item.isEmpty) return false
-        if (item.type.maxDurability == 0.toShort() || item.isEmpty) return false
+        if (item.type.maxDurability == 0.toShort()) return false
         return item.damage(amount, player).isEmpty
+    }
+
+    private fun ItemStack.remainingDurability(): Int {
+        if (isEmpty) return 0
+        val maxDurability = type.maxDurability.toInt()
+        if (maxDurability <= 0) return Int.MAX_VALUE
+        return maxDurability - (getData(DataComponentTypes.DAMAGE) ?: 0)
     }
 
     private fun Block.destroy() {

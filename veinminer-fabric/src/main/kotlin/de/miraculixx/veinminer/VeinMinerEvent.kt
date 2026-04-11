@@ -135,6 +135,8 @@ object VeinMinerEvent {
         val mainHandItem = player.mainHandItem
         if (settings.needCorrectTool && (state.requiresCorrectToolForDrops() && !mainHandItem.isCorrectToolForDrops(state))) return null
         if (!hasClientBypass && isGroupBlock && !blockGroup.tools.isEmpty() && !blockGroup.tools.contains(mainHandItem.key())) return null
+        // Fall back to vanilla single-block breaking on the last durability point.
+        if (settings.decreaseDurability && mainHandItem.remainingDurability() <= 1) return null
 
         // Check for enchantment if active
         if (enchantmentActive && !mainHandItem.enchantments.keySet().any { it.`is`(VEINMINE) }) return null
@@ -162,11 +164,14 @@ object VeinMinerEvent {
 
             // Only break if action is mining
             if (size != 0 && shouldBreak) {
+                if (settings.decreaseDurability && tool.remainingDurability() <= 1) continue
                 mcCoroutineTask(delay = (settings.delay * vBlock.distance).ticks) {
                     // Delay if necessary & check again if the block is still valid
                     if (settings.delay != 0) {
                         if (!targetTypes.contains(vBlock.block.key())) return@mcCoroutineTask
                     }
+                    // Re-check at execution time so delayed tasks cannot consume the last durability point.
+                    if (settings.decreaseDurability && tool.remainingDurability() <= 1) return@mcCoroutineTask
 
                     vBlock.block.destroyBlock(tool, world, pos, player, sourceLocation)
                     if (settings.decreaseDurability) damageItem(tool, player)
@@ -238,6 +243,12 @@ object VeinMinerEvent {
     private fun damageItem(item: ItemStack, player: Player) {
         if (item.isEmpty) return
         item.hurtAndBreak(1, player, EquipmentSlot.MAINHAND)
+    }
+
+    private fun ItemStack.remainingDurability(): Int {
+        if (isEmpty) return 0
+        if (maxDamage <= 0) return Int.MAX_VALUE
+        return maxDamage - damageValue
     }
 
     data class VeinmineAction(
