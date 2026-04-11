@@ -17,6 +17,7 @@ import net.minecraft.core.BlockPos
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.resources.Identifier
 import net.minecraft.server.level.ServerLevel
+import net.minecraft.stats.Stats
 import net.minecraft.tags.BlockTags
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.EquipmentSlot
@@ -59,13 +60,13 @@ object VeinMinerEvent {
     fun ItemStack.key() = BuiltInRegistries.ITEM.getKey(item)
 
     private val event = PlayerBlockBreakEvents.BEFORE.register { world, player, pos, state, _ ->
-        val veinmineInfo = allowedToVeinmine(world, player, pos, state)
-        if (veinmineInfo == null) return@register true
+        val veinmineInfo = allowedToVeinmine(world, player, pos, state) ?: return@register true
 
         val uuid = player.uuid
 
         mcCoroutineTask(delay = veinmineInfo.settings.delay.ticks) {
-            veinmineInfo.veinmine(true)
+            val amount = veinmineInfo.veinmine(true)
+            player.awardStat(Stats.BLOCK_MINED.get(state.block), amount - 1) // -1 to avoid double counting the original block
         }
 
         // Check for cooldown config
