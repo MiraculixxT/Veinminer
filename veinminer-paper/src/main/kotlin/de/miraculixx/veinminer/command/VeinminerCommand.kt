@@ -293,7 +293,7 @@ object VeinminerCommand {
                         }
                     })
                     anyExecutor { sender, args ->
-                        val key = args[0] as String
+                        val key = args.get("key") as String
                         if (args.resolve().unset(key)) {
                             sender.sendMessage(cmp("Unset override '$key'", cGreen.color()))
                             ConfigManager.save()
