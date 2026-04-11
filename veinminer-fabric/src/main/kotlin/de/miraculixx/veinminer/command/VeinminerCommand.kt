@@ -2,6 +2,8 @@
 
 package de.miraculixx.veinminer.command
 
+import com.mojang.brigadier.arguments.DoubleArgumentType
+import com.mojang.brigadier.arguments.IntegerArgumentType
 import com.mojang.brigadier.context.CommandContext
 import de.miraculixx.veinminer.Veinminer
 import de.miraculixx.veinminer.Veinminer.Companion.LOGGER
@@ -91,6 +93,7 @@ object VeinminerCommand {
             applySetting("permissionRestricted", { ConfigManager.settings.permissionRestricted }) { x,_ -> ConfigManager.settings.permissionRestricted = x }
             applySetting("mergeItemDrops", { ConfigManager.settings.mergeItemDrops }) { x,_ -> ConfigManager.settings.mergeItemDrops = x }
             applySetting("decreaseDurability", { ConfigManager.settings.decreaseDurability }) { x,_ -> ConfigManager.settings.decreaseDurability = x }
+            applySetting("miningSpeedModifier", { ConfigManager.settings.miningSpeedModifier }) { x,_ -> ConfigManager.settings.miningSpeedModifier = x }
             applySetting("debug", { debug }) { x,_ -> debug = x }
             literal("client") {
                 applySetting("allow", { ConfigManager.settings.client.allow }) { x,_ -> ConfigManager.settings.client.allow = x }
@@ -266,7 +269,16 @@ object VeinminerCommand {
                     }
                 }
 
-                typeOf<Int>(), typeOf<Int?>() -> argument<Int>("$name-new") { new ->
+                typeOf<Int>(), typeOf<Int?>() -> argument<Int>("$name-new", IntegerArgumentType.integer(0)) { new ->
+                    runsAsync {
+                        val value = new() as T
+                        consumer.invoke(value, this)
+                        ConfigManager.save()
+                        source.msg("$name set to $value", cGreen)
+                    }
+                }
+
+                typeOf<Double>(), typeOf<Double?>() -> argument<Double>("$name-new", DoubleArgumentType.doubleArg(0.0, 1.0)) { new ->
                     runsAsync {
                         val value = new() as T
                         consumer.invoke(value, this)
@@ -330,5 +342,6 @@ object VeinminerCommand {
         applySetting("searchRadius", { args -> args.resolve().searchRadius }) { x, args -> args.resolve().searchRadius = x }
         applySetting("permissionRestricted", { args -> args.resolve().permissionRestricted }) { x, args -> args.resolve().permissionRestricted = x }
         applySetting("decreaseDurability", { args -> args.resolve().decreaseDurability }) { x, args -> args.resolve().decreaseDurability = x }
+        applySetting("miningSpeedModifier", { args -> args.resolve().miningSpeedModifier }) { x, args -> args.resolve().miningSpeedModifier = x }
     }
 }

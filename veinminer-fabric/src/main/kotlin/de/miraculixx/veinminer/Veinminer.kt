@@ -1,6 +1,7 @@
 package de.miraculixx.veinminer
 
 import com.mojang.logging.LogUtils
+import de.miraculixx.veinminer.VeinMinerEvent.removeMiningSpeedModifier
 import de.miraculixx.veinminer.command.VeinminerCommand
 import de.miraculixx.veinminer.config.ConfigManager
 import de.miraculixx.veinminer.config.UpdateManager
@@ -64,7 +65,10 @@ class Veinminer : ModInitializer {
         }
 
         // Networking
-        ServerPlayConnectionEvents.DISCONNECT.register(FabricNetworking::onDisconnect)
+        ServerPlayConnectionEvents.DISCONNECT.register { handler, server ->
+            FabricNetworking.onDisconnect(handler, server)
+            handler.player.removeMiningSpeedModifier()
+        }
 
         // Update notification
         PlayerEvents.postLogin.listen(EventPriority.NORMAL, true) { event ->

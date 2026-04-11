@@ -11,6 +11,7 @@ import de.miraculixx.veinminer.config.data.VeinminerSettings
 import de.miraculixx.veinminer.config.data.VeinminerSettingsOverride
 import de.miraculixx.veinminer.config.utils.permissionVeinmine
 import de.miraculixx.veinminer.networking.FabricNetworking
+import net.fabricmc.fabric.api.event.player.AttackBlockCallback
 import me.lucko.fabric.api.permissions.v0.Permissions
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents
 import net.minecraft.core.BlockPos
@@ -33,9 +34,13 @@ import net.minecraft.world.level.block.state.BlockState
 import net.silkmc.silk.core.kotlin.ticks
 import net.silkmc.silk.core.task.mcCoroutineTask
 import java.util.*
+import net.minecraft.world.entity.ai.attributes.AttributeModifier
+import net.minecraft.world.entity.ai.attributes.Attributes
+import net.minecraft.world.InteractionResult
 
 object VeinMinerEvent {
     private val cooldown = mutableSetOf<UUID>()
+    private val speedModifierId: Identifier = Identifier.fromNamespaceAndPath("veinminer", "veinmine_speed")
 
     /**
      * @return a set of all blocks in the same group as this material. If the material is not in a group, it will return an empty set
@@ -59,10 +64,28 @@ object VeinMinerEvent {
     fun Block.key() = BuiltInRegistries.BLOCK.getKey(this)
     fun ItemStack.key() = BuiltInRegistries.ITEM.getKey(item)
 
-    private val event = PlayerBlockBreakEvents.BEFORE.register { world, player, pos, state, _ ->
-        val veinmineInfo = allowedToVeinmine(world, player, pos, state) ?: return@register true
+    private val onAttack = AttackBlockCallback.EVENT.register { player, world, _, pos, _ ->
+        if (world.isClientSide) return@register InteractionResult.PASS
+        player.removeMiningSpeedModifier()
 
-        val uuid = player.uuid
+        val state = world.getBlockState(pos)
+        val veinmineInfo = allowedToVeinmine(world, player, pos, state) ?: return@register InteractionResult.PASS
+        val multiplicator = veinmineInfo.settings.miningSpeedModifier
+        if (multiplicator <= 0.0) return@register InteractionResult.PASS
+
+        val amount = veinmineInfo.veinmine(false)
+        if (amount <= 1) return@register InteractionResult.PASS
+
+        val modifier = veinmineInfo.settings.calculateBreakSpeedModifier(amount, multiplicator)
+        val attribute = player.getAttribute(Attributes.BLOCK_BREAK_SPEED) ?: return@register InteractionResult.PASS
+        attribute.removeModifier(speedModifierId)
+        attribute.addTransientModifier(AttributeModifier(speedModifierId, modifier, AttributeModifier.Operation.ADD_MULTIPLIED_BASE))
+        InteractionResult.PASS
+    }
+
+    private val event = PlayerBlockBreakEvents.BEFORE.register { world, player, pos, state, _ ->
+        player.removeMiningSpeedModifier()
+        val veinmineInfo = allowedToVeinmine(world, player, pos, state) ?: return@register true
 
         mcCoroutineTask(delay = veinmineInfo.settings.delay.ticks) {
             val amount = veinmineInfo.veinmine(true)
@@ -250,6 +273,10 @@ object VeinMinerEvent {
         if (isEmpty) return 0
         if (maxDamage <= 0) return Int.MAX_VALUE
         return maxDamage - damageValue
+    }
+
+    fun Player.removeMiningSpeedModifier() {
+        getAttribute(Attributes.BLOCK_BREAK_SPEED)?.removeModifier(speedModifierId)
     }
 
     data class VeinmineAction(
