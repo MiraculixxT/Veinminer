@@ -27,7 +27,7 @@ dependencies {
 
     // Paper implementation
     implementation(pluginDep("io.papermc.paperweight.userdev", "2.0.0-beta.21"))
-    implementation(pluginDep("xyz.jpenilla.run-paper", "2.3.1"))
+    implementation(pluginDep("xyz.jpenilla.run-paper", "3.0.2"))
     implementation(pluginDep("de.eldoria.plugin-yml.paper", "0.7.+"))
 
     // Project configuration
