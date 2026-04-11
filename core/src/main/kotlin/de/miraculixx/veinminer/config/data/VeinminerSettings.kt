@@ -16,6 +16,7 @@ data class VeinminerSettings(
     var mergeItemDrops: Boolean = false,
     var autoUpdate: Boolean = false,
     var decreaseDurability: Boolean = true,
+    var miningSpeedModifier: Double = 0.0,
     val client: VeinminerClientSettings = VeinminerClientSettings()
 ) {
     /**
@@ -38,8 +39,26 @@ data class VeinminerSettings(
             permissionRestricted = g?.permissionRestricted ?: (if (isClient) c.permissionRestricted ?: permissionRestricted else permissionRestricted),
             mergeItemDrops = mergeItemDrops,
             decreaseDurability = g?.decreaseDurability ?: (if (isClient) c.decreaseDurability ?: decreaseDurability else decreaseDurability),
+            miningSpeedModifier = g?.miningSpeedModifier ?: (if (isClient) c.miningSpeedModifier ?: miningSpeedModifier else miningSpeedModifier),
             client = client
         )
+    }
+
+    /**
+     * Calculate the break speed modifier based on vein size and a multiplicator.
+     * Used for Operation.MULTIPLY_SCALAR_1
+     */
+    fun calculateBreakSpeedModifier(
+        veinSize: Int,
+        multiplicator: Double
+    ): Double {
+        val n = veinSize.coerceAtLeast(1)
+        val m = multiplicator.coerceIn(0.0, 1.0)
+
+        val timeFactor = 1.0 + m * (n - 1) // 0->1x, 1->nx time
+        val speedFactor = (1.0 / timeFactor).coerceAtLeast(0.01) // 100x max decrease
+
+        return speedFactor - 1.0
     }
 }
 
@@ -62,6 +81,7 @@ data class VeinminerSettingsOverride(
     var searchRadius: Int? = null,
     var permissionRestricted: Boolean? = null,
     var decreaseDurability: Boolean? = null,
+    var miningSpeedModifier: Double? = null
 ) {
     fun nonNullKeys(): List<String> =
         VeinminerSettingsOverride::class.memberProperties.mapNotNull { prop -> prop.get(this)?.let { prop.name } }

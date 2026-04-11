@@ -100,6 +100,7 @@ object VeinminerCommand {
             applySetting("permissionRestricted", { ConfigManager.settings.permissionRestricted }) { x,_ -> ConfigManager.settings.permissionRestricted = x }
             applySetting("mergeItemDrops", { ConfigManager.settings.mergeItemDrops }) { x,_ -> ConfigManager.settings.mergeItemDrops = x }
             applySetting("decreaseDurability", { ConfigManager.settings.decreaseDurability }) { x,_ -> ConfigManager.settings.decreaseDurability = x }
+            applySetting("miningSpeedModifier", { ConfigManager.settings.miningSpeedModifier }) { x,_ -> ConfigManager.settings.miningSpeedModifier = x }
             applySetting("debug", { debug }) { x,_ -> debug = x }
             literalArgument("client") {
                 applySetting("allow", { ConfigManager.settings.client.allow }) { x,_ -> ConfigManager.settings.client.allow = x }
@@ -258,6 +259,12 @@ object VeinminerCommand {
                 typeOf<Int>(), typeOf<Int?>() -> integerArgument("$name-new", min = 0) {
                     applyValue(name, consumer)
                 }
+
+                typeOf<Double>(), typeOf<Double?>() -> doubleArgument("$name-new", min = 0.0, max = 1.0) {
+                    applyValue(name, consumer)
+                }
+
+                else -> throw IllegalArgumentException("Unsupported setting type for '$name': ${typeOf<T>()}")
             }
         }
     }
@@ -312,6 +319,7 @@ object VeinminerCommand {
             applySetting("searchRadius", { args ->  args.resolve().searchRadius }) { x, args ->  args.resolve().searchRadius = x }
             applySetting("permissionRestricted", { args ->  args.resolve().permissionRestricted }) { x, args ->  args.resolve().permissionRestricted = x }
             applySetting("decreaseDurability", { args ->  args.resolve().decreaseDurability }) { x, args ->  args.resolve().decreaseDurability = x }
+            applySetting("miningSpeedModifier", { args ->  args.resolve().miningSpeedModifier }) { x, args ->  args.resolve().miningSpeedModifier = x }
         }
     }
 }

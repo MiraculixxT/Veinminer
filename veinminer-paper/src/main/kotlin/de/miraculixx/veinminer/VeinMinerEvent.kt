@@ -3,6 +3,7 @@
 package de.miraculixx.veinminer
 
 import de.miraculixx.kpaper.event.listen
+import de.miraculixx.kpaper.extensions.bukkit.cmp
 import de.miraculixx.kpaper.extensions.server
 import de.miraculixx.kpaper.runnables.taskRunLater
 import de.miraculixx.veinminer.Veinminer.Companion.VEINMINE
@@ -19,6 +20,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.bukkit.*
+import org.bukkit.attribute.Attribute
+import org.bukkit.attribute.AttributeModifier
 import org.bukkit.block.Block
 import org.bukkit.block.BlockState
 import org.bukkit.craftbukkit.block.CraftBlock
@@ -28,6 +31,8 @@ import org.bukkit.entity.Player
 import org.bukkit.event.Event
 import org.bukkit.event.EventPriority
 import org.bukkit.event.block.BlockBreakEvent
+import org.bukkit.event.block.BlockDamageAbortEvent
+import org.bukkit.event.block.BlockDamageEvent
 import org.bukkit.event.block.BlockExpEvent
 import org.bukkit.inventory.ItemStack
 import java.util.*
@@ -36,6 +41,7 @@ import kotlin.time.Duration.Companion.milliseconds
 object VeinMinerEvent {
     private val cooldown = mutableSetOf<UUID>()
     var enabled: Boolean = true
+    private val attributeNamespace = NamespacedKey(Veinminer.INSTANCE, "veinmine_speed")
 
     /**
      * @return a set of all blocks in the same group as this material. If the material is not in a group, it will return an empty set
@@ -59,8 +65,37 @@ object VeinMinerEvent {
         return FixedBlockGroup(blocks.toSet(), tools.toSet(), override)
     }
 
+    /**
+     * Used to modify the block breaking speed when veinmining.
+     * Only used when multi setting is over 0.0.
+     */
+    @Suppress("unused")
+    private val onBlockDamage = listen<BlockDamageEvent> {
+        if (it.isCancelled || it.instaBreak || !enabled) return@listen
+        val player = it.player
+        val veinmineInfo = allowedToVeinmine(player, it.block) ?: return@listen
+        val multiplicator = veinmineInfo.settings.miningSpeedModifier
+        if (multiplicator <= 0.0) return@listen
+
+        val amount = veinmineInfo.veinmine(false)
+        if (amount <= 1) return@listen
+
+        val speed = veinmineInfo.settings.calculateBreakSpeedModifier(amount, multiplicator)
+        val modifier = AttributeModifier(attributeNamespace, speed, AttributeModifier.Operation.MULTIPLY_SCALAR_1)
+        val attribute = player.getAttribute(Attribute.BLOCK_BREAK_SPEED) ?: return@listen
+        attribute.removeModifier(attributeNamespace)
+        attribute.addTransientModifier(modifier)
+        if (debug) player.sendMessage(cmp("Modifier: ${"%.3f".format(speed + 1.0)}x for $amount blocks"))
+    }
+
+    @Suppress("unused")
+    private val onBlockDamageAbort = listen<BlockDamageAbortEvent> {
+        it.player.removeAttribute()
+    }
+
     @Suppress("unused")
     private val onBlockBreak = listen<BlockBreakEvent>(priority = EventPriority.HIGH) {
+        it.player.removeAttribute() // Always remove
         if (it.isCancelled || !enabled) return@listen
 
         val player = it.player
@@ -275,6 +310,10 @@ object VeinMinerEvent {
         val nmsState = craftBlock.level.getBlockState(position)
         val nmsItem = (tool as CraftItemStack).handle ?: net.minecraft.world.item.ItemStack.EMPTY
         return nmsState.block.getExpDrop(nmsState, craftBlock.craftWorld.handle, position, nmsItem, true)
+    }
+
+    private fun Player.removeAttribute() {
+        getAttribute(Attribute.BLOCK_BREAK_SPEED)?.removeModifier(attributeNamespace)
     }
 
     /**
