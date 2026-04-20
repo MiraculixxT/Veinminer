@@ -26,6 +26,13 @@ object FabricNetworking {
     val registeredPlayers: MutableMap<UUID, String> = mutableMapOf()
     val readyToVeinmine = mutableSetOf<UUID>()
 
+    // Set by the client module in single-player to bypass the custom-payload channel
+    interface LocalDispatch {
+        fun onConfiguration(packet: ServerConfiguration)
+        fun onHighlight(packet: BlockHighlighting)
+    }
+    var localDispatch: LocalDispatch? = null
+
     //
     // Receive packets from clients
     //
@@ -93,12 +100,17 @@ object FabricNetworking {
     fun sendConfiguration(player: ServerPlayer, settings: VeinminerSettings) {
         if (!registeredPlayers.containsKey(player.uuid)) return
         val conf = ServerConfiguration(settings.cooldown, settings.mustSneak, false, settings.client.translucentBlockHighlight)
-        PACKET_CONFIGURATION.send(conf, player)
+        val dispatch = localDispatch
+        if (dispatch != null && player.server.isSingleplayer) dispatch.onConfiguration(conf)
+        else PACKET_CONFIGURATION.send(conf, player)
     }
 
     fun sendHighlighting(player: ServerPlayer, allowed: Boolean, icon: String, blocks: List<BlockPosition>) {
         if (!registeredPlayers.containsKey(player.uuid)) return userNotConnected(player.uuid)
-        PACKET_HIGHLIGHT.send(BlockHighlighting(allowed, icon, blocks), player)
+        val payload = BlockHighlighting(allowed, icon, blocks)
+        val dispatch = localDispatch
+        if (dispatch != null && player.server.isSingleplayer) dispatch.onHighlight(payload)
+        else PACKET_HIGHLIGHT.send(payload, player)
     }
 
     //

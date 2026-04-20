@@ -44,6 +44,16 @@ object NetworkManager {
     private val onConfiguration = PACKET_CONFIGURATION.receiveOnClient { packet, context -> onConfiguration(packet, context.client) }
     private val onHighlight = PACKET_HIGHLIGHT.receiveOnClient { packet, context -> onHighlight(packet) }
 
+    // Move to internal communication, skipping packets
+    private val localDispatch = object : FabricNetworking.LocalDispatch {
+        override fun onConfiguration(packet: ServerConfiguration) {
+            this@NetworkManager.onConfiguration(packet, Minecraft.getInstance())
+        }
+        override fun onHighlight(packet: BlockHighlighting) {
+            this@NetworkManager.onHighlight(packet)
+        }
+    }
+
     fun onConfiguration(packet: ServerConfiguration, client: Minecraft) {
         VeinminerClient.LOGGER.info("Server configuration: $packet")
         if (packet.outdated) {
@@ -72,6 +82,7 @@ object NetworkManager {
 
     fun onDisconnect() {
         isVeinminerActive = false
+        FabricNetworking.localDispatch = null
     }
 
 
@@ -91,15 +102,20 @@ object NetworkManager {
     fun sendJoin(version: String) {
         VeinminerClient.LOGGER.info("Sending join: ($version)")
 
-        // Register incoming packets
         val instance = Minecraft.getInstance()
         val con = instance.connection ?: return notConnected()
-        con.send(ServerboundCustomPayloadPacket(
-            RegistrationPayload(RegistrationPayload.REGISTER, listOf(PACKET_CONFIGURATION.id, PACKET_HIGHLIGHT.id))
-        ))
 
-        if (shouldSendInternal()) FabricNetworking.onJoin(null, JoinInformation(version), instance.player?.uuid)
-        else PACKET_JOIN.send(JoinInformation(version))
+        if (shouldSendInternal()) {
+            // Direct wiring for singleplayer, skipping the networking layer
+            FabricNetworking.localDispatch = localDispatch
+            FabricNetworking.onJoin(null, JoinInformation(version), instance.player?.uuid)
+        } else {
+            // Register incoming packets on the server side of the connection
+            con.send(ServerboundCustomPayloadPacket(
+                RegistrationPayload(RegistrationPayload.REGISTER, listOf(PACKET_CONFIGURATION.id, PACKET_HIGHLIGHT.id))
+            ))
+            PACKET_JOIN.send(JoinInformation(version))
+        }
     }
 
     fun sendKeyPress(pressed: Boolean) {
