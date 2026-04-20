@@ -97,11 +97,17 @@ object FabricNetworking {
     //
     // Send packets to clients
     //
+
+    /**
+     * True only for the in-JVM host player (loopback memory connection). LAN guests on an integrated server go through the real network and must use the payload channel.
+     */
+    private fun ServerPlayer.isIntegratedHost(): Boolean = connection.connection.isMemoryConnection
+
     fun sendConfiguration(player: ServerPlayer, settings: VeinminerSettings) {
         if (!registeredPlayers.containsKey(player.uuid)) return
         val conf = ServerConfiguration(settings.cooldown, settings.mustSneak, false, settings.client.translucentBlockHighlight)
         val dispatch = localDispatch
-        if (dispatch != null && player.server.isSingleplayer) dispatch.onConfiguration(conf)
+        if (dispatch != null && player.isIntegratedHost()) dispatch.onConfiguration(conf)
         else PACKET_CONFIGURATION.send(conf, player)
     }
 
@@ -109,7 +115,7 @@ object FabricNetworking {
         if (!registeredPlayers.containsKey(player.uuid)) return userNotConnected(player.uuid)
         val payload = BlockHighlighting(allowed, icon, blocks)
         val dispatch = localDispatch
-        if (dispatch != null && player.server.isSingleplayer) dispatch.onHighlight(payload)
+        if (dispatch != null && player.isIntegratedHost()) dispatch.onHighlight(payload)
         else PACKET_HIGHLIGHT.send(payload, player)
     }
 

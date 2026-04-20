@@ -10,8 +10,12 @@ import de.miraculixx.veinminer.config.network.ServerConfiguration
 import de.miraculixx.veinminer.config.pattern.Pattern
 import de.miraculixx.veinminer.config.utils.debug
 import de.miraculixx.veinminer.networking.FabricNetworking
+import de.miraculixx.veinminer.networking.PACKET_CONFIGURATION
+import de.miraculixx.veinminer.networking.PACKET_HIGHLIGHT
+import de.miraculixx.veinminer.networking.PACKET_JOIN
+import de.miraculixx.veinminer.networking.PACKET_KEY_PRESS
+import de.miraculixx.veinminer.networking.PACKET_MINE
 import de.miraculixx.veinminerClient.VeinminerClient
-import de.miraculixx.veinminerClient.constants.*
 import de.miraculixx.veinminerClient.render.BlockHighlightingRenderer
 import de.miraculixx.veinminerClient.render.HUDRenderer
 import de.miraculixx.veinminerClient.utils.toVeinminer
