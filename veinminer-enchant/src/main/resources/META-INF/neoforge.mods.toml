@@ -1,0 +1,36 @@
+modLoader = "javafml"
+loaderVersion = "[1,)"
+license = "${license}"
+issueTrackerURL = "https://dc.mutils.net"
+
+[[mods]]
+modId = "veinminer-enchantment"
+version = "${version}"
+displayName = "Veinminer Enchantment"
+displayURL = "https://modrinth.com/mod/veinminer-enchantment"
+logoFile = "assets/veinminer-enchantment/icon.png"
+authors = "Miraculixx"
+description = '''
+Addon for Veinminer to add an exclusive enchantment.
+'''
+
+[[dependencies.veinminer-enchantment]]
+    modId = "neoforge"
+    type = "required"
+    versionRange = "[21,)"
+    ordering = "NONE"
+    side = "BOTH"
+
+[[dependencies.veinminer-enchantment]]
+    modId = "minecraft"
+    type = "required"
+    versionRange = "[1.21,)"
+    ordering = "NONE"
+    side = "BOTH"
+
+[[dependencies.veinminer-enchantment]]
+    modId = "veinminer"
+    type = "required"
+    versionRange = "*"
+    ordering = "AFTER"
+    side = "BOTH"
