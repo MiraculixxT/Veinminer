@@ -54,3 +54,14 @@ Loader modules each do same shape: `Veinminer.kt` (entry point), `VeinMinerEvent
 
 - **V2** (this codebase's main output) — the Fabric mod and Paper plugin.
 - **V1** — the lightweight datapacks under `datapacks/veinminer/` and `datapacks/enchantment/`, configured purely via `/function veinminer:_config`. They have their own versioning (see `datapacks/build.gradle.kts`) and ship separate to Modrinth. Two independent — fix bug in V2 usually no apply to V1.
+
+## Planned Rewrite
+
+Project rewrite to support neoforge. Planned things
+- Removing silk dependency out of Veinminer
+- Adding neoforge build pipeline
+- Adding neoforge modules for base and client addon
+
+Planned module structure: core (common code for all modules), veinminer/common (common code for base mod), veinminer/fabric, veinminer/neoforge, veinminer/paper, veinminer-hotkey/common (common code for addon mod), veinminer-hotkey/fabric, veinminer-hotkey/neoforge, veinminer-enchant (fatjar containing all)
+
+
