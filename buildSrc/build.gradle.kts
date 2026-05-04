@@ -10,6 +10,7 @@ repositories {
     maven("https://server.bbkr.space/artifactory/libs-release/")
     maven("https://papermc.io/repo/repository/maven-public/")
     maven("https://maven.quiltmc.org/repository/release/")
+    maven("https://maven.neoforged.net/releases/")
 }
 
 dependencies {
@@ -29,6 +30,9 @@ dependencies {
     implementation(pluginDep("io.papermc.paperweight.userdev", "2.0.0-beta.21"))
     implementation(pluginDep("xyz.jpenilla.run-paper", "3.0.2"))
     implementation(pluginDep("de.eldoria.plugin-yml.paper", "0.7.+"))
+
+    // NeoForge implementation
+    implementation(pluginDep("net.neoforged.moddev", "2.0.141"))
 
     // Project configuration
     implementation(pluginDep("com.gradleup.shadow", "9.0.0"))
