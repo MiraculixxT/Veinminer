@@ -7,15 +7,13 @@ import de.miraculixx.kpaper.extensions.bukkit.cmp
 import de.miraculixx.kpaper.extensions.bukkit.plus
 import de.miraculixx.kpaper.extensions.pluginManager
 import de.miraculixx.kpaper.main.KPaper
-import de.miraculixx.veinminer.command.VeinminerCommand
+import de.miraculixx.veinminer.command.PaperVeinminerCommand
 import de.miraculixx.veinminer.config.ConfigManager
 import de.miraculixx.veinminer.config.UpdateManager
 import de.miraculixx.veinminer.config.extensions.color
 import de.miraculixx.veinminer.config.utils.cGreen
 import de.miraculixx.veinminer.config.utils.cRed
 import de.miraculixx.veinminer.networking.PaperNetworking
-import dev.jorel.commandapi.CommandAPI
-import dev.jorel.commandapi.CommandAPIPaperConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -41,14 +39,12 @@ class Veinminer : KPaper() {
         }
 
 
-        CommandAPI.onLoad(CommandAPIPaperConfig(this).silentLogs(true).fallbackToLatestNMS(true))
         ConfigManager
-        VeinminerCommand
+        PaperVeinminerCommand.register()
     }
 
     override fun startup() {
         if (shouldDisable) return // Safeguard because disabling isn't actually instantaneous
-        CommandAPI.onEnable()
         VeinMinerEvent
         PaperNetworking
 
@@ -80,7 +76,6 @@ class Veinminer : KPaper() {
 
     override fun shutdown() {
         if (shouldDisable) return // Safeguard because disabling isn't actually instantaneous
-        CommandAPI.onDisable()
 
         // Unregister packet channel
         server.messenger.unregisterOutgoingPluginChannel(this)

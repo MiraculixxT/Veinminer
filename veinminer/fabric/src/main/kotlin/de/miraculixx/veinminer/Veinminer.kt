@@ -2,7 +2,7 @@ package de.miraculixx.veinminer
 
 import com.mojang.logging.LogUtils
 import de.miraculixx.veinminer.VeinMinerEvent.removeMiningSpeedModifier
-import de.miraculixx.veinminer.command.VeinminerCommand
+import de.miraculixx.veinminer.command.FabricVeinminerCommand
 import de.miraculixx.veinminer.config.ConfigManager
 import de.miraculixx.veinminer.config.UpdateManager
 import de.miraculixx.veinminer.config.utils.cGreen
@@ -56,7 +56,7 @@ class Veinminer : ModInitializer {
         enchantmentActive = enchantmentContainer != null
 
         // Registration
-        VeinminerCommand.register()
+        FabricVeinminerCommand.register()
         VeinMinerEvent
 
         // Config hook
