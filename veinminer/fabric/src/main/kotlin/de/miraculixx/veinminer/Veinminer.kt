@@ -56,7 +56,7 @@ class Veinminer : ModInitializer {
         enchantmentActive = enchantmentContainer != null
 
         // Registration
-        VeinminerCommand
+        VeinminerCommand.register()
         VeinMinerEvent
 
         // Config hook
