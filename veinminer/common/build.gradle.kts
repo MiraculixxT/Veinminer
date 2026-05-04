@@ -6,4 +6,5 @@ plugins {
 dependencies {
     val gameVersion: String by properties
     minecraft("com.mojang:minecraft:$gameVersion")
+    implementation(project(":core"))
 }

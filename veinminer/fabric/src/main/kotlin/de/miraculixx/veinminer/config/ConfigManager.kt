@@ -9,7 +9,7 @@ import net.minecraft.resources.Identifier
 import kotlin.io.path.Path
 import kotlin.io.path.writeText
 
-object ConfigManager {
+object ConfigManager : ConfigBridge {
     private val settingsFile = Path("config/Veinminer/settings.json")
     private val blocksFile = Path("config/Veinminer/blocks.json")
     private val groupsFile = Path("config/Veinminer/groups.json")
@@ -23,15 +23,15 @@ object ConfigManager {
         }
     }
 
-    var settings: VeinminerSettings = loadSettings()
+    override var settings: VeinminerSettings = loadSettings()
         private set
 
-    var veinBlocksRaw: MutableSet<String> = mutableSetOf()
+    override var veinBlocksRaw: MutableSet<String> = mutableSetOf()
         private set
     var veinBlocks: Set<Identifier> = emptySet()
         private set
 
-    var groupsRaw: MutableSet<BlockGroup<String>> = mutableSetOf()
+    override var groupsRaw: MutableSet<BlockGroup<String>> = mutableSetOf()
         private set
     var groups: Set<BlockGroup<Identifier>> = emptySet()
         private set
@@ -41,7 +41,7 @@ object ConfigManager {
      * Reparses the raw config entries into NamespacedKeys.
      * If `fromDisc` is true, it will also reload the raw data from the disc first
      */
-    fun reload(fromDisc: Boolean) {
+    override fun reload(fromDisc: Boolean) {
         if (fromDisc) settings = loadSettings()
         if (loadBlocks(fromDisc)) saveBlocks()
         if (loadGroups(fromDisc)) saveGroups()
@@ -50,7 +50,7 @@ object ConfigManager {
     /**
      * Saves the current config to the disc and reparses the raw data into NamespacedKeys
      */
-    fun save() {
+    override fun save() {
         // Parse raw data into NamespacedKeys
         loadBlocks(false)
         loadGroups(false)
