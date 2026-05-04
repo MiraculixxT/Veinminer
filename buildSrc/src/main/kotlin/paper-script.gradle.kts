@@ -32,13 +32,6 @@ dependencies {
     library("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.+")
     library("org.jetbrains.kotlinx:kotlinx-serialization-cbor:1.+")
 
-    // Utility libraries (optional)
-    val useBrigadier = properties["useBrigadier"] as String == "true"
-    if (useBrigadier) {
-        implementation(library("dev.jorel:commandapi-paper-shade:11.1.0")!!)
-        implementation(library("dev.jorel:commandapi-kotlin-paper:11.1.0")!!)
-    }
-
     library("de.miraculixx:kpaper:1.+")
 }
 
