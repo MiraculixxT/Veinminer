@@ -1,3 +1,5 @@
+@file:Suppress("UnusedExpression")
+
 package de.miraculixx.veinminer
 
 import com.mojang.logging.LogUtils
