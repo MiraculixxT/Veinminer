@@ -1,5 +1,6 @@
 package de.miraculixx.veinminer
 
+import de.miraculixx.veinminer.command.ActiveHost
 import de.miraculixx.veinminer.data.ModrinthFile
 import de.miraculixx.veinminer.data.ModrinthVersion
 import de.miraculixx.veinminer.utils.json
@@ -9,6 +10,7 @@ import java.net.URI
 
 object UpdateManager {
     private const val DEBUG = true
+    private val logger = ActiveHost.host.logger
 
     fun checkForUpdates(module: Module, platform: String, serverVersion: String, modVersion: String?): VersionInfo {
         val target = URI("https://api.modrinth.com/v2/project/${module.id}/version?loaders=%5B%22${platform}%22%5D&game_versions=%5B%22$serverVersion%22%5D").toURL()
@@ -16,15 +18,15 @@ object UpdateManager {
         val content = con.inputStream.readAllBytes().decodeToString()
         val latest = json.decodeFromString<List<ModrinthVersion>>(content).firstOrNull()
         if (latest == null) {
-            println("[VeinminerUpdater] No version found for ${module.modID}${if (DEBUG) " (${target.path})" else ""}")
+            logger.warn("No version found for ${module.modID}${if (DEBUG) " (${target.path})" else ""}")
             return VersionInfo(false, modVersion ?: "unknown", "unknown", module)
         }
 
         val outdated = if (latest.version_number == modVersion) {
-            println("[VeinminerUpdater] ${module.modID} is up to date")
+            logger.info("${module.modID} is up to date")
             false
         } else if (modVersion != null) {
-            println("[VeinminerUpdater] ${module.modID} is outdated ($serverVersion). Installed: $modVersion -> Latest: ${latest.version_number}")
+            logger.warn("${module.modID} is outdated ($serverVersion). Installed: $modVersion -> Latest: ${latest.version_number}")
             true
         } else false
 

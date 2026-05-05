@@ -74,7 +74,7 @@ class Veinminer : KPaper() {
                         }
                     }
                 } catch (e: Exception) {
-                    println("[VeinminerUpdater] Error while checking for updates: ${e.message}")
+                    LOGGER.warn("Error while checking for updates: ${e.message}")
                 }
             }
         }
