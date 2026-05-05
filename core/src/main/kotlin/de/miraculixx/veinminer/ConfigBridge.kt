@@ -1,7 +1,7 @@
-package de.miraculixx.veinminer.config
+package de.miraculixx.veinminer
 
-import de.miraculixx.veinminer.config.data.BlockGroup
-import de.miraculixx.veinminer.config.data.VeinminerSettings
+import de.miraculixx.veinminer.data.BlockGroup
+import de.miraculixx.veinminer.data.VeinminerSettings
 
 interface ConfigBridge {
     val settings: VeinminerSettings

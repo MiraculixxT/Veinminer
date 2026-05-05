@@ -1,8 +1,8 @@
-package de.miraculixx.veinminer.config
+package de.miraculixx.veinminer
 
-import de.miraculixx.veinminer.config.data.ModrinthFile
-import de.miraculixx.veinminer.config.data.ModrinthVersion
-import de.miraculixx.veinminer.config.utils.json
+import de.miraculixx.veinminer.data.ModrinthFile
+import de.miraculixx.veinminer.data.ModrinthVersion
+import de.miraculixx.veinminer.utils.json
 import java.io.File
 import java.net.HttpURLConnection
 import java.net.URI

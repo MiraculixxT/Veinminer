@@ -1,4 +1,4 @@
-package de.miraculixx.veinminer.config.pattern
+package de.miraculixx.veinminer.pattern
 
 enum class Surface {
     NORTH,

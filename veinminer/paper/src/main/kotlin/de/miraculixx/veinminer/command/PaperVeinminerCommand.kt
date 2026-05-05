@@ -5,7 +5,7 @@ import de.miraculixx.veinminer.INSTANCE
 import de.miraculixx.veinminer.VeinMinerEvent
 import de.miraculixx.veinminer.Veinminer
 import de.miraculixx.veinminer.VeinminerCompatibility
-import de.miraculixx.veinminer.config.ActiveConfig
+import de.miraculixx.veinminer.ActiveConfig
 import de.miraculixx.veinminer.config.ConfigManager
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
 import net.minecraft.commands.CommandBuildContext

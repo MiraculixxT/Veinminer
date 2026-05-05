@@ -3,8 +3,8 @@ package de.miraculixx.veinminer.networking
 import de.miraculixx.kpaper.extensions.onlinePlayers
 import de.miraculixx.kpaper.extensions.server
 import de.miraculixx.veinminer.Veinminer
-import de.miraculixx.veinminer.config.network.NetworkManager
-import de.miraculixx.veinminer.config.utils.IDENTIFIER
+import de.miraculixx.veinminer.network.NetworkManager
+import de.miraculixx.veinminer.utils.IDENTIFIER
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.cbor.Cbor
 import kotlinx.serialization.decodeFromByteArray

@@ -8,10 +8,18 @@ import com.mojang.brigadier.arguments.IntegerArgumentType
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.context.CommandContext
-import de.miraculixx.veinminer.config.ActiveConfig
-import de.miraculixx.veinminer.config.data.BlockGroup
-import de.miraculixx.veinminer.config.data.VeinminerSettingsOverride
-import de.miraculixx.veinminer.config.utils.*
+import de.miraculixx.veinminer.ActiveConfig
+import de.miraculixx.veinminer.data.BlockGroup
+import de.miraculixx.veinminer.data.VeinminerSettingsOverride
+import de.miraculixx.veinminer.utils.cBase
+import de.miraculixx.veinminer.utils.cGreen
+import de.miraculixx.veinminer.utils.cRed
+import de.miraculixx.veinminer.utils.debug
+import de.miraculixx.veinminer.utils.permissionBlocks
+import de.miraculixx.veinminer.utils.permissionGroups
+import de.miraculixx.veinminer.utils.permissionReload
+import de.miraculixx.veinminer.utils.permissionSettings
+import de.miraculixx.veinminer.utils.permissionToggle
 import net.minecraft.commands.CommandBuildContext
 import net.minecraft.commands.CommandSourceStack
 import net.minecraft.commands.arguments.blocks.BlockPredicateArgument
@@ -26,7 +34,8 @@ object VeinminerCommand {
             executesAsync {
                 val host = ActiveHost.host
                 source.msg("Veinminer Version: ${host.versionVeinminer} (${host.platform})\n" +
-                        "Minecraft Version: ${host.versionMinecraft}", cBase)
+                        "Minecraft Version: ${host.versionMinecraft}", cBase
+                )
             }
 
             literal("reload") {

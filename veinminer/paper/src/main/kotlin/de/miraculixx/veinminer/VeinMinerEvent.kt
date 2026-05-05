@@ -8,11 +8,11 @@ import de.miraculixx.kpaper.extensions.server
 import de.miraculixx.kpaper.runnables.taskRunLater
 import de.miraculixx.veinminer.Veinminer.Companion.VEINMINE
 import de.miraculixx.veinminer.config.ConfigManager
-import de.miraculixx.veinminer.config.data.FixedBlockGroup
-import de.miraculixx.veinminer.config.data.VeinminerSettings
-import de.miraculixx.veinminer.config.data.VeinminerSettingsOverride
-import de.miraculixx.veinminer.config.utils.debug
-import de.miraculixx.veinminer.config.utils.permissionVeinmine
+import de.miraculixx.veinminer.data.FixedBlockGroup
+import de.miraculixx.veinminer.data.VeinminerSettings
+import de.miraculixx.veinminer.data.VeinminerSettingsOverride
+import de.miraculixx.veinminer.utils.debug
+import de.miraculixx.veinminer.utils.permissionVeinmine
 import de.miraculixx.veinminer.networking.PaperNetworking
 import io.papermc.paper.datacomponent.DataComponentTypes
 import kotlinx.coroutines.CoroutineScope

@@ -1,7 +1,7 @@
 package de.miraculixx.veinminerClient.utils
 
-import de.miraculixx.veinminer.config.data.BlockPosition
-import de.miraculixx.veinminer.config.pattern.Surface
+import de.miraculixx.veinminer.data.BlockPosition
+import de.miraculixx.veinminer.pattern.Surface
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
 

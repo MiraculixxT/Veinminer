@@ -5,7 +5,7 @@ import com.mojang.blaze3d.pipeline.DepthStencilState
 import com.mojang.blaze3d.pipeline.RenderPipeline
 import com.mojang.blaze3d.platform.CompareOp
 import com.mojang.blaze3d.vertex.PoseStack
-import de.miraculixx.veinminer.config.data.BlockPosition
+import de.miraculixx.veinminer.data.BlockPosition
 import de.miraculixx.veinminerClient.KeyBindManager
 import de.miraculixx.veinminerClient.VeinminerClient
 import de.miraculixx.veinminerClient.network.NetworkManager

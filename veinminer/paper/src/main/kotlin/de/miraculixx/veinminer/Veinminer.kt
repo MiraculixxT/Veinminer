@@ -11,10 +11,9 @@ import de.miraculixx.kpaper.extensions.pluginManager
 import de.miraculixx.kpaper.main.KPaper
 import de.miraculixx.veinminer.command.PaperVeinminerCommand
 import de.miraculixx.veinminer.config.ConfigManager
-import de.miraculixx.veinminer.config.UpdateManager
-import de.miraculixx.veinminer.config.extensions.color
-import de.miraculixx.veinminer.config.utils.cGreen
-import de.miraculixx.veinminer.config.utils.cRed
+import de.miraculixx.veinminer.extensions.color
+import de.miraculixx.veinminer.utils.cGreen
+import de.miraculixx.veinminer.utils.cRed
 import de.miraculixx.veinminer.networking.PaperNetworking
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

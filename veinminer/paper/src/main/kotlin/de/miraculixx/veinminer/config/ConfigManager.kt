@@ -1,8 +1,9 @@
 package de.miraculixx.veinminer.config
 
-import de.miraculixx.veinminer.config.data.BlockGroup
-import de.miraculixx.veinminer.config.data.VeinminerSettings
-import de.miraculixx.veinminer.config.extensions.load
+import de.miraculixx.veinminer.ConfigBridge
+import de.miraculixx.veinminer.data.BlockGroup
+import de.miraculixx.veinminer.data.VeinminerSettings
+import de.miraculixx.veinminer.extensions.load
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import org.bukkit.NamespacedKey

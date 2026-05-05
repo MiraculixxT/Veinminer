@@ -1,7 +1,6 @@
-package de.miraculixx.veinminer.config.network
+package de.miraculixx.veinminer.network
 
-import de.miraculixx.veinminer.config.data.BlockPosition
-import de.miraculixx.veinminer.config.data.FixedBlockGroup
+import de.miraculixx.veinminer.data.BlockPosition
 import kotlinx.serialization.Serializable
 
 @Serializable

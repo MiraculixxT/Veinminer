@@ -1,7 +1,7 @@
 package de.miraculixx.veinminer.command
 
 import de.miraculixx.veinminer.Veinminer
-import de.miraculixx.veinminer.config.ActiveConfig
+import de.miraculixx.veinminer.ActiveConfig
 import de.miraculixx.veinminer.config.ConfigManager
 import me.lucko.fabric.api.permissions.v0.Permissions as FabricPermissions
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback

@@ -1,11 +1,11 @@
 package de.miraculixx.veinminer.networking
 
-import de.miraculixx.veinminer.config.network.BlockHighlighting
-import de.miraculixx.veinminer.config.network.JoinInformation
-import de.miraculixx.veinminer.config.network.KeyPress
-import de.miraculixx.veinminer.config.network.NetworkManager
-import de.miraculixx.veinminer.config.network.RequestBlockVein
-import de.miraculixx.veinminer.config.network.ServerConfiguration
+import de.miraculixx.veinminer.network.BlockHighlighting
+import de.miraculixx.veinminer.network.JoinInformation
+import de.miraculixx.veinminer.network.KeyPress
+import de.miraculixx.veinminer.network.NetworkManager
+import de.miraculixx.veinminer.network.RequestBlockVein
+import de.miraculixx.veinminer.network.ServerConfiguration
 import net.minecraft.resources.Identifier
 import net.silkmc.silk.network.packet.c2sPacket
 import net.silkmc.silk.network.packet.s2cPacket

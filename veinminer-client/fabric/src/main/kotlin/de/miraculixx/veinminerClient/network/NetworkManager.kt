@@ -2,13 +2,13 @@
 
 package de.miraculixx.veinminerClient.network
 
-import de.miraculixx.veinminer.config.network.BlockHighlighting
-import de.miraculixx.veinminer.config.network.JoinInformation
-import de.miraculixx.veinminer.config.network.KeyPress
-import de.miraculixx.veinminer.config.network.RequestBlockVein
-import de.miraculixx.veinminer.config.network.ServerConfiguration
-import de.miraculixx.veinminer.config.pattern.Pattern
-import de.miraculixx.veinminer.config.utils.debug
+import de.miraculixx.veinminer.network.BlockHighlighting
+import de.miraculixx.veinminer.network.JoinInformation
+import de.miraculixx.veinminer.network.KeyPress
+import de.miraculixx.veinminer.network.RequestBlockVein
+import de.miraculixx.veinminer.network.ServerConfiguration
+import de.miraculixx.veinminer.pattern.Pattern
+import de.miraculixx.veinminer.utils.debug
 import de.miraculixx.veinminer.networking.FabricNetworking
 import de.miraculixx.veinminer.networking.PACKET_CONFIGURATION
 import de.miraculixx.veinminer.networking.PACKET_HIGHLIGHT

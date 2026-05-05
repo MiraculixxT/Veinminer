@@ -1,7 +1,7 @@
 package de.miraculixx.veinminerClient
 
 import com.mojang.logging.LogUtils
-import de.miraculixx.veinminer.config.UpdateManager
+import de.miraculixx.veinminer.UpdateManager
 import de.miraculixx.veinminerClient.constants.KEY_VEINMINE_HOLD
 import de.miraculixx.veinminerClient.constants.KEY_VEINMINE_TOGGLE
 import de.miraculixx.veinminerClient.network.NetworkManager
@@ -9,7 +9,6 @@ import de.miraculixx.veinminerClient.render.HUDRenderer
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
-import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElement
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.Minecraft

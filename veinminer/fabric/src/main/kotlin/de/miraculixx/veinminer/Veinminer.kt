@@ -6,9 +6,8 @@ import com.mojang.logging.LogUtils
 import de.miraculixx.veinminer.VeinMinerEvent.removeMiningSpeedModifier
 import de.miraculixx.veinminer.command.FabricVeinminerCommand
 import de.miraculixx.veinminer.config.ConfigManager
-import de.miraculixx.veinminer.config.UpdateManager
-import de.miraculixx.veinminer.config.utils.cGreen
-import de.miraculixx.veinminer.config.utils.cRed
+import de.miraculixx.veinminer.utils.cGreen
+import de.miraculixx.veinminer.utils.cRed
 import de.miraculixx.veinminer.networking.FabricNetworking
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
