@@ -7,13 +7,15 @@ File guide Claude Code (claude.ai/code) for work in this repo.
 Kotlin/Gradle multi-project. Java 25 toolchain, Kotlin 2.3, Gradle wrapper (`./gradlew`). CI use JDK 21 to call wrapper, but toolchain in `buildSrc/.../kotlin-script.gradle.kts` need JDK 25 to compile.
 
 - `./gradlew build` — build all (jars go `<module>/build/libs/`).
-- `./gradlew :veinminer:paper:build` / `:veinminer:fabric:build` / `:veinminer:neoforge:build` — build one base-mod loader.
-- `./gradlew :veinminer-client:fabric:build` / `:veinminer-client:neoforge:build` — build the client addon for one loader.
+- `./gradlew :veinminer:veinminer-paper:build` / `:veinminer:veinminer-fabric:build` / `:veinminer:veinminer-neoforge:build` — build one base-mod loader.
+- `./gradlew :veinminer-client:veinminer-client-fabric:build` / `:veinminer-client:veinminer-client-neoforge:build` — build the client addon for one loader.
 - `./gradlew :veinminer-enchant:build` — build the enchantment fatjar.
-- `./gradlew :veinminer:paper:runServer` — start Paper dev server (via `xyz.jpenilla.run-paper`); `runFolia` also registered.
-- `./gradlew :veinminer:fabric:runServer` / `:veinminer-client:fabric:runClient` — start via fabric-loom (each got `run/` dirs).
+- `./gradlew :veinminer:veinminer-paper:runServer` — start Paper dev server (via `xyz.jpenilla.run-paper`); `runFolia` also registered.
+- `./gradlew :veinminer:veinminer-fabric:runServer` / `:veinminer-client:veinminer-client-fabric:runClient` — start via fabric-loom (each got `run/` dirs).
 - `./gradlew :datapacks:zipAll` — zip V1 datapacks (`zipVeinminer`, `zipEnchantment` for single ones).
-- `./gradlew :veinminer:paper:modrinth` (or any module's `modrinth` task, via `com.modrinth.minotaur`) — publish. Set `modrinthToken` in `gradle.properties` or via `-PmodrinthToken=...`.
+- `./gradlew :veinminer:veinminer-paper:modrinth` (or any module's `modrinth` task, via `com.modrinth.minotaur`) — publish. Set `modrinthToken` in `gradle.properties` or via `-PmodrinthToken=...`.
+
+The doubled segments (`:veinminer:veinminer-fabric`) come from disambiguated leaf names in `settings.gradle.kts` — without it, both `:veinminer:fabric` and `:veinminer-client:fabric` resolved to the same `de.miraculixx:fabric` module ID and Gradle substituted one for the other (circular task graph). Same for `common`/`neoforge`.
 
 No test source set anywhere — don't make up test commands.
 
@@ -27,12 +29,12 @@ Gradle layout (see `settings.gradle.kts`):
 core                     ← shared logic, settings model, packet IDs, update checker (applies fabric-loom for MC types)
 veinminer/
  ├── common              ← base-mod common code (applies fabric-loom; depends on :core)
- ├── paper               ← Paper/Folia plugin (paperweight; depends on :core + :veinminer:common)
- ├── fabric              ← Fabric server+client mod (loom; `include`s :veinminer:common which chains :core)
+ ├── paper               ← Paper/Folia plugin (paperweight; depends on :core + :veinminer:veinminer-common)
+ ├── fabric              ← Fabric server+client mod (loom; `include`s :veinminer:veinminer-common which chains :core)
  └── neoforge            ← NeoForge base-mod (stub, in progress)
 veinminer-client/
  ├── common              ← client-addon common code (loom)
- ├── fabric              ← Fabric client-only addon: hotkey + block highlight (depends on :veinminer:fabric)
+ ├── fabric              ← Fabric client-only addon: hotkey + block highlight (depends on :veinminer:veinminer-fabric)
  └── neoforge            ← NeoForge client-addon (stub, in progress)
 veinminer-enchant        ← Separate plugin/mod registering the Veinminer enchantment (fatjar across loaders)
 datapacks                ← Zips the legacy V1 datapacks shipped to Modrinth
@@ -54,7 +56,7 @@ datapacks                ← Zips the legacy V1 datapacks shipped to Modrinth
 
 ### Multi-loom dependency rule
 
-Because `:core` and `:veinminer:common` both apply fabric-loom, the loader leaf modules must take **one** path to `:core` to avoid a circular `remapJar` graph. Convention: each leaf consumes only its direct parent (e.g. `:veinminer:fabric` includes `:veinminer:common`; `:veinminer-client:fabric` depends on `:veinminer:fabric`); the chain carries `:core` transitively. Don't add a second direct `include(project(":core"))` from a leaf that already pulls it through `:veinminer:common` / `:veinminer:fabric`.
+Because `:core` and `:veinminer:veinminer-common` both apply fabric-loom, the loader leaf modules must take **one** path to `:core` to avoid a circular `remapJar` graph. Convention: each leaf consumes only its direct parent (e.g. `:veinminer:veinminer-fabric` includes `:veinminer:veinminer-common`; `:veinminer-client:veinminer-client-fabric` depends on `:veinminer:veinminer-fabric`); the chain carries `:core` transitively. Don't add a second direct `include(project(":core"))` from a leaf that already pulls it through `:veinminer:veinminer-common` / `:veinminer:veinminer-fabric`. The client-addon currently re-declares `:core` and `:veinminer:veinminer-common` as `compileOnly` — they're JiJ'd into `:veinminer:veinminer-fabric` so this gives compile-time visibility without re-bundling.
 
 ## Conventions worth knowing
 
@@ -63,7 +65,7 @@ Because `:core` and `:veinminer:common` both apply fabric-loom, the loader leaf 
 - Fabric uses access-wideners (`veinminer/fabric/src/main/resources/veinminer.accesswidener`, plus a separate one for the client addon under `veinminer-client/fabric`). Touching private MC fields means editing those files, not adding mixins.
 - Paper module uses `paperweight` with `MOJANG_PRODUCTION` reobf; the Brigadier integration is via CommandAPI shaded into the plugin (`dev.jorel:commandapi-paper-shade`), not the Paper Brigadier API directly.
 - Paper module's `paper { main = ... }` and the enchant module's `paper { main = ... }` use the `de.eldoria.plugin-yml.paper` plugin to generate `paper-plugin.yml` at build time — there is no checked-in `plugin.yml`.
-- All loader implementations of the network layer share the same packet IDs declared in `core`'s `NetworkManager`; if you change a packet's payload, update the matching networking code in `:veinminer:fabric`, `:veinminer:paper`, `:veinminer:neoforge`, **and** the relevant client-addon module.
+- All loader implementations of the network layer share the same packet IDs declared in `core`'s `NetworkManager`; the server-side dispatch lives in `:veinminer:veinminer-common`'s `NetworkRouter` (loader leaves only implement `PlatformNetwork` + `ServerCallbacks`). The client-side mirror lives in the same module as `ClientNetworkRouter`/`ClientPlatformNetwork`/`ClientCallbacks` — client-addon leaves implement just `ClientPlatformNetwork`. If you change a packet's payload, update its data class in `core` and re-run all builds; no per-loader edits should be needed.
 
 ## Two product lines, don't confuse them
 
@@ -75,5 +77,5 @@ Because `:core` and `:veinminer:common` both apply fabric-loom, the loader leaf 
 NeoForge support is mid-landing. Tracker:
 - [x] New module layout (`veinminer/{common,fabric,paper,neoforge}`, `veinminer-client/{common,fabric,neoforge}`)
 - [x] Silk dependency removed from base mod
-- [ ] NeoForge build pipeline filled in (`:veinminer:neoforge`, `:veinminer-client:neoforge` are still stubs)
+- [ ] NeoForge build pipeline filled in (`:veinminer:veinminer-neoforge`, `:veinminer-client:veinminer-client-neoforge` are still stubs)
 - [ ] `:veinminer-enchant` repacked as a multi-loader fatjar
