@@ -1,13 +1,20 @@
 package de.miraculixx.veinminer.network
 
+import de.miraculixx.veinminer.command.ActiveHost
+import org.slf4j.Logger
 import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 
 object NetworkRouter {
-    val registeredPlayers: MutableMap<UUID, String> = mutableMapOf()
-    val readyToVeinmine: MutableSet<UUID> = mutableSetOf()
+    val registeredPlayers: MutableMap<UUID, String> = ConcurrentHashMap()
+    val readyToVeinmine: MutableSet<UUID> = ConcurrentHashMap.newKeySet()
 
+    @Volatile
     private var platform: PlatformNetwork? = null
-    private val c2sHandlers: MutableMap<String, (UUID, ByteArray) -> Unit> = mutableMapOf()
+
+    private val logger: Logger = ActiveHost.host.logger
+
+    private val c2sHandlers: MutableMap<String, (UUID, ByteArray) -> Unit> = ConcurrentHashMap()
 
     fun init(platform: PlatformNetwork, callbacks: ServerCallbacks) {
         this.platform = platform
@@ -28,23 +35,46 @@ object NetworkRouter {
     }
 
     private fun registerC2S(platform: PlatformNetwork, channel: String, handler: (UUID, ByteArray) -> Unit) {
-        c2sHandlers[channel] = handler
-        platform.registerC2S(channel, handler)
+        val safe: (UUID, ByteArray) -> Unit = { uuid, bytes ->
+            try {
+                handler(uuid, bytes)
+            } catch (e: Exception) {
+                logger.warn("Failed to handle C2S packet '$channel' from $uuid: ${e.message}")
+            }
+        }
+        c2sHandlers[channel] = safe
+        platform.registerC2S(channel, safe)
     }
 
-    /** Loopback entry for the singleplayer client — bypasses the wire. */
+    /** Loopback entry for the singleplayer client - bypasses packet stream */
     fun dispatchC2S(channel: String, playerId: UUID, payload: ByteArray) {
         c2sHandlers[channel]?.invoke(playerId, payload)
     }
 
     fun sendConfiguration(uuid: UUID, payload: ServerConfiguration) {
-        if (!registeredPlayers.containsKey(uuid)) return
-        platform?.sendS2C(uuid, NetworkManager.PACKET_CONFIGURATION_ID, Codec.encode(payload))
+        val plat = platform
+        if (plat == null) {
+            logger.warn("sendConfiguration called before NetworkRouter.init()")
+            return
+        }
+        if (!registeredPlayers.containsKey(uuid)) {
+            logger.debug("sendConfiguration: $uuid not registered, dropping")
+            return
+        }
+        plat.sendS2C(uuid, NetworkManager.PACKET_CONFIGURATION_ID, Codec.encode(payload))
     }
 
     fun sendHighlighting(uuid: UUID, payload: BlockHighlighting) {
-        if (!registeredPlayers.containsKey(uuid)) return
-        platform?.sendS2C(uuid, NetworkManager.PACKET_HIGHLIGHT_ID, Codec.encode(payload))
+        val plat = platform
+        if (plat == null) {
+            logger.warn("sendHighlighting called before NetworkRouter.init()")
+            return
+        }
+        if (!registeredPlayers.containsKey(uuid)) {
+            logger.debug("sendHighlighting: $uuid not registered, dropping")
+            return
+        }
+        plat.sendS2C(uuid, NetworkManager.PACKET_HIGHLIGHT_ID, Codec.encode(payload))
     }
 
     fun onDisconnect(uuid: UUID) {

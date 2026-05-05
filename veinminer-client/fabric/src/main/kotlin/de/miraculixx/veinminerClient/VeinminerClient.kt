@@ -42,8 +42,8 @@ class VeinminerClient : ClientModInitializer {
         KEY_VEINMINE_TOGGLE
         KEY_VEINMINE_HOLD
 
-        // Register networking payload types
-        NetworkManager.registerClientPayloads()
+        // Initialize client networking (registers payload types + S2C handlers)
+        NetworkManager.init()
 
         ClientPlayConnectionEvents.JOIN.register { packet, sender, mc ->
             isSinglePlayer = mc.singleplayerServer != null

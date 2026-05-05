@@ -3,8 +3,7 @@ package de.miraculixx.veinminer.network
 import java.util.UUID
 
 /**
- * Loader-specific actions that touch platform world/block types.
- * The common [NetworkRouter] decodes the payload and invokes these.
+ * Server-side handlers for decoded C2S packets
  */
 interface ServerCallbacks {
     fun onJoinAccepted(playerId: UUID, packet: JoinInformation)

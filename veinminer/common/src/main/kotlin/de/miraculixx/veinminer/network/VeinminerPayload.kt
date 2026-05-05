@@ -1,14 +1,13 @@
-package de.miraculixx.veinminer.networking
+package de.miraculixx.veinminer.network
 
 import net.minecraft.network.RegistryFriendlyByteBuf
 import net.minecraft.network.codec.StreamCodec
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload
 import net.minecraft.resources.Identifier
-import de.miraculixx.veinminer.network.NetworkManager
 
 /**
  * Generic Veinminer custom payload carrying raw JSON-encoded bytes.
- * One [Type] per channel ID — registered in [FabricPlatformNetwork].
+ * One [CustomPacketPayload.Type] per channel ID.
  *
  * Wire format is intentionally raw (no length prefix) so the same byte stream is
  * interchangeable with Bukkit plugin messaging on the Paper server.
