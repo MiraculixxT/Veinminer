@@ -45,7 +45,7 @@ class VeinminerClient : ClientModInitializer {
         // Initialize client networking (registers payload types + S2C handlers)
         NetworkManager.init()
 
-        ClientPlayConnectionEvents.JOIN.register { packet, sender, mc ->
+        ClientPlayConnectionEvents.JOIN.register { _, _, mc ->
             isSinglePlayer = mc.singleplayerServer != null
             LOGGER.info("Loading for ${if (isSinglePlayer) "singleplayer" else "multiplayer"}...")
             if (isSinglePlayer && !veinminerAvailable) {
@@ -63,12 +63,12 @@ class VeinminerClient : ClientModInitializer {
             NetworkManager.sendJoin(instance.metadata.version.friendlyString)
         }
 
-        ClientPlayConnectionEvents.DISCONNECT.register { handler, client ->
+        ClientPlayConnectionEvents.DISCONNECT.register { _, _ ->
             NetworkManager.onDisconnect()
             KeyBindManager.onDisconnect()
         }
 
-        ClientTickEvents.END_CLIENT_TICK.register { client ->
+        ClientTickEvents.END_CLIENT_TICK.register { _ ->
             KeyBindManager.tick()
         }
 
@@ -79,7 +79,7 @@ class VeinminerClient : ClientModInitializer {
         mcCoroutineTask(false) {
             listOf(UpdateManager.Module.VEINMINER_CLIENT).forEach { module ->
                 try {
-                    UpdateManager.checkForUpdates(module, "fabric", client.launchedVersion ?: "1.21.4", fabricLoader.getModContainer(module.modID).getOrNull()?.metadata?.version?.friendlyString)
+                    UpdateManager.checkForUpdates(module, "fabric", client.launchedVersion, fabricLoader.getModContainer(module.modID).getOrNull()?.metadata?.version?.friendlyString)
                 } catch (e: Exception) { LOGGER.warn("[VeinminerUpdater] Error while checking for updates: ${e.message}") }
             }
         }
