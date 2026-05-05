@@ -5,8 +5,9 @@ plugins {
 }
 
 dependencies {
-    implementation(include(project(":core"))!!)
-    implementation(project(":veinminer:fabric"))
+    compileOnly(project(":core"))
+    compileOnly(project(":veinminer:veinminer-common"))
+    implementation(project(":veinminer:veinminer-fabric"))
 }
 
 loom {

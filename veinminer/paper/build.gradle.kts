@@ -10,7 +10,7 @@ plugins {
 
 dependencies {
     implementation(project(":core"))
-    implementation(project(":veinminer:common"))
+    implementation(project(":veinminer:veinminer-common"))
 }
 
 sourceSets {
