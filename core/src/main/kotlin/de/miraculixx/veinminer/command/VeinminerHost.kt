@@ -1,9 +1,13 @@
 package de.miraculixx.veinminer.command
 
+import org.slf4j.Logger
+
 interface VeinminerHost {
-    val versionLine: String
+    val versionVeinminer: String
+    val versionMinecraft: String
+    val platform: String
+    val logger: Logger
     var active: Boolean
-    fun warn(msg: String)
 }
 
 object ActiveHost {

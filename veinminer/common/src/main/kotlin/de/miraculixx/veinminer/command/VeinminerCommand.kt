@@ -24,7 +24,9 @@ object VeinminerCommand {
     fun build(ctx: CommandBuildContext): LiteralArgumentBuilder<CommandSourceStack> =
         veinminerCommand("veinminer") {
             executesAsync {
-                source.msg(ActiveHost.host.versionLine, cBase)
+                val host = ActiveHost.host
+                source.msg("Veinminer Version: ${host.versionVeinminer} (${host.platform})\n" +
+                        "Minecraft Version: ${host.versionMinecraft}", cBase)
             }
 
             literal("reload") {
@@ -293,7 +295,7 @@ object VeinminerCommand {
             try {
                 sendSystemMessage(Component.literal(message))
             } catch (_: Exception) {
-                ActiveHost.host.warn("Messages cannot be sent in this version")
+                ActiveHost.host.logger.warn("Messages cannot be sent in this version")
             }
         }
     }
@@ -312,7 +314,7 @@ object VeinminerCommand {
             val name = runCatching { getArgument("group", String::class.java) }.getOrNull() ?: "client"
             val override = resolver.invoke(name)
             return if (override == null) {
-                ActiveHost.host.warn("Tried to access override for '${name}', but it does not exist. Changes are not saved!")
+                ActiveHost.host.logger.warn("Tried to access override for '${name}', but it does not exist. Changes are not saved!")
                 VeinminerSettingsOverride()
             } else override
         }

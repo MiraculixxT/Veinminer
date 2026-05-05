@@ -8,21 +8,19 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.minecraft.DetectedVersion
 import net.minecraft.commands.CommandSourceStack
 import net.minecraft.server.permissions.PermissionLevel
+import org.slf4j.Logger
 
 private object FabricHost : VeinminerHost {
-    override val versionLine: String
-        get() = "Veinminer Version: ${Veinminer.INSTANCE.metadata.version} (fabric)\n" +
-                "Game Version: ${DetectedVersion.tryDetectVersion().name()}"
+    override val versionVeinminer: String = Veinminer.INSTANCE.metadata.version.friendlyString
+    override val versionMinecraft: String = DetectedVersion.tryDetectVersion().name()
+    override val platform: String = "Fabric"
+    override val logger: Logger = Veinminer.LOGGER
 
     override var active: Boolean
         get() = Veinminer.active
         set(value) {
             Veinminer.active = value
         }
-
-    override fun warn(msg: String) {
-        Veinminer.LOGGER.warn(msg)
-    }
 }
 
 object FabricVeinminerCommand {
