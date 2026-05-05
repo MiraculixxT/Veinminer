@@ -8,7 +8,11 @@ import de.miraculixx.veinminer.command.FabricVeinminerCommand
 import de.miraculixx.veinminer.config.ConfigManager
 import de.miraculixx.veinminer.utils.cGreen
 import de.miraculixx.veinminer.utils.cRed
-import de.miraculixx.veinminer.networking.FabricNetworking
+import de.miraculixx.veinminer.network.NetworkRouter
+import de.miraculixx.veinminer.networking.FabricPlatformNetwork
+import de.miraculixx.veinminer.networking.FabricServerCallbacks
+import de.miraculixx.veinminer.utils.mcServer
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.fabricmc.loader.api.FabricLoader
@@ -66,8 +70,11 @@ class Veinminer : ModInitializer {
         }
 
         // Networking
-        ServerPlayConnectionEvents.DISCONNECT.register { handler, server ->
-            FabricNetworking.onDisconnect(handler, server)
+        ServerLifecycleEvents.SERVER_STARTING.register { server -> mcServer = server }
+        ServerLifecycleEvents.SERVER_STOPPED.register { _ -> mcServer = null }
+        NetworkRouter.init(FabricPlatformNetwork, FabricServerCallbacks)
+        ServerPlayConnectionEvents.DISCONNECT.register { handler, _ ->
+            NetworkRouter.onDisconnect(handler.player.uuid)
             handler.player.removeMiningSpeedModifier()
         }
 

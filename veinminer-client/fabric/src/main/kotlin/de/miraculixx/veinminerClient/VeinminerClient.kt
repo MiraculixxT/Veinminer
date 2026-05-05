@@ -42,6 +42,9 @@ class VeinminerClient : ClientModInitializer {
         KEY_VEINMINE_TOGGLE
         KEY_VEINMINE_HOLD
 
+        // Register networking payload types
+        NetworkManager.registerClientPayloads()
+
         ClientPlayConnectionEvents.JOIN.register { packet, sender, mc ->
             isSinglePlayer = mc.singleplayerServer != null
             LOGGER.info("Loading for ${if (isSinglePlayer) "singleplayer" else "multiplayer"}...")

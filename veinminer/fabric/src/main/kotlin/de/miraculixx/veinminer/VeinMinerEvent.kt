@@ -10,7 +10,7 @@ import de.miraculixx.veinminer.data.FixedBlockGroup
 import de.miraculixx.veinminer.data.VeinminerSettings
 import de.miraculixx.veinminer.data.VeinminerSettingsOverride
 import de.miraculixx.veinminer.utils.permissionVeinmine
-import de.miraculixx.veinminer.networking.FabricNetworking
+import de.miraculixx.veinminer.network.NetworkRouter
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback
 import me.lucko.fabric.api.permissions.v0.Permissions
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents
@@ -128,11 +128,11 @@ object VeinMinerEvent {
         if (player.gameMode() == GameType.CREATIVE) return null
 
         val uuid = player.uuid
-        val hasClient = FabricNetworking.registeredPlayers.contains(uuid)
+        val hasClient = NetworkRouter.registeredPlayers.contains(uuid)
         val material = state.key().takeIf { !state.isAir } ?: return null
 
         // Check if player has the client mod and pressed the key
-        if (hasClient && !FabricNetworking.readyToVeinmine.contains(uuid)) return null
+        if (hasClient && !NetworkRouter.readyToVeinmine.contains(uuid)) return null
 
         // Gater correct settings layer
         val blockGroup = material.groupedBlocks()
@@ -140,7 +140,7 @@ object VeinMinerEvent {
         val settings = ConfigManager.settings.applyOverrides(hasClient, blockGroup.override)
 
         if (settings.permissionRestricted && !Permissions.check(player, permissionVeinmine)) return null
-        val hasClientBypass = settings.client.allBlocks && FabricNetworking.registeredPlayers.containsKey(player.uuid)
+        val hasClientBypass = settings.client.allBlocks && NetworkRouter.registeredPlayers.containsKey(player.uuid)
         val isWhitelisted = isGroupBlock || ConfigManager.veinBlocks.contains(material)
 
         // Check if client is required

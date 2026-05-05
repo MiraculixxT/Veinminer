@@ -2,10 +2,10 @@ package de.miraculixx.veinminer.config
 
 import de.miraculixx.veinminer.VeinMinerEvent.key
 import de.miraculixx.veinminer.Veinminer
+import de.miraculixx.veinminer.utils.mcServer
 import net.minecraft.core.registries.Registries
 import net.minecraft.resources.Identifier
 import net.minecraft.tags.TagKey
-import net.silkmc.silk.core.Silk.server
 
 object ConfigSerializer {
 
@@ -48,19 +48,19 @@ object ConfigSerializer {
             when (type) {
                 MaterialType.ITEM -> {
                     val tag = TagKey.create(Registries.ITEM, key)
-                    val reg = server?.registryAccess()?.lookupOrThrow(Registries.ITEM) ?: return null
+                    val reg = mcServer?.registryAccess()?.lookupOrThrow(Registries.ITEM) ?: return null
                     reg.getTagOrEmpty(tag).map { it.value().defaultInstance.key() }.toSet()
                 }
 
                 MaterialType.BLOCK -> {
                     val tag = TagKey.create(Registries.BLOCK, key)
-                    val reg = server?.registryAccess()?.lookupOrThrow(Registries.BLOCK) ?: return null
+                    val reg = mcServer?.registryAccess()?.lookupOrThrow(Registries.BLOCK) ?: return null
                     reg.getTagOrEmpty(tag).map { it.value().key() }.toSet()
                 }
             }
 
         } else { // 'minecraft:stone' single material check if existing and return
-            val access = server?.registryAccess() ?: return null
+            val access = mcServer?.registryAccess() ?: return null
             val reg = if (type == MaterialType.BLOCK) access.lookupOrThrow(Registries.BLOCK) else access.lookupOrThrow(Registries.ITEM)
             if (reg.containsKey(key)) setOf(key) else emptySet()
         }

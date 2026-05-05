@@ -51,7 +51,6 @@ dependencies {
     implementation("net.silkmc:silk-core:$silkVersion") // core utilities
     implementation("net.silkmc:silk-commands:$silkVersion") // easy command registration
     implementation("net.silkmc:silk-nbt:$silkVersion") // item simplification
-    implementation("net.silkmc:silk-network:$silkVersion") // networking utilities
 
 
     //

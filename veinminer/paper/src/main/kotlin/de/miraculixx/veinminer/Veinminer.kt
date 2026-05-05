@@ -14,7 +14,9 @@ import de.miraculixx.veinminer.config.ConfigManager
 import de.miraculixx.veinminer.extensions.color
 import de.miraculixx.veinminer.utils.cGreen
 import de.miraculixx.veinminer.utils.cRed
-import de.miraculixx.veinminer.networking.PaperNetworking
+import de.miraculixx.veinminer.network.NetworkRouter
+import de.miraculixx.veinminer.networking.PaperPlatformNetwork
+import de.miraculixx.veinminer.networking.PaperServerCallbacks
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -47,7 +49,7 @@ class Veinminer : KPaper() {
     override fun startup() {
         if (shouldDisable) return // Safeguard because disabling isn't actually instantaneous
         VeinMinerEvent
-        PaperNetworking
+        NetworkRouter.init(PaperPlatformNetwork, PaperServerCallbacks)
 
         val enchantmentContainer = server.pluginManager.getPlugin("veinminer-enchantment")
         enchantmentActive = enchantmentContainer != null

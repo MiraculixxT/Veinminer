@@ -13,7 +13,7 @@ import de.miraculixx.veinminer.data.VeinminerSettings
 import de.miraculixx.veinminer.data.VeinminerSettingsOverride
 import de.miraculixx.veinminer.utils.debug
 import de.miraculixx.veinminer.utils.permissionVeinmine
-import de.miraculixx.veinminer.networking.PaperNetworking
+import de.miraculixx.veinminer.network.NetworkRouter
 import io.papermc.paper.datacomponent.DataComponentTypes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -160,11 +160,11 @@ object VeinMinerEvent {
         if (player.gameMode == GameMode.CREATIVE) return null
 
         val uuid = player.uniqueId
-        val hasClient = PaperNetworking.registeredPlayers.contains(uuid)
+        val hasClient = NetworkRouter.registeredPlayers.contains(uuid)
         val material = block.type.key
 
         // Check if player has the client mod and pressed the key
-        if (hasClient && !PaperNetworking.readyToVeinmine.contains(uuid)) return null
+        if (hasClient && !NetworkRouter.readyToVeinmine.contains(uuid)) return null
 
         // Gather correct settings layer
         val blockGroup = material.groupedBlocks()
@@ -172,7 +172,7 @@ object VeinMinerEvent {
         val settings = ConfigManager.settings.applyOverrides(hasClient, blockGroup.override)
 
         if (settings.permissionRestricted && !player.hasPermission(permissionVeinmine)) return null
-        val hasClientBypass = settings.client.allBlocks && PaperNetworking.registeredPlayers.containsKey(player.uniqueId)
+        val hasClientBypass = settings.client.allBlocks && NetworkRouter.registeredPlayers.containsKey(player.uniqueId)
         val isWhitelisted = isGroupBlock || ConfigManager.veinBlocks.contains(material)
         if (debug) Veinminer.LOGGER.info(" - Group: $blockGroup, Global: ${ConfigManager.veinBlocks}, isWhitelisted: $isWhitelisted")
 
