@@ -9,6 +9,7 @@ import de.miraculixx.kpaper.extensions.bukkit.cmp
 import de.miraculixx.kpaper.extensions.bukkit.plus
 import de.miraculixx.kpaper.extensions.pluginManager
 import de.miraculixx.kpaper.main.KPaper
+import de.miraculixx.veinminer.command.ActiveHost
 import de.miraculixx.veinminer.command.PaperVeinminerCommand
 import de.miraculixx.veinminer.config.ConfigManager
 import de.miraculixx.veinminer.extensions.color
@@ -17,6 +18,7 @@ import de.miraculixx.veinminer.utils.cRed
 import de.miraculixx.veinminer.network.NetworkRouter
 import de.miraculixx.veinminer.networking.PaperPlatformNetwork
 import de.miraculixx.veinminer.networking.PaperServerCallbacks
+import de.miraculixx.veinminer.utils.PaperHost
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -41,6 +43,7 @@ class Veinminer : KPaper() {
             return
         }
 
+        ActiveHost.host = PaperHost
 
         ConfigManager
         PaperVeinminerCommand.register()

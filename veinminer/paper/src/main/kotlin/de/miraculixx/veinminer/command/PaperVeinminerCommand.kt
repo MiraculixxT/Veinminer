@@ -2,9 +2,6 @@ package de.miraculixx.veinminer.command
 
 import com.mojang.brigadier.tree.LiteralCommandNode
 import de.miraculixx.veinminer.INSTANCE
-import de.miraculixx.veinminer.VeinMinerEvent
-import de.miraculixx.veinminer.Veinminer
-import de.miraculixx.veinminer.VeinminerCompatibility
 import de.miraculixx.veinminer.ActiveConfig
 import de.miraculixx.veinminer.config.ConfigManager
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
@@ -13,27 +10,12 @@ import net.minecraft.server.MinecraftServer
 import net.minecraft.world.flag.FeatureFlags
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
-import org.slf4j.Logger
 import io.papermc.paper.command.brigadier.CommandSourceStack as PaperCommandSourceStack
 import net.minecraft.commands.CommandSourceStack as NmsCommandSourceStack
-
-private object PaperHost : VeinminerHost {
-    override val versionVeinminer: String = INSTANCE.pluginMeta.version
-    override val versionMinecraft: String = INSTANCE.server.minecraftVersion
-    override val platform: String = VeinminerCompatibility.platform.name
-    override val logger: Logger = Veinminer.LOGGER
-
-    override var active: Boolean
-        get() = VeinMinerEvent.enabled
-        set(value) {
-            VeinMinerEvent.enabled = value
-        }
-}
 
 object PaperVeinminerCommand {
     fun register() {
         ActiveConfig.bridge = ConfigManager
-        ActiveHost.host = PaperHost
         Permissions.install { src, node ->
             val sender: CommandSender? = when (src) {
                 is NmsCommandSourceStack -> runCatching { src.bukkitSender }.getOrNull()

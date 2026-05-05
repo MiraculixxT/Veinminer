@@ -4,6 +4,7 @@ package de.miraculixx.veinminer
 
 import com.mojang.logging.LogUtils
 import de.miraculixx.veinminer.VeinMinerEvent.removeMiningSpeedModifier
+import de.miraculixx.veinminer.command.ActiveHost
 import de.miraculixx.veinminer.command.FabricVeinminerCommand
 import de.miraculixx.veinminer.config.ConfigManager
 import de.miraculixx.veinminer.utils.cGreen
@@ -11,6 +12,7 @@ import de.miraculixx.veinminer.utils.cRed
 import de.miraculixx.veinminer.network.NetworkRouter
 import de.miraculixx.veinminer.networking.FabricPlatformNetwork
 import de.miraculixx.veinminer.networking.FabricServerCallbacks
+import de.miraculixx.veinminer.utils.FabricHost
 import de.miraculixx.veinminer.utils.mcServer
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.api.ModInitializer
@@ -61,6 +63,7 @@ class Veinminer : ModInitializer {
         enchantmentActive = enchantmentContainer != null
 
         // Registration
+        ActiveHost.host = FabricHost
         FabricVeinminerCommand.register()
         VeinMinerEvent
 
