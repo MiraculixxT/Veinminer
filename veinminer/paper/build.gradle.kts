@@ -19,9 +19,15 @@ sourceSets {
     }
 }
 
+// to have a runFolia next to the runServer task for easier testing
+runPaper.folia.registerTask()
+
+tasks.jar       { archiveClassifier.set("dev") }
+tasks.shadowJar { archiveClassifier.set("")    }
+
 modrinth {
-    uploadFile.set(tasks.jar)
-    versionName = "Veinminer Plugin - ${properties["version"]}"
+    uploadFile.set(tasks.shadowJar)
+    versionName = "Veinminer Plugin - $version"
     outlet.mcVersionRange = properties["paperSupportedVersions"] as String
     outlet.allowedReleaseTypes = setOf(ReleaseType.RELEASE)
     gameVersions.addAll(outlet.mcVersions())
@@ -31,12 +37,5 @@ modrinth {
         add("purpur")
         add("folia")
     })
-    dependencies {
-        // The scope can be `required`, `optional`, `incompatible`, or `embedded`
-        // The type can either be `project` or `version`
-//        required.project("fabric-api")
-    }
+    dependencies { }
 }
-
-//To have a runFolia next to the runServer task for easier testing
-runPaper.folia.registerTask()
