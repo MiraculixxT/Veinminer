@@ -4,7 +4,7 @@ license = "${license}"
 issueTrackerURL = "https://dc.mutils.net"
 
 [[mods]]
-modId = "${modid}"
+modId = "veinminer"
 version = "${version}"
 displayName = "${name}"
 displayURL = "https://modrinth.com/mod/veinminer"
@@ -14,21 +14,21 @@ description = '''
 ${description}
 '''
 
-[[dependencies.${modid}]]
+[[dependencies.veinminer]]
     modId = "neoforge"
     type = "required"
     versionRange = "[21,)"
     ordering = "NONE"
     side = "BOTH"
 
-[[dependencies.${modid}]]
+[[dependencies.veinminer]]
     modId = "minecraft"
     type = "required"
     versionRange = "[1.21,)"
     ordering = "NONE"
     side = "BOTH"
 
-[[dependencies.${modid}]]
+[[dependencies.veinminer]]
     modId = "kotlinforforge"
     type = "required"
     versionRange = "[5,)"
