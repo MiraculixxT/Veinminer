@@ -3,8 +3,8 @@ import net.minecrell.pluginyml.paper.PaperPluginDescription
 
 plugins {
     `kotlin-script`
+    `publish-script`
     id("de.eldoria.plugin-yml.paper")
-    id("io.github.dexman545.outlet")
 }
 
 val paperVersion by properties
@@ -36,7 +36,6 @@ tasks.processResources {
     }
 }
 
-
 paper {
     main = "$group.veinminerEnchant.paper.VeinminerEnchantment"
     bootstrapper = "$group.veinminerEnchant.paper.VeinminerEnchantmentBootstrapper"
@@ -57,5 +56,24 @@ paper {
         register("Veinminer") {
             load = PaperPluginDescription.RelativeLoadOrder.BEFORE
         }
+    }
+}
+
+modrinth {
+    uploadFile.set(tasks.jar)
+    projectId = properties["modrinthEnchantmentId"] as String
+    versionName = "Veinminer Enchantment - $version"
+    outlet.mcVersionRange = properties["enchantmentVersions"] as String
+    gameVersions.addAll(outlet.mcVersions())
+    loaders.addAll(buildList {
+        add("fabric")
+        add("quilt")
+        add("neoforge")
+        add("paper")
+        add("purpur")
+        add("folia")
+    })
+    dependencies {
+        required.project("veinminer")
     }
 }

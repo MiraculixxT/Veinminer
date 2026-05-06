@@ -18,3 +18,18 @@ sourceSets {
         resources.srcDirs("$rootDir/veinminer/assets/")
     }
 }
+
+modrinth {
+    uploadFile.set(tasks.jar)
+    versionName = "Veinminer Fabric - $version"
+    outlet.mcVersionRange = properties["fabricSupportedVersions"] as String
+    gameVersions.addAll(outlet.mcVersions())
+    loaders.addAll(buildList {
+        add("fabric")
+        add("quilt")
+    })
+    dependencies {
+        required.project("fabric-api")
+        required.project("fabric-language-kotlin")
+    }
+}

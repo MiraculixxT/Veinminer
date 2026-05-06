@@ -1,11 +1,8 @@
-import dex.plugins.outlet.v2.util.ReleaseType
-
 plugins {
     `kotlin-script`
     `paper-script`
     `shadow-script`
     `publish-script`
-    id("io.github.dexman545.outlet")
 }
 
 dependencies {
@@ -27,11 +24,9 @@ tasks.shadowJar { archiveClassifier.set("")    }
 
 modrinth {
     uploadFile.set(tasks.shadowJar)
-    versionName = "Veinminer Plugin - $version"
+    versionName = "Veinminer Paper - $version"
     outlet.mcVersionRange = properties["paperSupportedVersions"] as String
-    outlet.allowedReleaseTypes = setOf(ReleaseType.RELEASE)
     gameVersions.addAll(outlet.mcVersions())
-    changelog = properties["changelog"] as String
     loaders.addAll(buildList {
         add("paper")
         add("purpur")

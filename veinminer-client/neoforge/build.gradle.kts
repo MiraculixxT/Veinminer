@@ -19,3 +19,18 @@ sourceSets {
         resources.srcDirs("$rootDir/veinminer-client/assets/")
     }
 }
+
+modrinth {
+    uploadFile.set(tasks.jar)
+    projectId = properties["modrinthClientId"] as String
+    versionName = "Veinminer Hotkey NeoForge - $version"
+    outlet.mcVersionRange = properties["neoforgeSupportedVersions"] as String
+    gameVersions.addAll(outlet.mcVersions())
+    loaders.addAll(buildList {
+        add("neoforge")
+    })
+    dependencies {
+        required.project("kotlin-for-forge")
+        required.project("veinminer")
+    }
+}

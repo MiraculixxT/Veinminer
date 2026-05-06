@@ -21,3 +21,16 @@ sourceSets {
         resources.srcDirs("$rootDir/veinminer/assets/")
     }
 }
+
+modrinth {
+    uploadFile.set(tasks.jar)
+    versionName = "Veinminer NeoForge - $version"
+    outlet.mcVersionRange = properties["neoforgeSupportedVersions"] as String
+    gameVersions.addAll(outlet.mcVersions())
+    loaders.addAll(buildList {
+        add("neoforge")
+    })
+    dependencies {
+        required.project("kotlin-for-forge")
+    }
+}

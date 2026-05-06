@@ -19,3 +19,20 @@ sourceSets {
         resources.srcDirs("$rootDir/veinminer-client/assets/")
     }
 }
+
+modrinth {
+    uploadFile.set(tasks.jar)
+    projectId = properties["modrinthClientId"] as String
+    versionName = "Veinminer Hotkey Fabric - $version"
+    outlet.mcVersionRange = properties["fabricSupportedVersions"] as String
+    gameVersions.addAll(outlet.mcVersions())
+    loaders.addAll(buildList {
+        add("fabric")
+        add("quilt")
+    })
+    dependencies {
+        required.project("fabric-api")
+        required.project("fabric-language-kotlin")
+        required.project("veinminer")
+    }
+}
