@@ -29,9 +29,7 @@ modrinth {
     loaders.addAll(buildList {
         add("paper")
         add("purpur")
-
-        val foliaSupport = properties["foliaSupport"] as String == "true"
-        if (foliaSupport) add("folia")
+        add("folia")
     })
     dependencies {
         // The scope can be `required`, `optional`, `incompatible`, or `embedded`

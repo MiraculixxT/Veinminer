@@ -11,7 +11,6 @@ plugins {
 description = properties["description"] as String
 
 val paperVersion by properties
-val foliaSupport = properties["foliaSupport"] as String == "true"
 val projectName = properties["projectName"] as String
 
 repositories {
@@ -35,12 +34,6 @@ dependencies {
     library("de.miraculixx:kpaper:1.+")
 }
 
-//tasks {
-//    assemble {
-//        dependsOn(reobfJar)
-//    }
-//}
-
 paper {
     main = "$group.veinminer.Veinminer"
     bootstrapper = "$group.veinminer.VeinminerBootstrapper"
@@ -51,6 +44,6 @@ paper {
     website = "https://mutils.net"
 
     foliaSupported = true
-    apiVersion = "1.20"
+    apiVersion = "1.21"
     load = BukkitPluginDescription.PluginLoadOrder.STARTUP
 }

@@ -2,6 +2,8 @@ package de.miraculixx.veinminerClient
 
 import com.mojang.logging.LogUtils
 import de.miraculixx.veinminer.UpdateManager
+import de.miraculixx.veinminer.extensions.mcCoroutineDelay
+import de.miraculixx.veinminer.extensions.ticks
 import de.miraculixx.veinminerClient.constants.KEY_VEINMINE_HOLD
 import de.miraculixx.veinminerClient.constants.KEY_VEINMINE_TOGGLE
 import de.miraculixx.veinminerClient.network.NetworkManager
@@ -15,7 +17,6 @@ import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.toasts.SystemToast
 import net.minecraft.network.chat.Component
 import net.minecraft.resources.Identifier
-import net.silkmc.silk.core.task.mcCoroutineTask
 import org.slf4j.Logger
 import kotlin.jvm.optionals.getOrNull
 
@@ -76,11 +77,11 @@ class VeinminerClient : ClientModInitializer {
         HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(MOD_ID, "target-info"), HUDRenderer)
 
         // Updater
-        mcCoroutineTask(false) {
+        mcCoroutineDelay(1.ticks) {
             listOf(UpdateManager.Module.VEINMINER_CLIENT).forEach { module ->
                 try {
                     UpdateManager.checkForUpdates(module, "fabric", client.launchedVersion, fabricLoader.getModContainer(module.modID).getOrNull()?.metadata?.version?.friendlyString)
-                } catch (e: Exception) { LOGGER.warn("[VeinminerUpdater] Error while checking for updates: ${e.message}") }
+                } catch (e: Exception) { LOGGER.warn("Error while checking for updates: ${e.message}") }
             }
         }
     }

@@ -34,13 +34,10 @@
     }
   },
   "depends": {
-    "fabricloader": ">=0.17.3",
-    "minecraft": ">=26.1",
+    "fabricloader": "${loaderVersion}",
+    "minecraft": "${mcversion}",
     "java": ">=25",
     "fabric-api": "*",
-    "fabric-language-kotlin": "*",
-
-    "silk-core": "*",
-    "silk-network": "*"
+    "fabric-language-kotlin": "*"
   }
 }

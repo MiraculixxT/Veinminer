@@ -4,6 +4,7 @@ import net.minecrell.pluginyml.paper.PaperPluginDescription
 plugins {
     `kotlin-script`
     id("de.eldoria.plugin-yml.paper")
+    id("io.github.dexman545.outlet")
 }
 
 val paperVersion by properties
@@ -17,18 +18,17 @@ repositories {
 }
 
 dependencies {
-    // Loader entrypoint surfaces only — never bundled, each loader provides its own at runtime.
-    // paper-api also supplies SLF4J transitively for the logger used by the Fabric/NeoForge stubs.
+    outlet.mcVersionRange = properties["gameVersion"] as String
+
     compileOnly("io.papermc.paper:paper-api:$paperVersion")
-    compileOnly("net.fabricmc:fabric-loader:$fabricLoaderVersion")
+    compileOnly("net.fabricmc:fabric-loader:${outlet.loaderVersion()}")
     compileOnly("net.neoforged.fancymodloader:loader:$fancyModLoaderVersion")
 }
 
 tasks.processResources {
     val tokens = mapOf(
         "version" to project.version.toString(),
-        "license" to (properties["licence"] as String),
-        "environment" to (properties["environment"] as String),
+        "license" to (properties["licence"] as String)
     )
     inputs.properties(tokens)
     filesMatching(listOf("fabric.mod.json", "META-INF/neoforge.mods.toml")) {

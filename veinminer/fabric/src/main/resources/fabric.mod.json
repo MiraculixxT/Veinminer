@@ -14,7 +14,7 @@
     "homepage": "https://modrinth.com/mod/${modrinth}",
     "issues": "https://dc.mutils.net"
   },
-  "environment": "${environment}",
+  "environment": "server",
   "entrypoints": {
     "main": [
       "de.miraculixx.veinminer.Veinminer"
@@ -22,13 +22,10 @@
   },
   "mixins": [],
   "depends": {
-    "fabricloader": ">=0.16.5",
-    "minecraft": ">=26.1",
+    "fabricloader": "${loaderVersion}",
+    "minecraft": "${mcversion}",
     "java": ">=25",
     "fabric-api": "*",
-    "fabric-language-kotlin": "*",
-
-    "silk-core": "*",
-    "silk-commands": "*"
+    "fabric-language-kotlin": "*"
   }
 }

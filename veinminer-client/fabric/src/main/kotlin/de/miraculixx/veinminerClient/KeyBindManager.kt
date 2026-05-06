@@ -1,5 +1,6 @@
 package de.miraculixx.veinminerClient
 
+import de.miraculixx.veinminer.extensions.ticks
 import de.miraculixx.veinminerClient.constants.KEY_VEINMINE_HOLD
 import de.miraculixx.veinminerClient.constants.KEY_VEINMINE_TOGGLE
 import de.miraculixx.veinminerClient.network.NetworkManager
@@ -17,7 +18,6 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import net.minecraft.world.phys.BlockHitResult
 import net.minecraft.world.phys.HitResult
-import net.silkmc.silk.core.kotlin.ticks
 
 object KeyBindManager {
     var lastTarget: BlockPos? = null

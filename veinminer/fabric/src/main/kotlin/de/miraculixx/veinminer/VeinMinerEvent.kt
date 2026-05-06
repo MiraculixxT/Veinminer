@@ -9,6 +9,8 @@ import de.miraculixx.veinminer.config.ConfigManager
 import de.miraculixx.veinminer.data.FixedBlockGroup
 import de.miraculixx.veinminer.data.VeinminerSettings
 import de.miraculixx.veinminer.data.VeinminerSettingsOverride
+import de.miraculixx.veinminer.extensions.mcCoroutineDelay
+import de.miraculixx.veinminer.extensions.ticks
 import de.miraculixx.veinminer.utils.permissionVeinmine
 import de.miraculixx.veinminer.network.NetworkRouter
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback
@@ -31,8 +33,6 @@ import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.entity.BlockEntity
 import net.minecraft.world.level.block.state.BlockState
-import net.silkmc.silk.core.kotlin.ticks
-import net.silkmc.silk.core.task.mcCoroutineTask
 import java.util.*
 import net.minecraft.world.entity.ai.attributes.AttributeModifier
 import net.minecraft.world.entity.ai.attributes.Attributes
@@ -87,7 +87,7 @@ object VeinMinerEvent {
         player.removeMiningSpeedModifier()
         val veinmineInfo = allowedToVeinmine(world, player, pos, state) ?: return@register true
 
-        mcCoroutineTask(delay = veinmineInfo.settings.delay.ticks) {
+        mcCoroutineDelay(veinmineInfo.settings.delay.ticks) {
             val amount = veinmineInfo.veinmine(true)
             player.awardStat(Stats.BLOCK_MINED.get(state.block), amount - 1) // -1 to avoid double counting the original block
         }
@@ -97,7 +97,7 @@ object VeinMinerEvent {
         if (cooldownTime > 0) {
             cooldown.add(player.uuid)
 
-            mcCoroutineTask(delay = cooldownTime.ticks) {
+            mcCoroutineDelay(cooldownTime.ticks) {
                 cooldown.remove(player.uuid)
             }
         }
@@ -189,13 +189,13 @@ object VeinMinerEvent {
             // Only break if action is mining
             if (size != 0 && shouldBreak) {
                 if (settings.decreaseDurability && tool.remainingDurability() <= 1) continue
-                mcCoroutineTask(delay = (settings.delay * vBlock.distance).ticks) {
+                mcCoroutineDelay((settings.delay * vBlock.distance).ticks) {
                     // Delay if necessary & check again if the block is still valid
                     if (settings.delay != 0) {
-                        if (!targetTypes.contains(vBlock.block.key())) return@mcCoroutineTask
+                        if (!targetTypes.contains(vBlock.block.key())) return@mcCoroutineDelay
                     }
                     // Re-check at execution time so delayed tasks cannot consume the last durability point.
-                    if (settings.decreaseDurability && tool.remainingDurability() <= 1) return@mcCoroutineTask
+                    if (settings.decreaseDurability && tool.remainingDurability() <= 1) return@mcCoroutineDelay
 
                     vBlock.block.destroyBlock(tool, world, pos, player, sourceLocation)
                     if (settings.decreaseDurability) damageItem(tool, player)

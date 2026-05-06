@@ -13,7 +13,7 @@
     "homepage": "https://modrinth.com/mod/veinminer-enchantment",
     "issues": "https://dc.mutils.net"
   },
-  "environment": "${environment}",
+  "environment": "server",
   "entrypoints": {
     "main": [
       "de.miraculixx.veinminerEnchant.fabric.VeinminerEnchantment"
