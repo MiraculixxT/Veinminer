@@ -10,6 +10,6 @@ dependencies {
 }
 
 modrinth {
-    projectId = "none" // Route into void on accident publish
+    projectId = properties["modrinthClientId"] as String
     syncBodyFrom = rootProject.file("veinminer-client/README.md").readText()
 }
