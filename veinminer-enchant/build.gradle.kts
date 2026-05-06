@@ -76,4 +76,6 @@ modrinth {
     dependencies {
         required.project("veinminer")
     }
+
+    syncBodyFrom = rootProject.file("veinminer-enchant/README.md").readText()
 }
