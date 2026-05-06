@@ -4,6 +4,9 @@ plugins {
     `publish-script`
 }
 
+neoForge {
+    accessTransformers.from(file("src/main/resources/META-INF/accesstransformer.cfg"))
+}
 
 dependencies {
     implementation(project(":core"))
