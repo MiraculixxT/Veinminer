@@ -14,7 +14,7 @@
     "homepage": "https://modrinth.com/mod/${modrinth}",
     "issues": "https://dc.mutils.net"
   },
-  "environment": "server",
+  "environment": "*",
   "entrypoints": {
     "main": [
       "de.miraculixx.veinminer.Veinminer"

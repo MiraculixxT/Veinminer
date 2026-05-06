@@ -38,6 +38,7 @@
     "minecraft": "${mcversion}",
     "java": ">=25",
     "fabric-api": "*",
-    "fabric-language-kotlin": "*"
+    "fabric-language-kotlin": "*",
+    "veinminer": ">=2.8.0"
   }
 }
