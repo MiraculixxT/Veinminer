@@ -16,6 +16,6 @@ loom {
 
 sourceSets {
     main {
-        resources.srcDirs("$rootDir/commons/")
+        resources.srcDirs("$rootDir/veinminer-client/assets/")
     }
 }
