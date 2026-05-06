@@ -18,6 +18,6 @@ dependencies {
 
 sourceSets {
     main {
-        resources.srcDirs("$rootDir/commons/")
+        resources.srcDirs("$rootDir/veinminer/assets/")
     }
 }
