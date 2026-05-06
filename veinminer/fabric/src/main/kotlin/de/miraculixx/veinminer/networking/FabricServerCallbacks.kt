@@ -1,7 +1,7 @@
 package de.miraculixx.veinminer.networking
 
-import de.miraculixx.veinminer.VeinMinerEvent
-import de.miraculixx.veinminer.VeinMinerEvent.veinmine
+import de.miraculixx.veinminer.event.VeinMinerEvent
+import de.miraculixx.veinminer.event.VeinMinerEvent.veinmine
 import de.miraculixx.veinminer.Veinminer
 import de.miraculixx.veinminer.config.ConfigManager
 import de.miraculixx.veinminer.network.BlockHighlighting

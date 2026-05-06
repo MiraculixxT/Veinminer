@@ -1,29 +1,24 @@
 @file:Suppress("unused")
 
-package de.miraculixx.veinminer
+package de.miraculixx.veinminer.event
 
-import de.miraculixx.veinminer.Veinminer.Companion.VEINMINE
-import de.miraculixx.veinminer.Veinminer.Companion.active
-import de.miraculixx.veinminer.Veinminer.Companion.enchantmentActive
-import de.miraculixx.veinminer.config.ConfigManager
+import de.miraculixx.veinminer.command.ActiveHost
 import de.miraculixx.veinminer.data.FixedBlockGroup
 import de.miraculixx.veinminer.data.VeinminerSettings
 import de.miraculixx.veinminer.data.VeinminerSettingsOverride
 import de.miraculixx.veinminer.extensions.mcCoroutineDelay
 import de.miraculixx.veinminer.extensions.ticks
-import de.miraculixx.veinminer.utils.permissionVeinmine
 import de.miraculixx.veinminer.network.NetworkRouter
-import net.fabricmc.fabric.api.event.player.AttackBlockCallback
-import me.lucko.fabric.api.permissions.v0.Permissions
-import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents
+import de.miraculixx.veinminer.utils.permissionVeinmine
 import net.minecraft.core.BlockPos
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.resources.Identifier
 import net.minecraft.server.level.ServerLevel
-import net.minecraft.stats.Stats
 import net.minecraft.tags.BlockTags
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.EquipmentSlot
+import net.minecraft.world.entity.ai.attributes.AttributeModifier
+import net.minecraft.world.entity.ai.attributes.Attributes
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.GameType
@@ -33,26 +28,29 @@ import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.entity.BlockEntity
 import net.minecraft.world.level.block.state.BlockState
-import java.util.*
-import net.minecraft.world.entity.ai.attributes.AttributeModifier
-import net.minecraft.world.entity.ai.attributes.Attributes
-import net.minecraft.world.InteractionResult
+import java.util.LinkedList
+import java.util.Queue
+import java.util.UUID
 
+/**
+ * Used by NMS-based loaders (Fabric, NeoForge). Paper has its own Bukkit-API-based
+ * implementation in `veinminer-paper` and intentionally does not use this one.
+ *
+ * Loaders must populate [EventState] during init and register their own
+ * block-break / attack-block hooks that delegate to [allowedToVeinmine] + [veinmine].
+ */
 object VeinMinerEvent {
     private val cooldown = mutableSetOf<UUID>()
     private val speedModifierId: Identifier = Identifier.fromNamespaceAndPath("veinminer", "veinmine_speed")
 
-    /**
-     * @return a set of all blocks in the same group as this material. If the material is not in a group, it will return an empty set
-     */
     private fun Identifier.groupedBlocks(): FixedBlockGroup<Identifier> {
         val blocks = mutableSetOf<Identifier>()
         val tools = mutableSetOf<Identifier>()
         var override: VeinminerSettingsOverride? = null
 
-        ConfigManager.groups.forEach {
+        EventState.configManager.groups.forEach {
             if (it.blocks.contains(this)) {
-                if (override == null) override = it.override // Capture first override. This behavior may need improvement
+                if (override == null) override = it.override
                 blocks.addAll(it.blocks)
                 tools.addAll(it.tools)
             }
@@ -60,118 +58,100 @@ object VeinMinerEvent {
         return FixedBlockGroup(blocks.toSet(), tools.toSet(), override)
     }
 
-    fun BlockState.key() = block.key()
-    fun Block.key() = BuiltInRegistries.BLOCK.getKey(this)
-    fun ItemStack.key() = BuiltInRegistries.ITEM.getKey(item)
+    fun BlockState.key(): Identifier = block.key()
+    fun Block.key(): Identifier = BuiltInRegistries.BLOCK.getKey(this)
+    fun ItemStack.key(): Identifier = BuiltInRegistries.ITEM.getKey(item)
 
-    private val onAttack = AttackBlockCallback.EVENT.register { player, world, _, pos, _ ->
-        if (world.isClientSide) return@register InteractionResult.PASS
+    fun getPreferredToolIcon(block: BlockState): String = when {
+        block.`is`(BlockTags.MINEABLE_WITH_AXE) -> "axe"
+        block.`is`(BlockTags.MINEABLE_WITH_SHOVEL) -> "shovel"
+        block.`is`(BlockTags.MINEABLE_WITH_HOE) -> "hoe"
+        else -> "pickaxe"
+    }
+
+    /**
+     * Apply the per-block-break attribute speed modifier when a vein chain is
+     * detected on attack. Returns true if a modifier was applied (caller may
+     * inspect to decide further behavior).
+     */
+    fun applySpeedModifierOnAttack(world: Level, player: Player, pos: BlockPos, state: BlockState) {
+        if (world.isClientSide) return
         player.removeMiningSpeedModifier()
 
-        val state = world.getBlockState(pos)
-        val veinmineInfo = allowedToVeinmine(world, player, pos, state) ?: return@register InteractionResult.PASS
-        val multiplicator = veinmineInfo.settings.miningSpeedModifier
-        if (multiplicator <= 0.0) return@register InteractionResult.PASS
+        val info = allowedToVeinmine(world, player, pos, state) ?: return
+        val multiplicator = info.settings.miningSpeedModifier
+        if (multiplicator <= 0.0) return
 
-        val amount = veinmineInfo.veinmine(false)
-        if (amount <= 1) return@register InteractionResult.PASS
+        val amount = info.veinmine(false)
+        if (amount <= 1) return
 
-        val modifier = veinmineInfo.settings.calculateBreakSpeedModifier(amount, multiplicator)
-        val attribute = player.getAttribute(Attributes.BLOCK_BREAK_SPEED) ?: return@register InteractionResult.PASS
+        val modifier = info.settings.calculateBreakSpeedModifier(amount, multiplicator)
+        val attribute = player.getAttribute(Attributes.BLOCK_BREAK_SPEED) ?: return
         attribute.removeModifier(speedModifierId)
         attribute.addTransientModifier(AttributeModifier(speedModifierId, modifier, AttributeModifier.Operation.ADD_MULTIPLIED_BASE))
-        InteractionResult.PASS
     }
 
-    private val event = PlayerBlockBreakEvents.BEFORE.register { world, player, pos, state, _ ->
+    /**
+     * Hook for the loader's block-break-before event. Returns true if the break
+     * should proceed, false to cancel.
+     */
+    fun onBlockBreakBefore(world: Level, player: Player, pos: BlockPos, state: BlockState): Boolean {
         player.removeMiningSpeedModifier()
-        val veinmineInfo = allowedToVeinmine(world, player, pos, state) ?: return@register true
+        val info = allowedToVeinmine(world, player, pos, state) ?: return true
 
-        mcCoroutineDelay(veinmineInfo.settings.delay.ticks) {
-            val amount = veinmineInfo.veinmine(true)
-            player.awardStat(Stats.BLOCK_MINED.get(state.block), amount - 1) // -1 to avoid double counting the original block
+        mcCoroutineDelay(info.settings.delay.ticks) {
+            val amount = info.veinmine(true)
+            player.awardStat(net.minecraft.stats.Stats.BLOCK_MINED.get(state.block), amount - 1)
         }
 
-        // Check for cooldown config
-        val cooldownTime = veinmineInfo.settings.cooldown
+        val cooldownTime = info.settings.cooldown
         if (cooldownTime > 0) {
             cooldown.add(player.uuid)
-
-            mcCoroutineDelay(cooldownTime.ticks) {
-                cooldown.remove(player.uuid)
-            }
+            mcCoroutineDelay(cooldownTime.ticks) { cooldown.remove(player.uuid) }
         }
-
-        return@register true
+        return true
     }
 
     /**
-     * Get the preferred tool icon for the block
-     */
-    fun getPreferredToolIcon(block: BlockState): String {
-        return when {
-            block.`is`(BlockTags.MINEABLE_WITH_AXE) -> "axe"
-            block.`is`(BlockTags.MINEABLE_WITH_SHOVEL) -> "shovel"
-            block.`is`(BlockTags.MINEABLE_WITH_HOE) -> "hoe"
-            else -> "pickaxe"
-        }
-    }
-
-    /**
-     * Check if the player is allowed to veinmine the block
      * @return the veinmine action if the player is allowed to veinmine the block, null otherwise
      */
     fun allowedToVeinmine(world: Level, player: Player, pos: BlockPos, state: BlockState): VeinmineAction? {
-        if (!active) return null
+        if (!ActiveHost.host.active) return null
 
-        // Check if player is in creative
         if (player.gameMode() == GameType.CREATIVE) return null
 
         val uuid = player.uuid
         val hasClient = NetworkRouter.registeredPlayers.contains(uuid)
         val material = state.key().takeIf { !state.isAir } ?: return null
 
-        // Check if player has the client mod and pressed the key
         if (hasClient && !NetworkRouter.readyToVeinmine.contains(uuid)) return null
 
-        // Gater correct settings layer
         val blockGroup = material.groupedBlocks()
         val isGroupBlock = blockGroup.blocks.isNotEmpty()
-        val settings = ConfigManager.settings.applyOverrides(hasClient, blockGroup.override)
+        val settings = EventState.configManager.settings.applyOverrides(hasClient, blockGroup.override)
 
-        if (settings.permissionRestricted && !Permissions.check(player, permissionVeinmine)) return null
+        if (settings.permissionRestricted && !EventState.checkPermission(player, permissionVeinmine)) return null
         val hasClientBypass = settings.client.allBlocks && NetworkRouter.registeredPlayers.containsKey(player.uuid)
-        val isWhitelisted = isGroupBlock || ConfigManager.veinBlocks.contains(material)
+        val isWhitelisted = isGroupBlock || EventState.configManager.veinBlocks.contains(material)
 
-        // Check if client is required
         if (settings.client.require && !hasClient) return null
-
-        // Check if the block is allowed at all
         if (!isWhitelisted && !hasClientBypass) return null
-
-        // Check for sneak config
         if (settings.mustSneak && !player.isCrouching) return null
-
-        // Check for cooldown
         if (cooldown.contains(player.uuid)) return null
 
-        // Check for correct tool (if block group tools are empty, it means all tools are allowed)
         val mainHandItem = player.mainHandItem
         if (settings.needCorrectTool && (state.requiresCorrectToolForDrops() && !mainHandItem.isCorrectToolForDrops(state))) return null
         if (!hasClientBypass && isGroupBlock && !blockGroup.tools.isEmpty() && !blockGroup.tools.contains(mainHandItem.key())) return null
-        // Fall back to vanilla single-block breaking on the last durability point.
         if (settings.decreaseDurability && mainHandItem.remainingDurability() <= 1) return null
 
-        // Check for enchantment if active
-        if (enchantmentActive && !mainHandItem.enchantments.keySet().any { it.`is`(VEINMINE) }) return null
+        if (EventState.enchantmentActive && !mainHandItem.enchantments.keySet().any { it.`is`(EventState.enchantmentKey) }) return null
 
-        // Gather veinmine action information
         val blocks = if (isGroupBlock) blockGroup.blocks else setOf(material)
         return VeinmineAction(state, pos, blocks, mainHandItem, mutableSetOf(), player, world, pos, settings)
     }
 
     /**
-     * Recursively break blocks around the source block until the vein stops
+     * Recursively break blocks around the source block until the vein stops.
      * @return the number of blocks broken
      */
     fun VeinmineAction.veinmine(shouldBreak: Boolean): Int {
@@ -186,15 +166,12 @@ object VeinMinerEvent {
             if (size >= settings.maxChain) continue
             if (tool.isEmpty) continue
 
-            // Only break if action is mining
             if (size != 0 && shouldBreak) {
                 if (settings.decreaseDurability && tool.remainingDurability() <= 1) continue
                 mcCoroutineDelay((settings.delay * vBlock.distance).ticks) {
-                    // Delay if necessary & check again if the block is still valid
                     if (settings.delay != 0) {
                         if (!targetTypes.contains(vBlock.block.key())) return@mcCoroutineDelay
                     }
-                    // Re-check at execution time so delayed tasks cannot consume the last durability point.
                     if (settings.decreaseDurability && tool.remainingDurability() <= 1) return@mcCoroutineDelay
 
                     vBlock.block.destroyBlock(tool, world, pos, player, sourceLocation)
@@ -203,7 +180,6 @@ object VeinMinerEvent {
             }
             processedBlocks.add(pos)
 
-            // Process blocks around the current block
             val searchRadius = settings.searchRadius
             (-searchRadius..searchRadius).forEach { x ->
                 (-searchRadius..searchRadius).forEach { y ->
@@ -211,7 +187,6 @@ object VeinMinerEvent {
                         if (x == 0 && y == 0 && z == 0) return@z
                         val newPos = BlockPos(pos.x + x, pos.y + y, pos.z + z)
                         val newBlock = world.getBlockState(newPos)
-
                         queue.add(VeinmineBlock(newBlock, newPos, vBlock.distance + 1))
                     }
                 }
@@ -244,9 +219,6 @@ object VeinMinerEvent {
         }
     }
 
-    /**
-     * Used to extract the drop logic from [Block.dropResources] to allow for custom handling of drops
-     */
     private fun improvedDropResources(
         blockState: BlockState,
         world: Level,
@@ -258,7 +230,7 @@ object VeinMinerEvent {
     ) {
         val serverLevel = world as? ServerLevel ?: return
         Block.getDrops(blockState, serverLevel, blockPos, blockEntity, breaker, tool).forEach { drop: ItemStack ->
-            val dropPos = if (ConfigManager.settings.mergeItemDrops) initialSource else blockPos
+            val dropPos = if (EventState.configManager.settings.mergeItemDrops) initialSource else blockPos
             Block.popResource(world, dropPos, drop)
         }
         blockState.spawnAfterBreak(serverLevel, blockPos, tool, true)

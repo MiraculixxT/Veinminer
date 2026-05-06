@@ -38,6 +38,10 @@ import org.bukkit.inventory.ItemStack
 import java.util.*
 import kotlin.time.Duration.Companion.milliseconds
 
+/**
+ * Paper implementation of the common veinmining logic.
+ * Native implementation is prefered here over using the common NMS implementation.
+ */
 object VeinMinerEvent {
     private val cooldown = mutableSetOf<UUID>()
     var enabled: Boolean = true
