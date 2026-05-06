@@ -4,6 +4,10 @@ import de.miraculixx.veinminer.command.ActiveHost
 import de.miraculixx.veinminer.data.ModrinthFile
 import de.miraculixx.veinminer.data.ModrinthVersion
 import de.miraculixx.veinminer.utils.json
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import java.io.File
 import java.net.HttpURLConnection
 import java.net.URI
@@ -43,6 +47,29 @@ object UpdateManager {
         val targetFolder = File(configFolder, "update").apply { mkdirs() }
         val targetFile = File(targetFolder, file.filename)
         targetFile.writeBytes(content)
+    }
+
+    /**
+     * Launches a coroutine that checks each module against Modrinth and invokes
+     * [onOutdated] for every module that is behind the latest published version.
+     * [moduleVersionLookup] returns the currently installed version of a module,
+     * or null if the module isn't installed.
+     */
+    fun startUpdateChecker(
+        modules: List<Module>,
+        platform: String,
+        serverVersion: String,
+        moduleVersionLookup: (Module) -> String?,
+        onOutdated: (VersionInfo) -> Unit,
+    ): Job = CoroutineScope(Dispatchers.Default).launch {
+        modules.forEach { module ->
+            try {
+                val info = checkForUpdates(module, platform, serverVersion, moduleVersionLookup(module))
+                if (info.outdated) onOutdated(info)
+            } catch (e: Exception) {
+                logger.warn("Error while checking for updates: ${e.message}")
+            }
+        }
     }
 
     enum class Module(val id: String, val modID: String) {

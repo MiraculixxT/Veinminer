@@ -19,9 +19,6 @@ import de.miraculixx.veinminer.network.NetworkRouter
 import de.miraculixx.veinminer.networking.PaperPlatformNetwork
 import de.miraculixx.veinminer.networking.PaperServerCallbacks
 import de.miraculixx.veinminer.utils.PaperHost
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import org.bukkit.NamespacedKey
 import org.bukkit.event.player.PlayerJoinEvent
 
@@ -57,24 +54,18 @@ class Veinminer : KPaper() {
         val enchantmentContainer = server.pluginManager.getPlugin("veinminer-enchantment")
         enchantmentActive = enchantmentContainer != null
 
-        // Update checker
-        CoroutineScope(Dispatchers.Default).launch {
-            listOf(UpdateManager.Module.VEINMINER, UpdateManager.Module.VEINMINER_ENCHANTMENT).forEach { module ->
-                try {
-                    val updateInfo = UpdateManager.checkForUpdates(module, "paper", server.minecraftVersion, pluginManager.getPlugin(module.modID)?.pluginMeta?.version)
-                    if (updateInfo.outdated) {
-                        // Update notification
-                        listen<PlayerJoinEvent> {
-                            if (it.player.isOp) {
-                                it.player.sendMessage(
-                                    cmp("${module.modID} is outdated! Click here to download the latest version").addUrl("https://modrinth.com/project/${module.modID}") +
-                                    cmp(" (Current: ") + cmp(updateInfo.currentVersion, cRed.color()) + cmp(", Latest: ") + cmp(updateInfo.latestVersion, cGreen.color()) + cmp(")")
-                                )
-                            }
-                        }
-                    }
-                } catch (e: Exception) {
-                    LOGGER.warn("Error while checking for updates: ${e.message}")
+        UpdateManager.startUpdateChecker(
+            modules = listOf(UpdateManager.Module.VEINMINER, UpdateManager.Module.VEINMINER_ENCHANTMENT),
+            platform = "paper",
+            serverVersion = server.minecraftVersion,
+            moduleVersionLookup = { pluginManager.getPlugin(it.modID)?.pluginMeta?.version },
+        ) { info ->
+            listen<PlayerJoinEvent> {
+                if (it.player.isOp) {
+                    it.player.sendMessage(
+                        cmp("${info.module.modID} is outdated! Click here to download the latest version").addUrl("https://modrinth.com/project/${info.module.modID}") +
+                        cmp(" (Current: ") + cmp(info.currentVersion, cRed.color()) + cmp(", Latest: ") + cmp(info.latestVersion, cGreen.color()) + cmp(")")
+                    )
                 }
             }
         }

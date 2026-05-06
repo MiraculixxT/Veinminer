@@ -91,15 +91,11 @@ class Veinminer : ModInitializer {
             }
         }
 
-
-        // Updater
-        CoroutineScope(Dispatchers.Default).launch {
-            listOf(UpdateManager.Module.VEINMINER, UpdateManager.Module.VEINMINER_CLIENT).forEach { module ->
-                try {
-                    val info = UpdateManager.checkForUpdates(module, "fabric", mcVersion, fabricLoader.getModContainer(module.modID).getOrNull()?.metadata?.version?.friendlyString)
-                    if (info.outdated) updateInfo = info
-                } catch (e: Exception) { LOGGER.warn("Error while checking for updates: ${e.message}") }
-            }
-        }
+        UpdateManager.startUpdateChecker(
+            modules = listOf(UpdateManager.Module.VEINMINER, UpdateManager.Module.VEINMINER_CLIENT),
+            platform = "fabric",
+            serverVersion = mcVersion,
+            moduleVersionLookup = { fabricLoader.getModContainer(it.modID).getOrNull()?.metadata?.version?.friendlyString },
+        ) { info -> updateInfo = info }
     }
 }
