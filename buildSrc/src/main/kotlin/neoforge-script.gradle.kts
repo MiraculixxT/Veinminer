@@ -29,6 +29,10 @@ neoForge {
     }
 }
 
+tasks.named<JavaExec>("runServer") {
+    standardInput = System.`in`
+}
+
 dependencies {
     implementation("thedarkcolour:kotlinforforge-neoforge:$kotlinForNeoforgeVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.+")
