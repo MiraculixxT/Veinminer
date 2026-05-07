@@ -4,38 +4,38 @@ license = "${license}"
 issueTrackerURL = "https://dc.mutils.net"
 
 [[mods]]
-modId = "veinminer-client"
+modId = "veinminer_client"
 version = "${version}"
 displayName = "${name}"
 displayURL = "https://modrinth.com/mod/veinminer-client"
-logoFile = "assets/veinminer-client/icon.png"
+logoFile = "assets/veinminer_client/icon.png"
 authors = "${author}"
 description = '''
 ${description}
 '''
 
-[[dependencies.veinminer-client]]
+[[dependencies.veinminer_client]]
     modId = "neoforge"
     type = "required"
     versionRange = "[21,)"
     ordering = "NONE"
     side = "CLIENT"
 
-[[dependencies.veinminer-client]]
+[[dependencies.veinminer_client]]
     modId = "minecraft"
     type = "required"
     versionRange = "[1.21,)"
     ordering = "NONE"
     side = "CLIENT"
 
-[[dependencies.veinminer-client]]
+[[dependencies.veinminer_client]]
     modId = "kotlinforforge"
     type = "required"
     versionRange = "[5,)"
     ordering = "NONE"
     side = "CLIENT"
 
-[[dependencies.veinminer-client]]
+[[dependencies.veinminer_client]]
     modId = "veinminer"
     type = "required"
     versionRange = "[2.8.0,)"
