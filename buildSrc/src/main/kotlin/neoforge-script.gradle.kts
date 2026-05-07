@@ -20,16 +20,11 @@ neoForge {
     runs {
         register("server") {
             server()
+            programArgument("--nogui")
         }
 
         register("client") {
             client()
-        }
-    }
-
-    mods {
-        register(modid) {
-            sourceSet(sourceSets.main.get())
         }
     }
 }

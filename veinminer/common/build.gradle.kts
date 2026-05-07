@@ -8,9 +8,3 @@ dependencies {
     minecraft("com.mojang:minecraft:$gameVersion")
     implementation(project(":core"))
 }
-
-tasks.jar {
-    manifest {
-        attributes("FMLModType" to "GAMELIBRARY")
-    }
-}

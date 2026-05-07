@@ -6,14 +6,24 @@ plugins {
 
 neoForge {
     accessTransformers.from(file("src/main/resources/META-INF/accesstransformer.cfg"))
+    mods {
+        create("veinminer") {
+            sourceSet(sourceSets.main.get())
+            sourceSet(project(":core").sourceSets.main.get())
+            sourceSet(project(":veinminer:veinminer-common").sourceSets.main.get())
+        }
+    }
 }
 
 dependencies {
     implementation(project(":core"))
     implementation(project(":veinminer:veinminer-common"))
+}
 
-    jarJar(project(":core"))
-    jarJar(project(":veinminer:veinminer-common"))
+tasks.jar {
+    from(project(":core").sourceSets["main"].output)
+    from(project(":veinminer:veinminer-common").sourceSets["main"].output)
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 sourceSets {
