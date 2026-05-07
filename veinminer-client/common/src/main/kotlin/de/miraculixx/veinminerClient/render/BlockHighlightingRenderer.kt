@@ -6,8 +6,8 @@ import com.mojang.blaze3d.pipeline.RenderPipeline
 import com.mojang.blaze3d.platform.CompareOp
 import com.mojang.blaze3d.vertex.PoseStack
 import de.miraculixx.veinminer.data.BlockPosition
+import de.miraculixx.veinminerClient.ClientLifecycle
 import de.miraculixx.veinminerClient.KeyBindManager
-import de.miraculixx.veinminerClient.VeinminerClient
 import de.miraculixx.veinminerClient.network.NetworkManager
 import net.minecraft.client.renderer.MultiBufferSource
 import net.minecraft.client.renderer.RenderPipelines
@@ -31,7 +31,7 @@ object BlockHighlightingRenderer {
      */
     private val renderHighlighting
         get() = RenderType.create(
-            "${VeinminerClient.MOD_ID}:highlight",
+            "${ClientLifecycle.MOD_ID}:highlight",
             RenderSetup.builder(
                 RenderPipelines.register(
                     RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
@@ -45,20 +45,9 @@ object BlockHighlightingRenderer {
                 .createRenderSetup()
         )
 
-
-//        RenderType.CompositeState.builder()
-//                .setLineState(RenderStateShard.LineStateShard(OptionalDouble.of(1.0)))
-//                .setLayeringState(RenderStateShard.LayeringStateShard.NO_LAYERING)
-//                .createCompositeState(false)
-
-//    RenderType.CompositeState.builder()
-//      .setLineState(RenderStateShard.LineStateShard(OptionalDouble.of(1.0)))
-//      .setLayeringState(RenderStateShard.LayeringStateShard.NO_LAYERING)
-//      .createCompositeState(false)
-
     private val renderHighlightingTranslucent
         get() = RenderType.create(
-            "${VeinminerClient.MOD_ID}:highlight_translucent",
+            "${ClientLifecycle.MOD_ID}:highlight_translucent",
             RenderSetup.builder(
                 RenderPipelines.register(
                     RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)

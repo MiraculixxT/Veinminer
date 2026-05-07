@@ -1,20 +1,25 @@
 package de.miraculixx.veinminerClient.constants
 
 import com.mojang.blaze3d.platform.InputConstants
-import de.miraculixx.veinminerClient.VeinminerClient.Companion.MOD_ID
+import de.miraculixx.veinminerClient.ClientLifecycle.MOD_ID
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper
 import net.minecraft.client.KeyMapping
 import net.minecraft.resources.Identifier
 
-val KEY_CATEGORY = KeyMapping.Category.register(Identifier.fromNamespaceAndPath(MOD_ID, "keybinds"))
-val KEY_VEINMINE_HOLD = registerKeyBinding("hold", InputConstants.KEY_Y)
-val KEY_VEINMINE_TOGGLE = registerKeyBinding("toggle", InputConstants.UNKNOWN.value)
+object FabricKeyBindings {
+    private val category = KeyMapping.Category.register(Identifier.fromNamespaceAndPath(MOD_ID, "keybinds"))
 
-private fun registerKeyBinding(id: String, key: Int) = KeyMappingHelper.registerKeyMapping(
-    KeyMapping(
-        "key.$MOD_ID.$id",
-        InputConstants.Type.KEYSYM,
-        key,
-        KEY_CATEGORY
+    fun register() {
+        KeyBindings.hold = registerKeyBinding("hold", InputConstants.KEY_Y)
+        KeyBindings.toggle = registerKeyBinding("toggle", InputConstants.UNKNOWN.value)
+    }
+
+    private fun registerKeyBinding(id: String, key: Int) = KeyMappingHelper.registerKeyMapping(
+        KeyMapping(
+            "key.$MOD_ID.$id",
+            InputConstants.Type.KEYSYM,
+            key,
+            category
+        )
     )
-)
+}

@@ -1,11 +1,10 @@
 package de.miraculixx.veinminerClient
 
 import de.miraculixx.veinminer.extensions.ticks
-import de.miraculixx.veinminerClient.constants.KEY_VEINMINE_HOLD
-import de.miraculixx.veinminerClient.constants.KEY_VEINMINE_TOGGLE
+import de.miraculixx.veinminerClient.constants.KeyBindings
 import de.miraculixx.veinminerClient.network.NetworkManager
 import de.miraculixx.veinminerClient.render.BlockHighlightingRenderer
-import de.miraculixx.veinminerClient.render.FabricHUDRenderer
+import de.miraculixx.veinminerClient.render.HUDProvider
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -32,19 +31,21 @@ object KeyBindManager {
     private var isToggled = false
     var notifiedOnce = false
 
-
     fun tick() {
-        if (KEY_VEINMINE_TOGGLE.consumeClick()) isToggled = !isToggled
-        val currentlyActive = isToggled || KEY_VEINMINE_HOLD.isDown
+        val toggleKey = KeyBindings.toggle ?: return
+        val holdKey = KeyBindings.hold ?: return
+
+        if (toggleKey.consumeClick()) isToggled = !isToggled
+        val currentlyActive = isToggled || holdKey.isDown
 
         if (currentlyActive) {
-            // Notify user if not active
             if (!NetworkManager.isVeinminerActive) {
                 if (!notifiedOnce) {
                     notifiedOnce = true
                     val mc = Minecraft.getInstance()
                     mc.toastManager.addToast(
-                        SystemToast.multiline(mc, SystemToast.SystemToastId.PERIODIC_NOTIFICATION,
+                        SystemToast.multiline(
+                            mc, SystemToast.SystemToastId.PERIODIC_NOTIFICATION,
                             Component.translatable("veinminer.disabled.title"),
                             Component.translatable("veinminer.disabled.subtitle")
                         )
@@ -52,20 +53,17 @@ object KeyBindManager {
                 }
                 return
             }
-
             if (!isPressed) isPressed = true
             checkBlockTarget()
             scrollPattern()
-
         } else {
             if (isPressed) isPressed = false
-            FabricHUDRenderer.updateTarget(null)
+            HUDProvider.instance.updateTarget(null)
             BlockHighlightingRenderer.setShape(emptyList())
             lastTarget = null
         }
     }
 
-    // Check current block target & update if necessary
     fun checkBlockTarget() {
         val instance = Minecraft.getInstance()
         val target = instance.hitResult as? BlockHitResult ?: return
@@ -78,16 +76,14 @@ object KeyBindManager {
         lastTarget = pos
         lastItem = holding
 
-        // If not targeting block, fail
         if (target.type != HitResult.Type.BLOCK) {
             resetTarget()
-            FabricHUDRenderer.updateTarget("forbidden")
+            HUDProvider.instance.updateTarget("forbidden")
             return
         }
 
-        // Request vein for block highlighting and hud
         CoroutineScope(Dispatchers.Default).launch {
-            if (itemChanged) delay(1.ticks) // Delay 1 tick, as server is slower then client
+            if (itemChanged) delay(1.ticks) // wait for server to update the held item
             resetTarget()
             NetworkManager.sendBlockRequest(pos, target.direction)
         }
@@ -97,7 +93,6 @@ object KeyBindManager {
         BlockHighlightingRenderer.setShape(emptyList())
     }
 
-    // Scroll through veinmine patterns
     fun scrollPattern() {
         // TODO
     }
