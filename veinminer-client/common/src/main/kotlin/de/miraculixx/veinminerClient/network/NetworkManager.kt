@@ -12,7 +12,7 @@ import de.miraculixx.veinminer.utils.debug
 import de.miraculixx.veinminerClient.ClientLifecycle
 import de.miraculixx.veinminerClient.render.BlockHighlightingRenderer
 import de.miraculixx.veinminerClient.render.HUDProvider
-import de.miraculixx.veinminerClient.utils.toVeinminer
+import de.miraculixx.veinminer.utils.toVeinminer
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.toasts.SystemToast
 import net.minecraft.core.BlockPos

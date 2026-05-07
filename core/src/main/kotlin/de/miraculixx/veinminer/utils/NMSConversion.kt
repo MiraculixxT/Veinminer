@@ -1,4 +1,4 @@
-package de.miraculixx.veinminerClient.utils
+package de.miraculixx.veinminer.utils
 
 import de.miraculixx.veinminer.data.BlockPosition
 import de.miraculixx.veinminer.pattern.Surface
