@@ -8,6 +8,7 @@ dependencies {
     compileOnly(project(":core"))
     compileOnly(project(":veinminer:veinminer-common"))
     implementation(project(":veinminer:veinminer-fabric"))
+    implementation(include(project(":veinminer-client:veinminer-client-common"))!!)
 }
 
 loom {

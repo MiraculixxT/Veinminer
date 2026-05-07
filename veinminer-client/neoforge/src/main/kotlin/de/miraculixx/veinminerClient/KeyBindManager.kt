@@ -4,7 +4,7 @@ import de.miraculixx.veinminer.extensions.ticks
 import de.miraculixx.veinminerClient.constants.KeyBindings
 import de.miraculixx.veinminerClient.network.NetworkManager
 import de.miraculixx.veinminerClient.render.BlockHighlightingRenderer
-import de.miraculixx.veinminerClient.render.HUDRenderer
+import de.miraculixx.veinminerClient.render.NeoHUDRenderer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -58,7 +58,7 @@ object KeyBindManager {
             scrollPattern()
         } else {
             if (isPressed) isPressed = false
-            HUDRenderer.updateTarget(null)
+            NeoHUDRenderer.updateTarget(null)
             BlockHighlightingRenderer.setShape(emptyList())
             lastTarget = null
         }
@@ -78,7 +78,7 @@ object KeyBindManager {
 
         if (target.type != HitResult.Type.BLOCK) {
             resetTarget()
-            HUDRenderer.updateTarget("forbidden")
+            NeoHUDRenderer.updateTarget("forbidden")
             return
         }
 

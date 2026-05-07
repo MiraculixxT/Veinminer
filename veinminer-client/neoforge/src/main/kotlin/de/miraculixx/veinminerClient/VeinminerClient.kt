@@ -8,7 +8,7 @@ import de.miraculixx.veinminerClient.constants.KeyBindings
 import de.miraculixx.veinminerClient.network.NeoForgeClientPlatformNetwork
 import de.miraculixx.veinminerClient.network.NetworkManager
 import de.miraculixx.veinminerClient.render.BlockHighlightingRenderer
-import de.miraculixx.veinminerClient.render.HUDRenderer
+import de.miraculixx.veinminerClient.render.NeoHUDRenderer
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.toasts.SystemToast
 import net.minecraft.network.chat.Component
@@ -50,7 +50,7 @@ class VeinminerClient(modBus: IEventBus, container: ModContainer) {
             KeyBindings.register(event)
         }
         modBus.addListener<RegisterGuiLayersEvent> { event ->
-            event.registerAboveAll(Identifier.fromNamespaceAndPath(MOD_ID, "target-info"), HUDRenderer)
+            event.registerAboveAll(Identifier.fromNamespaceAndPath(MOD_ID, "target-info"), NeoHUDRenderer)
         }
 
         // Game-bus listeners

@@ -12,6 +12,9 @@ dependencies {
     compileOnly(project(":core"))
     compileOnly(project(":veinminer:veinminer-common"))
     implementation(project(":veinminer:veinminer-neoforge"))
+    implementation(project(":veinminer-client:veinminer-client-common"))
+
+    jarJar(project(":veinminer-client:veinminer-client-common"))
 }
 
 sourceSets {

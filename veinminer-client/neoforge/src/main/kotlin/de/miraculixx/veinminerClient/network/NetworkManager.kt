@@ -11,7 +11,7 @@ import de.miraculixx.veinminer.pattern.Pattern
 import de.miraculixx.veinminer.utils.debug
 import de.miraculixx.veinminerClient.VeinminerClient
 import de.miraculixx.veinminerClient.render.BlockHighlightingRenderer
-import de.miraculixx.veinminerClient.render.HUDRenderer
+import de.miraculixx.veinminerClient.render.NeoHUDRenderer
 import de.miraculixx.veinminerClient.utils.toVeinminer
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.toasts.SystemToast
@@ -60,11 +60,11 @@ object NetworkManager : ClientCallbacks {
     override fun onHighlight(packet: BlockHighlighting) {
         if (debug) VeinminerClient.LOGGER.info("Received block highlight: $packet")
         if (!packet.allowed) {
-            HUDRenderer.updateTarget("forbidden")
+            NeoHUDRenderer.updateTarget("forbidden")
             BlockHighlightingRenderer.setShape(emptyList())
             return
         }
-        HUDRenderer.updateTarget(packet.icon)
+        NeoHUDRenderer.updateTarget(packet.icon)
         BlockHighlightingRenderer.setShape(packet.blocks)
     }
 

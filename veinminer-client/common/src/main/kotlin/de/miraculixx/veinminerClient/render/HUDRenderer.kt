@@ -5,9 +5,8 @@ import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.renderer.RenderPipelines
 import net.minecraft.resources.Identifier
-import net.neoforged.neoforge.client.gui.GuiLayer
 
-object HUDRenderer : GuiLayer {
+abstract class HUDRenderer {
     private val AXE_ICON = Identifier.fromNamespaceAndPath("veinminer-client", "textures/gui/sprite/axe.png")
     private val PICKAXE_ICON = Identifier.fromNamespaceAndPath("veinminer-client", "textures/gui/sprite/pickaxe.png")
     private val SHOVEL_ICON = Identifier.fromNamespaceAndPath("veinminer-client", "textures/gui/sprite/shovel.png")
@@ -15,10 +14,12 @@ object HUDRenderer : GuiLayer {
     private val FORBIDDEN_ICON = Identifier.fromNamespaceAndPath("veinminer-client", "textures/gui/sprite/forbidden.png")
     private var target: Identifier? = null
 
-    override fun render(graphics: GuiGraphicsExtractor, deltaTracker: DeltaTracker) {
+    fun renderCrosshair(graphics: GuiGraphicsExtractor, deltaTracker: DeltaTracker) {
         if (target == null) return
+
         val client = Minecraft.getInstance()
         val window = client.window
+
         graphics.blit(RenderPipelines.CROSSHAIR, target!!, (window.guiScaledWidth / 2) + 2, (window.guiScaledHeight / 2) - 10, 0f, 0f, 8, 8, 8, 8)
     }
 

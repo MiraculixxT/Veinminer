@@ -7,7 +7,7 @@ import de.miraculixx.veinminer.extensions.ticks
 import de.miraculixx.veinminerClient.constants.KEY_VEINMINE_HOLD
 import de.miraculixx.veinminerClient.constants.KEY_VEINMINE_TOGGLE
 import de.miraculixx.veinminerClient.network.NetworkManager
-import de.miraculixx.veinminerClient.render.HUDRenderer
+import de.miraculixx.veinminerClient.render.FabricHUDRenderer
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
@@ -74,7 +74,7 @@ class VeinminerClient : ClientModInitializer {
         }
 
         // Crosshair info
-        HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(MOD_ID, "target-info"), HUDRenderer)
+        HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(MOD_ID, "target-info"), FabricHUDRenderer)
 
         // Updater
         mcCoroutineDelay(1.ticks) {

@@ -5,7 +5,7 @@ import de.miraculixx.veinminerClient.constants.KEY_VEINMINE_HOLD
 import de.miraculixx.veinminerClient.constants.KEY_VEINMINE_TOGGLE
 import de.miraculixx.veinminerClient.network.NetworkManager
 import de.miraculixx.veinminerClient.render.BlockHighlightingRenderer
-import de.miraculixx.veinminerClient.render.HUDRenderer
+import de.miraculixx.veinminerClient.render.FabricHUDRenderer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -59,7 +59,7 @@ object KeyBindManager {
 
         } else {
             if (isPressed) isPressed = false
-            HUDRenderer.updateTarget(null)
+            FabricHUDRenderer.updateTarget(null)
             BlockHighlightingRenderer.setShape(emptyList())
             lastTarget = null
         }
@@ -81,7 +81,7 @@ object KeyBindManager {
         // If not targeting block, fail
         if (target.type != HitResult.Type.BLOCK) {
             resetTarget()
-            HUDRenderer.updateTarget("forbidden")
+            FabricHUDRenderer.updateTarget("forbidden")
             return
         }
 
