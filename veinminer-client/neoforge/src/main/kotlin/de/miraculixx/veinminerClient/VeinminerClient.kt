@@ -9,6 +9,7 @@ import de.miraculixx.veinminerClient.network.NetworkManager
 import de.miraculixx.veinminerClient.render.BlockHighlightingRenderer
 import de.miraculixx.veinminerClient.render.HUDProvider
 import de.miraculixx.veinminerClient.render.NeoHUDRenderer
+import net.minecraft.DetectedVersion
 import net.minecraft.client.Minecraft
 import net.minecraft.resources.Identifier
 import net.neoforged.api.distmarker.Dist
@@ -27,7 +28,6 @@ import net.neoforged.neoforge.common.NeoForge
 class VeinminerClient(modBus: IEventBus, container: ModContainer) {
 
     init {
-        val client = Minecraft.getInstance()
         ClientLifecycle.veinminerAvailable = ModList.get().isLoaded("veinminer")
 
         HUDProvider.instance = NeoHUDRenderer
@@ -68,7 +68,7 @@ class VeinminerClient(modBus: IEventBus, container: ModContainer) {
         mcCoroutineDelay(1.ticks) {
             ClientLifecycle.checkForUpdates(
                 "neoforge",
-                client.launchedVersion,
+                DetectedVersion.tryDetectVersion().name(),
                 ModList.get().getModContainerById("veinminer-client").orElse(null)?.modInfo?.version?.toString()
             )
         }
