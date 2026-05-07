@@ -7,6 +7,12 @@ plugins {
 dependencies {
     val gameVersion: String by properties
     minecraft("com.mojang:minecraft:$gameVersion")
+    compileOnly(project(":core"))
+    compileOnly(project(":veinminer:veinminer-common"))
+}
+
+loom {
+    accessWidenerPath = file("src/main/resources/veinminerClient.accesswidener") // only compile time
 }
 
 modrinth {
