@@ -9,7 +9,7 @@ import net.minecraft.network.chat.Component
 import org.slf4j.Logger
 
 object ClientLifecycle {
-    const val MOD_ID = "veinminer-client"
+    const val MOD_ID = "veinminer_client"
     val LOGGER: Logger = LogUtils.getLogger()
     var veinminerAvailable = false
     var isSinglePlayer = false
