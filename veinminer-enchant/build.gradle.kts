@@ -65,6 +65,7 @@ modrinth {
     versionName = "Veinminer Enchantment - $version"
     outlet.mcVersionRange = properties["enchantmentVersions"] as String
     gameVersions.addAll(outlet.mcVersions())
+    changelog = properties["changelogEnchantment"] as String
     loaders.addAll(buildList {
         add("fabric")
         add("quilt")

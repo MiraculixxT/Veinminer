@@ -38,6 +38,7 @@ modrinth {
     versionName = "Veinminer Hotkey NeoForge - $version"
     outlet.mcVersionRange = properties["neoforgeSupportedVersions"] as String
     gameVersions.addAll(outlet.mcVersions())
+    changelog = properties["changelogClient"] as String
     loaders.addAll(buildList {
         add("neoforge")
     })

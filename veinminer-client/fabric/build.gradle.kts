@@ -27,6 +27,7 @@ modrinth {
     versionName = "Veinminer Hotkey Fabric - $version"
     outlet.mcVersionRange = properties["fabricSupportedVersions"] as String
     gameVersions.addAll(outlet.mcVersions())
+    changelog = properties["changelogClient"] as String
     loaders.addAll(buildList {
         add("fabric")
         add("quilt")
