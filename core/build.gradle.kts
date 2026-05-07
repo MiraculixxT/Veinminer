@@ -9,3 +9,9 @@ dependencies {
     val gameVersion: String by properties
     minecraft("com.mojang:minecraft:$gameVersion")
 }
+
+tasks.jar {
+    manifest {
+        attributes("FMLModType" to "GAMELIBRARY")
+    }
+}

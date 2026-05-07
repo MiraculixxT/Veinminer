@@ -15,6 +15,12 @@ loom {
     accessWidenerPath = file("src/main/resources/veinminerClient.accesswidener") // only compile time
 }
 
+tasks.jar {
+    manifest {
+        attributes("FMLModType" to "GAMELIBRARY")
+    }
+}
+
 modrinth {
     projectId = properties["modrinthClientId"] as String
     syncBodyFrom = rootProject.file("veinminer-client/README.md").readText()
