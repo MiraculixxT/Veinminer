@@ -56,7 +56,7 @@ object NeoForgePlatformNetwork : PlatformNetwork {
     override fun sendS2C(playerId: UUID, channel: String, payload: ByteArray) {
         val type = typeFor(channel)
         if (LocalLoopback.isLoopbackPlayer(playerId)) {
-            LocalLoopback.clientReceiver?.receive(channel, payload)
+            ClientPayloadDispatch.dispatch(channel, payload)
             return
         }
         val player = mcServer?.playerList?.getPlayer(playerId) ?: return
@@ -76,7 +76,9 @@ object NeoForgePlatformNetwork : PlatformNetwork {
 
     private fun doRegisterS2C(reg: PayloadRegistrar, channel: String) {
         val type = typeFor(channel)
-        // Server only sends — register a no-op client handler that won't be invoked server-side.
-        reg.playToClient(type, rawBytesCodec(type)) { _, _ -> }
+        // playToClient registration claimed by base mod for better ownership
+        reg.playToClient(type, rawBytesCodec(type)) { payload: VeinminerPayload, _: IPayloadContext ->
+            ClientPayloadDispatch.dispatch(channel, payload.bytes)
+        }
     }
 }

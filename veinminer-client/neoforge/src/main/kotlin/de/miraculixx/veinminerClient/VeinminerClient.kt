@@ -32,7 +32,6 @@ class VeinminerClient(modBus: IEventBus, container: ModContainer) {
 
         HUDProvider.instance = NeoHUDRenderer
 
-        modBus.addListener(NeoForgeClientPlatformNetwork::onRegisterPayloadHandlers)
         NetworkManager.init(NeoForgeClientPlatformNetwork)
 
         modBus.addListener<RegisterKeyMappingsEvent> { event ->
