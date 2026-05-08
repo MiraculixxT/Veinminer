@@ -7,11 +7,11 @@ import net.minecraft.client.renderer.RenderPipelines
 import net.minecraft.resources.Identifier
 
 abstract class HUDRenderer {
-    private val AXE_ICON = Identifier.fromNamespaceAndPath("veinminer-client", "textures/gui/sprite/axe.png")
-    private val PICKAXE_ICON = Identifier.fromNamespaceAndPath("veinminer-client", "textures/gui/sprite/pickaxe.png")
-    private val SHOVEL_ICON = Identifier.fromNamespaceAndPath("veinminer-client", "textures/gui/sprite/shovel.png")
-    private val HOE_ICON = Identifier.fromNamespaceAndPath("veinminer-client", "textures/gui/sprite/hoe.png")
-    private val FORBIDDEN_ICON = Identifier.fromNamespaceAndPath("veinminer-client", "textures/gui/sprite/forbidden.png")
+    private val AXE_ICON = Identifier.fromNamespaceAndPath("veinminer_client", "textures/gui/sprite/axe.png")
+    private val PICKAXE_ICON = Identifier.fromNamespaceAndPath("veinminer_client", "textures/gui/sprite/pickaxe.png")
+    private val SHOVEL_ICON = Identifier.fromNamespaceAndPath("veinminer_client", "textures/gui/sprite/shovel.png")
+    private val HOE_ICON = Identifier.fromNamespaceAndPath("veinminer_client", "textures/gui/sprite/hoe.png")
+    private val FORBIDDEN_ICON = Identifier.fromNamespaceAndPath("veinminer_client", "textures/gui/sprite/forbidden.png")
     private var target: Identifier? = null
 
     fun renderCrosshair(graphics: GuiGraphicsExtractor, deltaTracker: DeltaTracker) {
