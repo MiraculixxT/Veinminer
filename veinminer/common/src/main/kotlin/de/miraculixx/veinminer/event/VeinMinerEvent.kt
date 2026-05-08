@@ -7,8 +7,10 @@ import de.miraculixx.veinminer.data.FixedBlockGroup
 import de.miraculixx.veinminer.data.VeinminerSettings
 import de.miraculixx.veinminer.data.VeinminerSettingsOverride
 import de.miraculixx.veinminer.extensions.mcCoroutineDelay
+import de.miraculixx.veinminer.extensions.mcScheduleDelay
 import de.miraculixx.veinminer.extensions.ticks
 import de.miraculixx.veinminer.network.NetworkRouter
+import de.miraculixx.veinminer.utils.mcServer
 import de.miraculixx.veinminer.utils.permissionVeinmine
 import net.minecraft.core.BlockPos
 import net.minecraft.core.registries.BuiltInRegistries
@@ -168,11 +170,11 @@ object VeinMinerEvent {
 
             if (size != 0 && shouldBreak) {
                 if (settings.decreaseDurability && tool.remainingDurability() <= 1) continue
-                mcCoroutineDelay((settings.delay * vBlock.distance).ticks) {
+                mcScheduleDelay(mcServer!!, settings.delay * vBlock.distance) {
                     if (settings.delay != 0) {
-                        if (!targetTypes.contains(vBlock.block.key())) return@mcCoroutineDelay
+                        if (!targetTypes.contains(vBlock.block.key())) return@mcScheduleDelay
                     }
-                    if (settings.decreaseDurability && tool.remainingDurability() <= 1) return@mcCoroutineDelay
+                    if (settings.decreaseDurability && tool.remainingDurability() <= 1) return@mcScheduleDelay
 
                     vBlock.block.destroyBlock(tool, world, pos, player, sourceLocation)
                     if (settings.decreaseDurability) damageItem(tool, player)

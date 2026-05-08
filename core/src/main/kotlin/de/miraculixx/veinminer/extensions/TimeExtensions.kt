@@ -4,6 +4,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import net.minecraft.server.MinecraftServer
+import net.minecraft.server.TickTask
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -15,4 +17,10 @@ fun mcCoroutineDelay(time: Duration, block: suspend () -> Unit) {
         delay(time)
         block()
     }
+}
+
+fun mcScheduleDelay(mcServer: MinecraftServer, ticks: Int, block: () -> Unit) {
+    mcServer.schedule(TickTask(ticks) {
+        block()
+    })
 }
