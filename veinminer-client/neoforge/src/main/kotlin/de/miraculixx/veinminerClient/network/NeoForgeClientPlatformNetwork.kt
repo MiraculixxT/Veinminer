@@ -1,9 +1,9 @@
 package de.miraculixx.veinminerClient.network
 
+import de.miraculixx.veinminer.network.ClientPayloadDispatch
 import de.miraculixx.veinminer.network.ClientPlatformNetwork
 import de.miraculixx.veinminer.network.VeinminerPayload
 import de.miraculixx.veinminer.network.payloadType
-import de.miraculixx.veinminer.networking.ClientPayloadDispatch
 import net.minecraft.client.Minecraft
 import net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload

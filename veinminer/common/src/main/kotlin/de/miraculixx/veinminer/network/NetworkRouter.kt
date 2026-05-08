@@ -1,6 +1,7 @@
 package de.miraculixx.veinminer.network
 
 import de.miraculixx.veinminer.command.ActiveHost
+import de.miraculixx.veinminer.utils.mcServer
 import org.slf4j.Logger
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
@@ -46,9 +47,20 @@ object NetworkRouter {
         platform.registerC2S(channel, safe)
     }
 
-    /** Loopback entry for the singleplayer client - bypasses packet stream */
+    /**
+     * Loopback entry for the singleplayer client — bypasses the packet stream.
+     * Posted onto the integrated server thread when invoked from elsewhere
+     * (e.g. the client thread on join) so the server-side handler sees a
+     * fully-placed player in `playerList`.
+     */
     fun dispatchC2S(channel: String, playerId: UUID, payload: ByteArray) {
-        c2sHandlers[channel]?.invoke(playerId, payload)
+        val handler = c2sHandlers[channel] ?: return
+        val server = mcServer
+        if (server != null && !server.isSameThread) {
+            server.execute { handler(playerId, payload) }
+        } else {
+            handler(playerId, payload)
+        }
     }
 
     fun sendConfiguration(uuid: UUID, payload: ServerConfiguration) {

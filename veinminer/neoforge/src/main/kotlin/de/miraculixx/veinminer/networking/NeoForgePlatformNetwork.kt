@@ -1,6 +1,7 @@
 package de.miraculixx.veinminer.networking
 
 import de.miraculixx.veinminer.Veinminer
+import de.miraculixx.veinminer.network.ClientPayloadDispatch
 import de.miraculixx.veinminer.network.LocalLoopback
 import de.miraculixx.veinminer.network.NetworkManager
 import de.miraculixx.veinminer.network.PlatformNetwork

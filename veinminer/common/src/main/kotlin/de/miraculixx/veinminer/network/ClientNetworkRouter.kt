@@ -57,19 +57,6 @@ object ClientNetworkRouter {
             }
         }
 
-        // Loopback receiver: server side will call this in singleplayer instead of going on the wire.
-        LocalLoopback.clientReceiver = object : LocalLoopback.ClientReceiver {
-            override fun receive(channel: String, payload: ByteArray) {
-                try {
-                    when (channel) {
-                        NetworkManager.PACKET_CONFIGURATION_ID -> callbacks.onConfiguration(Codec.decode(payload))
-                        NetworkManager.PACKET_HIGHLIGHT_ID -> callbacks.onHighlight(Codec.decode(payload))
-                    }
-                } catch (e: Exception) {
-                    logger.warn("Failed to handle loopback S2C '$channel': ${e.message}")
-                }
-            }
-        }
     }
 
     fun sendJoin(version: String) {
