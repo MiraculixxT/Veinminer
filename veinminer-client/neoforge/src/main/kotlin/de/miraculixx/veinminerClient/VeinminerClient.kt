@@ -1,6 +1,6 @@
 package de.miraculixx.veinminerClient
 
-import de.miraculixx.veinminer.extensions.mcCoroutineDelay
+import de.miraculixx.veinminer.extensions.mcCoroutineAsync
 import de.miraculixx.veinminer.extensions.ticks
 import de.miraculixx.veinminerClient.ClientLifecycle.MOD_ID
 import de.miraculixx.veinminerClient.constants.NeoForgeKeyBindings
@@ -64,11 +64,11 @@ class VeinminerClient(modBus: IEventBus, container: ModContainer) {
             BlockHighlightingRenderer.render(event.poseStack, source, event.levelRenderState.cameraRenderState.pos, true)
         }
 
-        mcCoroutineDelay(1.ticks) {
+        mcCoroutineAsync(1.ticks) {
             ClientLifecycle.checkForUpdates(
                 "neoforge",
                 DetectedVersion.tryDetectVersion().name(),
-                ModList.get().getModContainerById("veinminer-client").orElse(null)?.modInfo?.version?.toString()
+                ModList.get().getModContainerById("veinminer_client").orElse(null)?.modInfo?.version?.toString()
             )
         }
     }

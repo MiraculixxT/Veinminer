@@ -184,7 +184,7 @@ object VeinminerCommand {
                             argument("block2", BlockPredicateArgument.blockPredicate(ctx)) {
                                 executesAsync {
                                     val name = StringArgumentType.getString(this, "name")
-                                    source.createGroup(name, setOf(getRaw(5), getRaw(6)).mapNotNull { it }.toMutableSet())
+                                    source.createGroup(name, setOf(getRaw(4), getRaw(5)).mapNotNull { it }.toMutableSet())
                                 }
                             }
                         }

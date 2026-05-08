@@ -6,8 +6,8 @@ import de.miraculixx.veinminer.command.ActiveHost
 import de.miraculixx.veinminer.data.FixedBlockGroup
 import de.miraculixx.veinminer.data.VeinminerSettings
 import de.miraculixx.veinminer.data.VeinminerSettingsOverride
-import de.miraculixx.veinminer.extensions.mcCoroutineDelay
-import de.miraculixx.veinminer.extensions.mcScheduleDelay
+import de.miraculixx.veinminer.extensions.mcCoroutineAsync
+import de.miraculixx.veinminer.extensions.mcCoroutineSync
 import de.miraculixx.veinminer.extensions.ticks
 import de.miraculixx.veinminer.network.NetworkRouter
 import de.miraculixx.veinminer.utils.mcServer
@@ -101,15 +101,13 @@ object VeinMinerEvent {
         player.removeMiningSpeedModifier()
         val info = allowedToVeinmine(world, player, pos, state) ?: return true
 
-        mcCoroutineDelay(info.settings.delay.ticks) {
-            val amount = info.veinmine(true)
-            player.awardStat(net.minecraft.stats.Stats.BLOCK_MINED.get(state.block), amount - 1)
-        }
+        val amount = info.veinmine(true)
+        player.awardStat(net.minecraft.stats.Stats.BLOCK_MINED.get(state.block), amount - 1)
 
         val cooldownTime = info.settings.cooldown
         if (cooldownTime > 0) {
             cooldown.add(player.uuid)
-            mcCoroutineDelay(cooldownTime.ticks) { cooldown.remove(player.uuid) }
+            mcCoroutineAsync(cooldownTime.ticks) { cooldown.remove(player.uuid) }
         }
         return true
     }
@@ -170,11 +168,11 @@ object VeinMinerEvent {
 
             if (size != 0 && shouldBreak) {
                 if (settings.decreaseDurability && tool.remainingDurability() <= 1) continue
-                mcScheduleDelay(mcServer!!, settings.delay * vBlock.distance) {
+                mcCoroutineSync(mcServer!!, settings.delay * vBlock.distance) {
                     if (settings.delay != 0) {
-                        if (!targetTypes.contains(vBlock.block.key())) return@mcScheduleDelay
+                        if (!targetTypes.contains(vBlock.block.key())) return@mcCoroutineSync
                     }
-                    if (settings.decreaseDurability && tool.remainingDurability() <= 1) return@mcScheduleDelay
+                    if (settings.decreaseDurability && tool.remainingDurability() <= 1) return@mcCoroutineSync
 
                     vBlock.block.destroyBlock(tool, world, pos, player, sourceLocation)
                     if (settings.decreaseDurability) damageItem(tool, player)

@@ -1,6 +1,6 @@
 package de.miraculixx.veinminerClient
 
-import de.miraculixx.veinminer.extensions.mcCoroutineDelay
+import de.miraculixx.veinminer.extensions.mcCoroutineAsync
 import de.miraculixx.veinminer.extensions.ticks
 import de.miraculixx.veinminerClient.ClientLifecycle.MOD_ID
 import de.miraculixx.veinminerClient.constants.FabricKeyBindings
@@ -44,11 +44,11 @@ class VeinminerClient : ClientModInitializer {
 
         HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(MOD_ID, "target-info"), FabricHUDRenderer)
 
-        mcCoroutineDelay(1.ticks) {
+        mcCoroutineAsync(1.ticks) {
             ClientLifecycle.checkForUpdates(
                 "fabric",
                 client.launchedVersion,
-                fabricLoader.getModContainer("veinminer-client").getOrNull()?.metadata?.version?.friendlyString
+                fabricLoader.getModContainer("veinminer_client").getOrNull()?.metadata?.version?.friendlyString
             )
         }
     }
