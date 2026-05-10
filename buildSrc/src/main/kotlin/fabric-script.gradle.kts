@@ -53,6 +53,14 @@ dependencies {
     }
 }
 
+loom {
+    runs {
+        named("client") {
+            programArgs("--username", "Dev")
+        }
+    }
+}
+
 tasks.processResources {
     val modrinthSlug = properties["modrinthProjectId"] as? String ?: properties["modid"] as String
     val expansion = mapOf(
