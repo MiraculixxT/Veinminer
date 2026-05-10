@@ -21,15 +21,15 @@ object NetworkRouter {
         this.platform = platform
 
         registerC2S(platform, NetworkManager.PACKET_JOIN_ID) { uuid, bytes ->
-            callbacks.onJoinAccepted(uuid, Codec.decode(bytes))
+            callbacks.onJoinAccepted(uuid, PacketCodecs.JOIN.decode(bytes))
         }
         registerC2S(platform, NetworkManager.PACKET_KEY_PRESS_ID) { uuid, bytes ->
-            val packet: KeyPress = Codec.decode(bytes)
+            val packet = PacketCodecs.KEY.decode(bytes)
             if (packet.pressed) readyToVeinmine.add(uuid) else readyToVeinmine.remove(uuid)
             callbacks.onKeyPress(uuid, packet)
         }
         registerC2S(platform, NetworkManager.PACKET_MINE_ID) { uuid, bytes ->
-            callbacks.onMineRequest(uuid, Codec.decode(bytes))
+            callbacks.onMineRequest(uuid, PacketCodecs.MINE.decode(bytes))
         }
         platform.registerS2C(NetworkManager.PACKET_CONFIGURATION_ID)
         platform.registerS2C(NetworkManager.PACKET_HIGHLIGHT_ID)
@@ -48,7 +48,7 @@ object NetworkRouter {
     }
 
     /**
-     * Loopback entry for the singleplayer client — bypasses the packet stream.
+     * Loopback entry for the singleplayer client - bypasses the packet stream.
      * Posted onto the integrated server thread when invoked from elsewhere
      * (e.g. the client thread on join) so the server-side handler sees a
      * fully-placed player in `playerList`.
@@ -73,7 +73,7 @@ object NetworkRouter {
             logger.debug("sendConfiguration: $uuid not registered, dropping")
             return
         }
-        plat.sendS2C(uuid, NetworkManager.PACKET_CONFIGURATION_ID, Codec.encode(payload))
+        plat.sendS2C(uuid, NetworkManager.PACKET_CONFIGURATION_ID, PacketCodecs.CONFIGURATION.encode(payload))
     }
 
     fun sendHighlighting(uuid: UUID, payload: BlockHighlighting) {
@@ -86,7 +86,7 @@ object NetworkRouter {
             logger.debug("sendHighlighting: $uuid not registered, dropping")
             return
         }
-        plat.sendS2C(uuid, NetworkManager.PACKET_HIGHLIGHT_ID, Codec.encode(payload))
+        plat.sendS2C(uuid, NetworkManager.PACKET_HIGHLIGHT_ID, PacketCodecs.HIGHLIGHT.encode(payload))
     }
 
     fun onDisconnect(uuid: UUID) {

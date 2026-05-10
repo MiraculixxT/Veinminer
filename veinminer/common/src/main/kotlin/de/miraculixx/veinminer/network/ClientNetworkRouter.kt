@@ -44,14 +44,14 @@ object ClientNetworkRouter {
 
         platform.registerS2C(NetworkManager.PACKET_CONFIGURATION_ID) { bytes ->
             try {
-                callbacks.onConfiguration(Codec.decode(bytes))
+                callbacks.onConfiguration(PacketCodecs.CONFIGURATION.decode(bytes))
             } catch (e: Exception) {
                 logger.warn("Failed to decode S2C 'configuration': ${e.message}")
             }
         }
         platform.registerS2C(NetworkManager.PACKET_HIGHLIGHT_ID) { bytes ->
             try {
-                callbacks.onHighlight(Codec.decode(bytes))
+                callbacks.onHighlight(PacketCodecs.HIGHLIGHT.decode(bytes))
             } catch (e: Exception) {
                 logger.warn("Failed to decode S2C 'highlight': ${e.message}")
             }
@@ -60,19 +60,19 @@ object ClientNetworkRouter {
     }
 
     fun sendJoin(version: String) {
-        send(NetworkManager.PACKET_JOIN_ID, JoinInformation(version), markLoopback = true)
+        send(NetworkManager.PACKET_JOIN_ID, PacketCodecs.JOIN, JoinInformation(version), markLoopback = true)
     }
 
     fun sendKeyPress(pressed: Boolean) {
-        send(NetworkManager.PACKET_KEY_PRESS_ID, KeyPress(pressed))
+        send(NetworkManager.PACKET_KEY_PRESS_ID, PacketCodecs.KEY, KeyPress(pressed))
     }
 
     fun sendBlockRequest(packet: RequestBlockVein) {
-        send(NetworkManager.PACKET_MINE_ID, packet)
+        send(NetworkManager.PACKET_MINE_ID, PacketCodecs.MINE, packet)
     }
 
-    private inline fun <reified T> send(channel: String, packet: T, markLoopback: Boolean = false) {
-        val bytes = Codec.encode(packet)
+    private fun <T> send(channel: String, codec: PacketCodec<T>, packet: T, markLoopback: Boolean = false) {
+        val bytes = codec.encode(packet)
         val plat = platform
         if (plat == null) {
             logger.warn("Send '$channel' called before ClientNetworkRouter.init()")
