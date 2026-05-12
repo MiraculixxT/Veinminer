@@ -4,7 +4,7 @@
   "veinminer.notavailable.title": "Veinminer Not Available",
   "veinminer.notavailable.subtitle": "Install the base Veinminer mod to use it in singleplayer! https://modrinth.com/mod/veinminer",
 
-  "key.category.veinminer-client.keybinds": "Veinminer",
-  "key.veinminer-client.hold": "Veinmining (Hold)",
-  "key.veinminer-client.toggle": "Veinmining (Toggle)"
+  "key.category.veinminer_client.keybinds": "Veinminer",
+  "key.veinminer_client.hold": "Veinmining (Hold)",
+  "key.veinminer_client.toggle": "Veinmining (Toggle)"
 }
