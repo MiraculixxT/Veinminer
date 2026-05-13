@@ -14,7 +14,7 @@ Veinminer works server side, so all clients are supported. Even cross loaders & 
 >  Add the [**Veinminer Enchantment Addon**](https://modrinth.com/datapack/veinminer-enchantment) to limit veinmining to only enchanted tools!
 
 ## ⚙️ Customization & Settings
-![](https://cdn-raw.modrinth.com/data/OhduvhIc/images/f4c0ad7fa3b8b579753c1f757e80151798717c68.gif)
+![](https://i.postimg.cc/ZR85KZJM/output.webp)
 
 **Veinminer comes in two different versions**<br>
 • **Version 2.x** -> Full customizable mod & plugin<br>
