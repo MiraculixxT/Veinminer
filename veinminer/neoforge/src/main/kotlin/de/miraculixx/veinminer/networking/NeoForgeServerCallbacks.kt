@@ -2,7 +2,9 @@ package de.miraculixx.veinminer.networking
 
 import de.miraculixx.veinminer.Veinminer
 import de.miraculixx.veinminer.config.ConfigManager
+import de.miraculixx.veinminer.event.HighlightCache
 import de.miraculixx.veinminer.event.VeinMinerEvent
+import de.miraculixx.veinminer.event.VeinMinerEvent.key
 import de.miraculixx.veinminer.event.VeinMinerEvent.veinmine
 import de.miraculixx.veinminer.network.BlockHighlighting
 import de.miraculixx.veinminer.network.JoinInformation
@@ -52,9 +54,19 @@ object NeoForgeServerCallbacks : ServerCallbacks {
             return
         }
 
+        val sourcePos = packet.blockPosition
+        val cacheKey = HighlightCache.Key(level, sourcePos, state.key().toString())
+        val cached = HighlightCache.get(cacheKey)
+        if (cached != null) {
+            NetworkRouter.sendHighlighting(playerId, BlockHighlighting(true, cached.second, cached.first))
+            return
+        }
+
         action.copy(settings = action.settings.copy(delay = 0)).veinmine(false)
         val blocks = action.processedBlocks.map { it.toVeinminer() }
-        NetworkRouter.sendHighlighting(playerId, BlockHighlighting(true, VeinMinerEvent.getPreferredToolIcon(state), blocks))
+        val toolIcon = VeinMinerEvent.getPreferredToolIcon(state)
+        HighlightCache.put(cacheKey, blocks, toolIcon)
+        NetworkRouter.sendHighlighting(playerId, BlockHighlighting(true, toolIcon, blocks))
     }
 
     private fun invalidUserInformation(type: String) {

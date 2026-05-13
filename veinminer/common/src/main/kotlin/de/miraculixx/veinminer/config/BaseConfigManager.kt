@@ -3,6 +3,7 @@ package de.miraculixx.veinminer.config
 import de.miraculixx.veinminer.ConfigBridge
 import de.miraculixx.veinminer.data.BlockGroup
 import de.miraculixx.veinminer.data.VeinminerSettings
+import de.miraculixx.veinminer.event.HighlightCache
 import de.miraculixx.veinminer.extensions.load
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
@@ -47,6 +48,7 @@ abstract class BaseConfigManager<T>(
         if (fromDisc) settings = loadSettings()
         if (loadBlocks(fromDisc)) saveBlocks()
         if (loadGroups(fromDisc)) saveGroups()
+        HighlightCache.clear()
     }
 
     /**

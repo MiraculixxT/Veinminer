@@ -8,9 +8,11 @@ import de.miraculixx.kpaper.extensions.server
 import de.miraculixx.kpaper.runnables.taskRunLater
 import de.miraculixx.veinminer.Veinminer.Companion.VEINMINE
 import de.miraculixx.veinminer.config.ConfigManager
+import de.miraculixx.veinminer.data.BlockPosition
 import de.miraculixx.veinminer.data.FixedBlockGroup
 import de.miraculixx.veinminer.data.VeinminerSettings
 import de.miraculixx.veinminer.data.VeinminerSettingsOverride
+import de.miraculixx.veinminer.event.HighlightCache
 import de.miraculixx.veinminer.utils.debug
 import de.miraculixx.veinminer.utils.permissionVeinmine
 import de.miraculixx.veinminer.network.NetworkRouter
@@ -130,6 +132,7 @@ object VeinMinerEvent {
             return@listen
         }
 
+        HighlightCache.invalidate(block.world, BlockPosition(block.x, block.y, block.z))
         val veinmineInfo = allowedToVeinmine(player, block) ?: return@listen
         it.isCancelled = true // Cancel the original event
 
@@ -214,25 +217,32 @@ object VeinMinerEvent {
      * @return the number of blocks broken
      */
     fun VeinmineAction.veinmine(shouldBreak: Boolean): Int {
-        val queue: Queue<VeinmineBlock> = LinkedList()
+        val targets = targetTypes
+        val visited = processedBlocks
+        if (!targets.contains(currentBlock.type.key)) return 0
+
+        val maxChain = settings.maxChain
+        val searchRadius = settings.searchRadius
+        val decreaseDurability = settings.decreaseDurability
+        val needCorrectTool = settings.needCorrectTool
+        val delay = settings.delay
+        val runsAsync = VeinminerCompatibility.runsAsync
+
+        val queue = ArrayDeque<VeinmineBlock>()
         queue.add(VeinmineBlock(currentBlock, 0))
 
         while (queue.isNotEmpty()) {
-            val vBlock = queue.poll()
+            val vBlock = queue.removeFirst()
             val block = vBlock.block
-            if (!targetTypes.contains(block.type.key) || processedBlocks.contains(block)) continue
-            val size = processedBlocks.size
-            if (size >= settings.maxChain) continue
+            if (visited.contains(block)) continue
+            if (visited.size >= maxChain) break
 
-            // Only break if action is mining
             if (shouldBreak) {
-                // Mining exclusive checks
-                if (settings.needCorrectTool && tool.isEmpty) continue
-                if (settings.decreaseDurability && tool.remainingDurability() <= 1) continue
+                if (needCorrectTool && tool.isEmpty) continue
+                if (decreaseDurability && tool.remainingDurability() <= 1) continue
 
-
-                val tickDelay = (settings.delay * vBlock.distance).toLong()
-                if (VeinminerCompatibility.runsAsync) { // folia
+                val tickDelay = (delay * vBlock.distance).toLong()
+                if (runsAsync) {
                     if (tickDelay == 0L) {
                         server.regionScheduler.execute(Veinminer.INSTANCE, block.location) {
                             triggerBreaking(block)
@@ -248,22 +258,24 @@ object VeinMinerEvent {
                     }
                 }
             }
-            processedBlocks.add(block)
+            visited.add(block)
 
-            // Process blocks around the current block
-            val searchRadius = settings.searchRadius
-            (-searchRadius .. searchRadius).forEach { x ->
-                (-searchRadius .. searchRadius).forEach { y ->
-                    (-searchRadius .. searchRadius).forEach z@{ z ->
-                        if (x == 0 && y == 0 && z == 0) return@z
-                        val newBlock = block.world.getBlockAt(block.x + x, block.y + y, block.z + z)
-
-                        queue.add(VeinmineBlock(newBlock, vBlock.distance + 1))
+            val nextDist = vBlock.distance + 1
+            val world = block.world
+            val bx = block.x; val by = block.y; val bz = block.z
+            for (x in -searchRadius..searchRadius) {
+                for (y in -searchRadius..searchRadius) {
+                    for (z in -searchRadius..searchRadius) {
+                        if (x == 0 && y == 0 && z == 0) continue
+                        val newBlock = world.getBlockAt(bx + x, by + y, bz + z)
+                        if (visited.contains(newBlock)) continue
+                        if (!targets.contains(newBlock.type.key)) continue
+                        queue.add(VeinmineBlock(newBlock, nextDist))
                     }
                 }
             }
         }
-        return processedBlocks.size
+        return visited.size
     }
 
     private fun VeinmineAction.triggerBreaking(block: Block) {

@@ -6,6 +6,7 @@ import de.miraculixx.veinminer.VeinMinerEvent.veinmine
 import de.miraculixx.veinminer.Veinminer
 import de.miraculixx.veinminer.config.ConfigManager
 import de.miraculixx.veinminer.data.BlockPosition
+import de.miraculixx.veinminer.event.HighlightCache
 import de.miraculixx.veinminer.network.BlockHighlighting
 import de.miraculixx.veinminer.network.JoinInformation
 import de.miraculixx.veinminer.network.KeyPress
@@ -50,8 +51,17 @@ object PaperServerCallbacks : ServerCallbacks {
             return
         }
 
+        val cacheKey = HighlightCache.Key(player.world, pos, block.type.key.toString())
+        val cached = HighlightCache.get(cacheKey)
+        if (cached != null) {
+            NetworkRouter.sendHighlighting(playerId, BlockHighlighting(true, cached.second, cached.first))
+            return
+        }
+
         action.copy(settings = action.settings.copy(delay = 0)).veinmine(false)
         val blocks = action.processedBlocks.map { BlockPosition(it.x, it.y, it.z) }
-        NetworkRouter.sendHighlighting(playerId, BlockHighlighting(true, VeinMinerEvent.getPreferredToolIcon(block.type), blocks))
+        val toolIcon = VeinMinerEvent.getPreferredToolIcon(block.type)
+        HighlightCache.put(cacheKey, blocks, toolIcon)
+        NetworkRouter.sendHighlighting(playerId, BlockHighlighting(true, toolIcon, blocks))
     }
 }

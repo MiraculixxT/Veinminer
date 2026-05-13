@@ -7,8 +7,12 @@ import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
 object NetworkRouter {
+    private const val MINE_REQUEST_MIN_INTERVAL_MS = 50L
+
     val registeredPlayers: MutableMap<UUID, String> = ConcurrentHashMap()
     val readyToVeinmine: MutableSet<UUID> = ConcurrentHashMap.newKeySet()
+
+    private val lastMineRequestMs: MutableMap<UUID, Long> = ConcurrentHashMap()
 
     @Volatile
     private var platform: PlatformNetwork? = null
@@ -29,6 +33,10 @@ object NetworkRouter {
             callbacks.onKeyPress(uuid, packet)
         }
         registerC2S(platform, NetworkManager.PACKET_MINE_ID) { uuid, bytes ->
+            val now = System.currentTimeMillis()
+            val last = lastMineRequestMs[uuid]
+            if (last != null && now - last < MINE_REQUEST_MIN_INTERVAL_MS) return@registerC2S
+            lastMineRequestMs[uuid] = now
             callbacks.onMineRequest(uuid, PacketCodecs.MINE.decode(bytes))
         }
         platform.registerS2C(NetworkManager.PACKET_CONFIGURATION_ID)
@@ -92,5 +100,6 @@ object NetworkRouter {
     fun onDisconnect(uuid: UUID) {
         registeredPlayers.remove(uuid)
         readyToVeinmine.remove(uuid)
+        lastMineRequestMs.remove(uuid)
     }
 }

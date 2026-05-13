@@ -3,6 +3,7 @@
 package de.miraculixx.veinminer.event
 
 import de.miraculixx.veinminer.command.ActiveHost
+import de.miraculixx.veinminer.data.BlockPosition
 import de.miraculixx.veinminer.data.FixedBlockGroup
 import de.miraculixx.veinminer.data.VeinminerSettings
 import de.miraculixx.veinminer.data.VeinminerSettingsOverride
@@ -30,8 +31,6 @@ import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.entity.BlockEntity
 import net.minecraft.world.level.block.state.BlockState
-import java.util.LinkedList
-import java.util.Queue
 import java.util.UUID
 
 /**
@@ -99,6 +98,7 @@ object VeinMinerEvent {
      */
     fun onBlockBreakBefore(world: Level, player: Player, pos: BlockPos, state: BlockState): Boolean {
         player.removeMiningSpeedModifier()
+        HighlightCache.invalidate(world, BlockPosition(pos.x, pos.y, pos.z))
         val info = allowedToVeinmine(world, player, pos, state) ?: return true
 
         val amount = info.veinmine(true)
@@ -155,44 +155,55 @@ object VeinMinerEvent {
      * @return the number of blocks broken
      */
     fun VeinmineAction.veinmine(shouldBreak: Boolean): Int {
-        val queue: Queue<VeinmineBlock> = LinkedList()
+        if (tool.isEmpty) return 0
+        val targets = targetTypes
+        val visited = processedBlocks
+        if (!targets.contains(currentBlock.key())) return 0
+
+        val maxChain = settings.maxChain
+        val searchRadius = settings.searchRadius
+        val decreaseDurability = settings.decreaseDurability
+        val delay = settings.delay
+
+        val queue = ArrayDeque<VeinmineBlock>()
         queue.add(VeinmineBlock(currentBlock, currentPosition, 0))
+        val probe = BlockPos.MutableBlockPos()
 
         while (queue.isNotEmpty()) {
-            val vBlock = queue.poll()
+            val vBlock = queue.removeFirst()
             val pos = vBlock.position
-            if (!targetTypes.contains(vBlock.block.key()) || processedBlocks.contains(pos)) continue
-            val size = processedBlocks.size
-            if (size >= settings.maxChain) continue
-            if (tool.isEmpty) continue
+            if (visited.contains(pos)) continue
+            if (visited.size >= maxChain) break
 
-            if (size != 0 && shouldBreak) {
-                if (settings.decreaseDurability && tool.remainingDurability() <= 1) continue
-                mcCoroutineSync(mcServer!!, settings.delay * vBlock.distance) {
-                    if (settings.delay != 0) {
-                        if (!targetTypes.contains(vBlock.block.key())) return@mcCoroutineSync
+            if (visited.isNotEmpty() && shouldBreak) {
+                if (decreaseDurability && tool.remainingDurability() <= 1) continue
+                mcCoroutineSync(mcServer!!, delay * vBlock.distance) {
+                    if (delay != 0) {
+                        if (!targets.contains(vBlock.block.key())) return@mcCoroutineSync
                     }
-                    if (settings.decreaseDurability && tool.remainingDurability() <= 1) return@mcCoroutineSync
+                    if (decreaseDurability && tool.remainingDurability() <= 1) return@mcCoroutineSync
 
                     vBlock.block.destroyBlock(tool, world, pos, player, sourceLocation)
-                    if (settings.decreaseDurability) damageItem(tool, player)
+                    if (decreaseDurability) damageItem(tool, player)
                 }
             }
-            processedBlocks.add(pos)
+            visited.add(pos)
 
-            val searchRadius = settings.searchRadius
-            (-searchRadius..searchRadius).forEach { x ->
-                (-searchRadius..searchRadius).forEach { y ->
-                    (-searchRadius..searchRadius).forEach z@{ z ->
-                        if (x == 0 && y == 0 && z == 0) return@z
-                        val newPos = BlockPos(pos.x + x, pos.y + y, pos.z + z)
-                        val newBlock = world.getBlockState(newPos)
-                        queue.add(VeinmineBlock(newBlock, newPos, vBlock.distance + 1))
+            val nextDist = vBlock.distance + 1
+            for (x in -searchRadius..searchRadius) {
+                for (y in -searchRadius..searchRadius) {
+                    for (z in -searchRadius..searchRadius) {
+                        if (x == 0 && y == 0 && z == 0) continue
+                        probe.set(pos.x + x, pos.y + y, pos.z + z)
+                        if (visited.contains(probe)) continue
+                        val newBlock = world.getBlockState(probe)
+                        if (!targets.contains(newBlock.key())) continue
+                        queue.add(VeinmineBlock(newBlock, probe.immutable(), nextDist))
                     }
                 }
             }
         }
-        return processedBlocks.size
+        return visited.size
     }
 
     private fun BlockState.destroyBlock(
