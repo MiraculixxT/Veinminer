@@ -29,9 +29,9 @@ ${description}
     side = "BOTH"
 
 [[dependencies.veinminer]]
-    modId = "kotlinforforge"
+    modId = "klf"
     type = "required"
-    versionRange = "[5,)"
+    versionRange = "[1,)"
     ordering = "NONE"
     side = "BOTH"
 

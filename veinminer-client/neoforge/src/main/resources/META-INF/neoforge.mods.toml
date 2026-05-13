@@ -29,9 +29,9 @@ Client addon for Veinminer to add a hotkey and veinmining preview
     side = "CLIENT"
 
 [[dependencies.veinminer_client]]
-    modId = "kotlinforforge"
+    modId = "klf"
     type = "required"
-    versionRange = "[5,)"
+    versionRange = "[1,)"
     ordering = "NONE"
     side = "CLIENT"
 

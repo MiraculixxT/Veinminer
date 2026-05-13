@@ -4,15 +4,11 @@ plugins {
 
 repositories {
     maven("https://maven.neoforged.net/releases/")
-    maven {
-        name = "KotlinForForge"
-        url = uri("https://thedarkcolour.github.io/KotlinForForge/")
-    }
+    maven("https://repo.nyon.dev/releases")
 }
 
 val neoforgeVersion: String by properties
 val modid: String by properties
-val kotlinForNeoforgeVersion: String by properties
 
 neoForge {
     version = neoforgeVersion
@@ -34,7 +30,7 @@ tasks.named<JavaExec>("runServer") {
 }
 
 dependencies {
-    implementation("thedarkcolour:kotlinforforge-neoforge:$kotlinForNeoforgeVersion")
+    implementation("dev.nyon:KotlinLangForge:2.12.0-k2.3.21-3.1+neoforge")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.+")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.+")
 }
