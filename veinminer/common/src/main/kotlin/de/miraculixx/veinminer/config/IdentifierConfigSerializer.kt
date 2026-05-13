@@ -1,26 +1,30 @@
 package de.miraculixx.veinminer.config
 
-import de.miraculixx.veinminer.Veinminer
+import de.miraculixx.veinminer.command.ActiveHost
 import de.miraculixx.veinminer.utils.mcServer
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.core.registries.Registries
 import net.minecraft.resources.Identifier
 import net.minecraft.tags.TagKey
 
-object FabricConfigSerializer : ConfigSerializer<Identifier> {
+/**
+ * Fabric & NeoForge exclusive - Paper carries its own impl
+ */
+object IdentifierConfigSerializer : ConfigSerializer<Identifier> {
 
     override fun parseList(rawList: Set<String>, type: MaterialType): ParsedData<Identifier> {
         val parsed = mutableSetOf<Identifier>()
         val invalid = mutableSetOf<String>()
+        val logger = ActiveHost.host.logger
 
         rawList.forEach { raw ->
             val entries = parseEntry(raw, type)
             if (entries == null) {
-                Veinminer.LOGGER.warn("Failed to access server registry! Cannot parse config, Veinminer will be inactive!")
+                logger.warn("Failed to access server registry! Cannot parse config, Veinminer will be inactive!")
 
             } else if (entries.isEmpty()) {
                 invalid.add(raw)
-                Veinminer.LOGGER.warn("Invalid ${type.name.lowercase()} entry in config: $raw")
+                logger.warn("Invalid ${type.name.lowercase()} entry in config: $raw")
 
             } else parsed.addAll(entries)
         }

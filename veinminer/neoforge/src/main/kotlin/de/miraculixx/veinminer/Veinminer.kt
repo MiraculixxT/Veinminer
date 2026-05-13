@@ -8,8 +8,8 @@ import de.miraculixx.veinminer.event.EventState
 import de.miraculixx.veinminer.event.VeinMinerEvent
 import de.miraculixx.veinminer.event.VeinMinerEvent.removeMiningSpeedModifier
 import de.miraculixx.veinminer.network.NetworkRouter
+import de.miraculixx.veinminer.network.ServerCallbacksImpl
 import de.miraculixx.veinminer.networking.NeoForgePlatformNetwork
-import de.miraculixx.veinminer.networking.NeoForgeServerCallbacks
 import de.miraculixx.veinminer.utils.NeoForgeHost
 import de.miraculixx.veinminer.utils.cGreen
 import de.miraculixx.veinminer.utils.cRed
@@ -18,6 +18,7 @@ import net.minecraft.DetectedVersion
 import net.minecraft.network.chat.ClickEvent
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.Style
+import net.minecraft.server.level.ServerPlayer
 import net.neoforged.bus.api.IEventBus
 import net.neoforged.fml.ModContainer
 import net.neoforged.fml.ModList
@@ -93,7 +94,7 @@ class Veinminer(modBus: IEventBus, container: ModContainer) {
         // Network registrar (mod bus event)
         modBus.addListener(NeoForgePlatformNetwork::onRegisterPayloadHandlers)
 
-        NetworkRouter.init(NeoForgePlatformNetwork, NeoForgeServerCallbacks)
+        NetworkRouter.init(NeoForgePlatformNetwork, ServerCallbacksImpl)
 
         // Disconnect cleanup
         gameBus.addListener<PlayerEvent.PlayerLoggedOutEvent> { event ->
@@ -104,7 +105,7 @@ class Veinminer(modBus: IEventBus, container: ModContainer) {
 
         // Update notification on join
         gameBus.addListener<PlayerEvent.PlayerLoggedInEvent> { event ->
-            val player = event.entity as? net.minecraft.server.level.ServerPlayer ?: return@addListener
+            val player = event.entity as? ServerPlayer ?: return@addListener
             val info = updateInfo ?: return@addListener
             val server = player.server
             val isOp = server.playerList.isOp(player.nameAndId())
