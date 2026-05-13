@@ -1,4 +1,4 @@
-modLoader = "javafml"
+modLoader = "klf"
 loaderVersion = "[1,)"
 license = "${license}"
 issueTrackerURL = "https://dc.mutils.net"
@@ -25,13 +25,6 @@ ${description}
     modId = "minecraft"
     type = "required"
     versionRange = "[1.21,)"
-    ordering = "NONE"
-    side = "BOTH"
-
-[[dependencies.veinminer]]
-    modId = "klf"
-    type = "required"
-    versionRange = "[1,)"
     ordering = "NONE"
     side = "BOTH"
 
