@@ -11,7 +11,7 @@ import de.miraculixx.kpaper.extensions.pluginManager
 import de.miraculixx.kpaper.main.KPaper
 import de.miraculixx.veinminer.command.ActiveHost
 import de.miraculixx.veinminer.command.PaperVeinminerCommand
-import de.miraculixx.veinminer.config.ConfigManager
+import de.miraculixx.veinminer.config.PaperConfigManager
 import de.miraculixx.veinminer.extensions.color
 import de.miraculixx.veinminer.utils.cGreen
 import de.miraculixx.veinminer.utils.cRed
@@ -42,7 +42,7 @@ class Veinminer : KPaper() {
 
         ActiveHost.host = PaperHost
 
-        ConfigManager
+        PaperConfigManager
         PaperVeinminerCommand.register()
     }
 

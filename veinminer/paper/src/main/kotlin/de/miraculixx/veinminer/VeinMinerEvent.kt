@@ -7,7 +7,7 @@ import de.miraculixx.kpaper.extensions.bukkit.cmp
 import de.miraculixx.kpaper.extensions.server
 import de.miraculixx.kpaper.runnables.taskRunLater
 import de.miraculixx.veinminer.Veinminer.Companion.VEINMINE
-import de.miraculixx.veinminer.config.ConfigManager
+import de.miraculixx.veinminer.config.PaperConfigManager
 import de.miraculixx.veinminer.data.BlockPosition
 import de.miraculixx.veinminer.data.FixedBlockGroup
 import de.miraculixx.veinminer.data.VeinminerSettings
@@ -58,7 +58,7 @@ object VeinMinerEvent {
         val tools = mutableSetOf<NamespacedKey>()
         var override: VeinminerSettingsOverride? = null
 
-        ConfigManager.groups.forEach {
+        PaperConfigManager.groups.forEach {
             if (it.blocks.contains(this)) {
                 if (override == null) { // Capture first override. This behavior may need improvement
                     override = it.override
@@ -110,7 +110,7 @@ object VeinMinerEvent {
         // Check if the event is triggered by Veinminer
         if (it is VeinminerEvent) {
             if (!it.isDropItems) return@listen
-            var settings = ConfigManager.settings
+            var settings = PaperConfigManager.settings
 
             // Invoke VeinminerDropEvent - allows other plugins to modify the items and exp dropped by Veinminer itself
             // Veinminer will drop the items that are still in the list and the remaining amount of experience
@@ -176,12 +176,12 @@ object VeinMinerEvent {
         // Gather correct settings layer
         val blockGroup = material.groupedBlocks()
         val isGroupBlock = blockGroup.blocks.isNotEmpty()
-        val settings = ConfigManager.settings.applyOverrides(hasClient, blockGroup.override)
+        val settings = PaperConfigManager.settings.applyOverrides(hasClient, blockGroup.override)
 
         if (settings.permissionRestricted && !player.hasPermission(permissionVeinmine)) return null
         val hasClientBypass = settings.client.allBlocks && NetworkRouter.registeredPlayers.containsKey(player.uniqueId)
-        val isWhitelisted = isGroupBlock || ConfigManager.veinBlocks.contains(material)
-        if (debug) Veinminer.LOGGER.info(" - Group: $blockGroup, Global: ${ConfigManager.veinBlocks}, isWhitelisted: $isWhitelisted")
+        val isWhitelisted = isGroupBlock || PaperConfigManager.veinBlocks.contains(material)
+        if (debug) Veinminer.LOGGER.info(" - Group: $blockGroup, Global: ${PaperConfigManager.veinBlocks}, isWhitelisted: $isWhitelisted")
 
         // Check if client is required
         if (settings.client.require && !hasClient) return null

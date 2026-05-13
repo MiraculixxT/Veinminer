@@ -15,10 +15,7 @@ object PaperConfigSerializer : ConfigSerializer<NamespacedKey> {
 
         rawList.forEach { raw ->
             val entries = parseEntry(raw, type)
-            if (entries == null) {
-                Veinminer.LOGGER.warn("Failed to access server registry! Cannot parse config, Veinminer will be inactive!")
-
-            } else if (entries.isEmpty()) {
+            if (entries.isEmpty()) {
                 invalid.add(raw)
                 Veinminer.LOGGER.warn("Invalid ${type.name.lowercase()} entry in config: $raw")
 
@@ -27,7 +24,7 @@ object PaperConfigSerializer : ConfigSerializer<NamespacedKey> {
         return ParsedData(parsed, invalid)
     }
 
-    private fun parseEntry(raw: String, type: MaterialType): Set<NamespacedKey>? {
+    private fun parseEntry(raw: String, type: MaterialType): Set<NamespacedKey> {
         val isTag = raw.startsWith("#")
         val name = if (isTag) raw.substring(1) else raw
 

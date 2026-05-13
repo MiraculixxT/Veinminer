@@ -4,7 +4,7 @@ import kotlinx.serialization.modules.SerializersModule
 import org.bukkit.NamespacedKey
 import kotlin.io.path.Path
 
-object ConfigManager : BaseConfigManager<NamespacedKey>(
+object PaperConfigManager : BaseConfigManager<NamespacedKey>(
     configDir = Path("plugins/Veinminer"),
     serializer = PaperConfigSerializer,
     jsonModule = SerializersModule {

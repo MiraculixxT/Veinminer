@@ -4,7 +4,7 @@ import de.miraculixx.kpaper.event.listen
 import de.miraculixx.veinminer.VeinMinerEvent
 import de.miraculixx.veinminer.VeinMinerEvent.veinmine
 import de.miraculixx.veinminer.Veinminer
-import de.miraculixx.veinminer.config.ConfigManager
+import de.miraculixx.veinminer.config.PaperConfigManager
 import de.miraculixx.veinminer.data.BlockPosition
 import de.miraculixx.veinminer.event.HighlightCache
 import de.miraculixx.veinminer.network.BlockHighlighting
@@ -25,7 +25,7 @@ object PaperServerCallbacks : ServerCallbacks {
 
     override fun onJoinAccepted(playerId: UUID, packet: JoinInformation) {
         val player = Bukkit.getPlayer(playerId) ?: return
-        val settings = ConfigManager.settings
+        val settings = PaperConfigManager.settings
         if (!settings.client.allow) return
 
         Veinminer.INSTANCE.logger.info("${player.name} joined with Veinminer version ${packet.veinminerClientVersion}")

@@ -3,7 +3,7 @@ package de.miraculixx.veinminer.command
 import com.mojang.brigadier.tree.LiteralCommandNode
 import de.miraculixx.veinminer.INSTANCE
 import de.miraculixx.veinminer.ActiveConfig
-import de.miraculixx.veinminer.config.ConfigManager
+import de.miraculixx.veinminer.config.PaperConfigManager
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
 import net.minecraft.commands.CommandBuildContext
 import net.minecraft.server.MinecraftServer
@@ -15,7 +15,7 @@ import net.minecraft.commands.CommandSourceStack as NmsCommandSourceStack
 
 object PaperVeinminerCommand {
     fun register() {
-        ActiveConfig.bridge = ConfigManager
+        ActiveConfig.bridge = PaperConfigManager
         Permissions.install { src, node ->
             val sender: CommandSender? = when (src) {
                 is NmsCommandSourceStack -> runCatching { src.bukkitSender }.getOrNull()
