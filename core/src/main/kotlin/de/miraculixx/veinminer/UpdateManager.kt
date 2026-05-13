@@ -43,7 +43,7 @@ object UpdateManager {
         val target = URI(file.url).toURL()
         val con = target.openConnection() as HttpURLConnection
         val content = con.inputStream.readAllBytes()
-        val configFolder = File(if (platform == "fabric") "config/veinminer" else "plugins/Veinminer")
+        val configFolder = File(if (platform != "paper") "config/Veinminer" else "plugins/Veinminer")
         val targetFolder = File(configFolder, "update").apply { mkdirs() }
         val targetFile = File(targetFolder, file.filename)
         targetFile.writeBytes(content)
