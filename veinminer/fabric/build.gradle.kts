@@ -21,6 +21,7 @@ sourceSets {
 
 modrinth {
     uploadFile.set(tasks.jar)
+    projectId = properties["modrinthId"] as String
     versionName = "Veinminer Fabric - $version"
     outlet.mcVersionRange = properties["fabricSupportedVersions"] as String
     gameVersions.addAll(outlet.mcVersions())

@@ -24,6 +24,7 @@ tasks.shadowJar { archiveClassifier.set("")    }
 
 modrinth {
     uploadFile.set(tasks.shadowJar)
+    projectId = properties["modrinthId"] as String
     versionName = "Veinminer Paper - $version"
     outlet.mcVersionRange = properties["paperSupportedVersions"] as String
     gameVersions.addAll(outlet.mcVersions())

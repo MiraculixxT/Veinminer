@@ -1,7 +1,11 @@
+import dex.plugins.outlet.v2.util.ReleaseType
+
 plugins {
     id("com.modrinth.minotaur")
     id("io.github.dexman545.outlet")
 }
+
+outlet.allowedReleaseTypes = setOf(ReleaseType.RELEASE)
 
 modrinth {
     token.set(properties["modrinthToken"] as? String ?: "")

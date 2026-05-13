@@ -43,7 +43,7 @@ modrinth {
         add("neoforge")
     })
     dependencies {
-        required.project("kotlin-for-forge")
+        required.project("kotlin-lang-forge")
         required.project("veinminer")
     }
 }

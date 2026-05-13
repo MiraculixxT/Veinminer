@@ -34,6 +34,7 @@ sourceSets {
 
 modrinth {
     uploadFile.set(tasks.jar)
+    projectId = properties["modrinthId"] as String
     versionName = "Veinminer NeoForge - $version"
     outlet.mcVersionRange = properties["neoforgeSupportedVersions"] as String
     gameVersions.addAll(outlet.mcVersions())
@@ -41,6 +42,6 @@ modrinth {
         add("neoforge")
     })
     dependencies {
-        required.project("kotlin-for-forge")
+        required.project("kotlin-lang-forge")
     }
 }
