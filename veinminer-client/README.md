@@ -1,6 +1,6 @@
 [![dono-badge](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/donate/kofi-singular_vector.svg)](https://ko-fi.com/miraculixx/donate)
-[![silk-badge](https://i.imgur.com/iSCVMEz.png)](https://modrinth.com/mod/silk)
-[![fapi-badge](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/requires/fabric-api_vector.svg)](https://modrinth.com/mod/fabric-api)
+[![veinminer-badge](https://cdn.modrinth.com/data/cached_images/625146681182f85ef448f5c910e4cd28ec6cf604.png)](https://modrinth.com/mod/veinminer)
+[![enchant-badge](https://cdn.modrinth.com/data/cached_images/ea836ed1714c4f065aca5466c99c9e7d8f5baeff.png)](https://modrinth.com/project/veinminer-enchantment)
 
 
 ## ⛏️ Veinminer Hotkey

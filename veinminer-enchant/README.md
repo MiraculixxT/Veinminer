@@ -1,3 +1,7 @@
+[![dono-badge](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/donate/kofi-singular_vector.svg)](https://ko-fi.com/miraculixx/donate)
+[![veinminer-badge](https://cdn.modrinth.com/data/cached_images/625146681182f85ef448f5c910e4cd28ec6cf604.png)](https://modrinth.com/mod/veinminer)
+[![client-badge](https://cdn.modrinth.com/data/cached_images/9badc43c5a3708f90d24088df4f37c03acc943b8.png)](https://modrinth.com/project/veinminer-client)
+
 ## ⛏️ Veinminer Enchantment
 
 Addon for the popular [Veinminer](https://modrinth.com/project/veinminer) mod/plugin/data-pack that limits the use of veinmining to a new custom enchantment `Veinmine`! As long as this addon is installed, veinmining is only possible with the enchantment (still respecting block rules and settings).
