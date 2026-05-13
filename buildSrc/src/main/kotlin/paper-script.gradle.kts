@@ -11,7 +11,6 @@ plugins {
 description = properties["description"] as String
 
 val paperVersion by properties
-val foliaSupport = properties["foliaSupport"] as String == "true"
 val projectName = properties["projectName"] as String
 
 repositories {
@@ -32,21 +31,8 @@ dependencies {
     library("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.+")
     library("org.jetbrains.kotlinx:kotlinx-serialization-cbor:1.+")
 
-    // Utility libraries (optional)
-    val useBrigadier = properties["useBrigadier"] as String == "true"
-    if (useBrigadier) {
-        implementation(library("dev.jorel:commandapi-paper-shade:11.1.0")!!)
-        implementation(library("dev.jorel:commandapi-kotlin-paper:11.1.0")!!)
-    }
-
     library("de.miraculixx:kpaper:1.+")
 }
-
-//tasks {
-//    assemble {
-//        dependsOn(reobfJar)
-//    }
-//}
 
 paper {
     main = "$group.veinminer.Veinminer"
@@ -58,6 +44,6 @@ paper {
     website = "https://mutils.net"
 
     foliaSupported = true
-    apiVersion = "1.20"
+    apiVersion = "1.21"
     load = BukkitPluginDescription.PluginLoadOrder.STARTUP
 }

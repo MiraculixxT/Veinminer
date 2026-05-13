@@ -1,0 +1,52 @@
+plugins {
+    id("net.neoforged.moddev")
+}
+
+repositories {
+    maven("https://maven.neoforged.net/releases/")
+    maven("https://repo.nyon.dev/releases")
+}
+
+val neoforgeVersion: String by properties
+val modid: String by properties
+
+neoForge {
+    version = neoforgeVersion
+
+    runs {
+        register("server") {
+            server()
+            programArgument("--nogui")
+        }
+
+        register("client") {
+            client()
+        }
+    }
+}
+
+tasks.named<JavaExec>("runServer") {
+    standardInput = System.`in`
+}
+
+dependencies {
+    implementation("dev.nyon:KotlinLangForge:2.12.0-k2.3.21-3.1+neoforge")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.+")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.+")
+}
+
+tasks.processResources {
+    val tokens = mapOf(
+        "modid" to modid,
+        "version" to project.version.toString(),
+        "name" to (properties["projectName"] as String),
+        "description" to (properties["description"] as? String ?: ""),
+        "author" to (properties["author"] as String),
+        "license" to (properties["licence"] as String),
+        "neoforgeVersion" to neoforgeVersion,
+    )
+    inputs.properties(tokens)
+    filesMatching("META-INF/neoforge.mods.toml") {
+        expand(tokens)
+    }
+}

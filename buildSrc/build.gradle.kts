@@ -7,9 +7,9 @@ repositories {
     mavenCentral()
     gradlePluginPortal()
     maven("https://maven.fabricmc.net/")
-    maven("https://server.bbkr.space/artifactory/libs-release/")
     maven("https://papermc.io/repo/repository/maven-public/")
     maven("https://maven.quiltmc.org/repository/release/")
+    maven("https://maven.neoforged.net/releases/")
 }
 
 dependencies {
@@ -30,8 +30,11 @@ dependencies {
     implementation(pluginDep("xyz.jpenilla.run-paper", "3.0.2"))
     implementation(pluginDep("de.eldoria.plugin-yml.paper", "0.7.+"))
 
+    // NeoForge implementation
+    implementation(pluginDep("net.neoforged.moddev", "2.0.141"))
+
     // Project configuration
     implementation(pluginDep("com.gradleup.shadow", "9.0.0"))
     implementation(pluginDep("com.modrinth.minotaur", "2.+"))
-    implementation(pluginDep("io.github.dexman545.outlet", "1.6.+"))
+    implementation(pluginDep("io.github.dexman545.outlet", "1.8.+"))
 }

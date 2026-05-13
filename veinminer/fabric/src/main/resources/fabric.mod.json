@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "${modid}",
+  "version": "${version}",
+  "name": "${name}",
+  "description": "${description}",
+  "authors": [
+    "${author}"
+  ],
+  "license": "${license}",
+  "icon": "assets/veinminer/icon.png",
+  "accessWidener": "veinminer.accesswidener",
+  "contact": {
+    "homepage": "https://modrinth.com/mod/${modrinth}",
+    "issues": "https://dc.mutils.net"
+  },
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "de.miraculixx.veinminer.Veinminer"
+    ]
+  },
+  "mixins": [],
+  "depends": {
+    "fabricloader": "${loaderVersion}",
+    "minecraft": "${mcversion}",
+    "java": ">=25",
+    "fabric-api": "*",
+    "fabric-language-kotlin": "*"
+  }
+}
