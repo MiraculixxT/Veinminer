@@ -18,23 +18,13 @@ If you need any help or want to share some ideas to add, just hop on our Discord
 Task shortcuts for easier testing.
 
 ### Run Servers
-```shell
-./gradlew :veinminer:veinminer-paper:runServer
-```
-```shell
-./gradlew :veinminer:veinminer-fabric:runServer
-```
-```shell
-./gradlew :veinminer:veinminer-neoforge:runServer
-```
+- `./gradlew :veinminer:veinminer-paper:runServer`
+- `./gradlew :veinminer:veinminer-fabric:runServer`
+- `./gradlew :veinminer:veinminer-neoforge:runServer`
 
 ### Run Clients
-```shell
-./gradlew :veinminer-client:veinminer-client-fabric:runClient
-```
-```shell
-./gradlew :veinminer-client:veinminer-client-neoforge:runClient
-```
+- `./gradlew :veinminer-client:veinminer-client-fabric:runClient`
+- `./gradlew :veinminer-client:veinminer-client-neoforge:runClient`
 
 ### Building (bulked or project seperated)
 ```shell
