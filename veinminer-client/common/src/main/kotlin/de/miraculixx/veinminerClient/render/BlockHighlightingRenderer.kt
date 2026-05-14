@@ -13,6 +13,7 @@ import net.minecraft.client.renderer.MultiBufferSource
 import net.minecraft.client.renderer.RenderPipelines
 import net.minecraft.client.renderer.rendertype.RenderSetup
 import net.minecraft.client.renderer.rendertype.RenderType
+import net.minecraft.client.renderer.rendertype.RenderTypes
 import net.minecraft.resources.Identifier
 import net.minecraft.world.phys.Vec3
 import net.minecraft.world.phys.shapes.Shapes
@@ -24,35 +25,16 @@ import java.util.*
 object BlockHighlightingRenderer {
     private var highlightingShape: VoxelShape = Shapes.empty()
 
-    /**
-     * Render type for block highlighting.
-     *
-     * RenderType.create(namespace, bufferSize, pipeline, state)
-     */
-    private val renderHighlighting
-        get() = RenderType.create(
-            "${ClientLifecycle.MOD_ID}:highlight",
-            RenderSetup.builder(
-                RenderPipelines.register(
-                    RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
-                        .withLocation(Identifier.fromNamespaceAndPath("veinminer-client", "pipeline/highlight"))
-                        .withDepthStencilState(DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, false))
-                        .withCull(false)
-                        .withColorTargetState(ColorTargetState.DEFAULT)
-                        .build()
-                )
-            ).bufferSize(1536)
-                .createRenderSetup()
-        )
+    private val renderHighlighting: RenderType by lazy { RenderTypes.lines() }
 
-    private val renderHighlightingTranslucent
-        get() = RenderType.create(
+    // Custom renderer, unavailable under Iris
+    private val renderHighlightingTranslucent: RenderType by lazy {
+        RenderType.create(
             "${ClientLifecycle.MOD_ID}:highlight_translucent",
             RenderSetup.builder(
                 RenderPipelines.register(
                     RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
                         .withLocation(Identifier.fromNamespaceAndPath("veinminer-client", "pipeline/highlight_translucent"))
-                        // Ignore the depth buffer so the outline renders through blocks
                         .withDepthStencilState(DepthStencilState(CompareOp.ALWAYS_PASS, false))
                         .withCull(false)
                         .withColorTargetState(ColorTargetState.DEFAULT)
@@ -61,6 +43,7 @@ object BlockHighlightingRenderer {
             ).bufferSize(1536)
                 .createRenderSetup()
         )
+    }
 
 
     // OrderedSubmitNodeCollector
@@ -76,21 +59,17 @@ object BlockHighlightingRenderer {
 
         val matrix = stack.last().pose()
 
+        val drawTranslucent = NetworkManager.translucentBlockHighlight
+
         if (!isTranslucentPass) {
-            // First Pass (Solid/Normal): Render standard lines that respect depth
             renderBlocks(source, renderHighlighting, matrix, highlightingShape, 255)
-        } else {
-            // Second Pass (Translucent): Render "Always on Top" lines
-            // Render last so they overlay water/translucent blocks
-            if (NetworkManager.translucentBlockHighlight) {
-                renderBlocks(source, renderHighlightingTranslucent, matrix, highlightingShape, 20)
-            }
+        } else if (drawTranslucent) {
+            renderBlocks(source, renderHighlightingTranslucent, matrix, highlightingShape, 20)
         }
 
-        // Force draw the lines immediately
         if (!isTranslucentPass) {
             source.endBatch(renderHighlighting)
-        } else if (NetworkManager.translucentBlockHighlight) {
+        } else if (drawTranslucent) {
             source.endBatch(renderHighlightingTranslucent)
         }
 
