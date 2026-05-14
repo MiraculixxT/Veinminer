@@ -1,7 +1,7 @@
 package de.miraculixx.veinminer.network
 
 import de.miraculixx.veinminer.data.BlockPosition
-import de.miraculixx.veinminer.pattern.Pattern
+import de.miraculixx.veinminer.pattern.Shape
 import de.miraculixx.veinminer.pattern.Surface
 import net.minecraft.network.FriendlyByteBuf
 
@@ -14,22 +14,24 @@ object PacketCodecs {
     }
 
     val KEY: PacketCodec<KeyPress> = object : PacketCodec<KeyPress> {
-        override fun read(buf: FriendlyByteBuf) = KeyPress(buf.readBoolean())
+        override fun read(buf: FriendlyByteBuf) = KeyPress(
+            pressed = buf.readBoolean(),
+            shape = Shape.valueOf(buf.readUtf())
+        )
         override fun write(buf: FriendlyByteBuf, value: KeyPress) {
             buf.writeBoolean(value.pressed)
+            buf.writeUtf(value.shape.name)
         }
     }
 
     val MINE: PacketCodec<RequestBlockVein> = object : PacketCodec<RequestBlockVein> {
         override fun read(buf: FriendlyByteBuf) = RequestBlockVein(
             blockPosition = readBlockPosition(buf),
-            surface = Surface.valueOf(buf.readUtf()),
-            pattern = Pattern.valueOf(buf.readUtf())
+            surface = Surface.valueOf(buf.readUtf())
         )
         override fun write(buf: FriendlyByteBuf, value: RequestBlockVein) {
             writeBlockPosition(buf, value.blockPosition)
             buf.writeUtf(value.surface.name)
-            buf.writeUtf(value.pattern.name)
         }
     }
 

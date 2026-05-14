@@ -5,9 +5,10 @@ package de.miraculixx.veinminerClient.network
 import de.miraculixx.veinminer.network.BlockHighlighting
 import de.miraculixx.veinminer.network.ClientCallbacks
 import de.miraculixx.veinminer.network.ClientNetworkRouter
+import de.miraculixx.veinminer.network.KeyPress
 import de.miraculixx.veinminer.network.RequestBlockVein
 import de.miraculixx.veinminer.network.ServerConfiguration
-import de.miraculixx.veinminer.pattern.Pattern
+import de.miraculixx.veinminer.pattern.Shape
 import de.miraculixx.veinminer.utils.debug
 import de.miraculixx.veinminerClient.ClientLifecycle
 import de.miraculixx.veinminerClient.render.BlockHighlightingRenderer
@@ -22,7 +23,7 @@ import net.minecraft.network.chat.Component
 object NetworkManager : ClientCallbacks {
     var isVeinminerActive = false
         private set
-    var selectedPattern = Pattern.DEFAULT
+    var selectedShape: Shape = Shape.NORMAL
 
     var mustSneak = false
         private set
@@ -76,7 +77,7 @@ object NetworkManager : ClientCallbacks {
     fun sendBlockRequest(position: BlockPos, direction: Direction) {
         if (debug) ClientLifecycle.LOGGER.info("Sending veinmine request: ($position, $direction)")
         if (!isConnected()) return
-        ClientNetworkRouter.sendBlockRequest(RequestBlockVein(position.toVeinminer(), direction.toVeinminer(), selectedPattern))
+        ClientNetworkRouter.sendBlockRequest(RequestBlockVein(position.toVeinminer(), direction.toVeinminer()))
     }
 
     fun sendJoin(version: String) {
@@ -86,9 +87,14 @@ object NetworkManager : ClientCallbacks {
     }
 
     fun sendKeyPress(pressed: Boolean) {
-        ClientLifecycle.LOGGER.info("Sending veinmine state: $pressed")
+        ClientLifecycle.LOGGER.info("Sending veinmine state: $pressed (shape=$selectedShape)")
         if (!isConnected()) return
-        ClientNetworkRouter.sendKeyPress(pressed)
+        ClientNetworkRouter.sendKeyPress(KeyPress(pressed, selectedShape))
+    }
+
+    fun resendKeyPress() {
+        if (!isConnected()) return
+        ClientNetworkRouter.sendKeyPress(KeyPress(true, selectedShape))
     }
 
     private fun isConnected(): Boolean {

@@ -5,6 +5,8 @@ import de.miraculixx.veinminerClient.constants.KeyBindings
 import de.miraculixx.veinminerClient.network.NetworkManager
 import de.miraculixx.veinminerClient.render.BlockHighlightingRenderer
 import de.miraculixx.veinminerClient.render.HUDProvider
+import de.miraculixx.veinminerClient.render.ShapeRouletteOverlay
+import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -93,8 +95,21 @@ object KeyBindManager {
         BlockHighlightingRenderer.setShape(emptyList())
     }
 
+    private val pendingScroll = AtomicInteger(0)
+
+    fun queueScroll(delta: Int) {
+        if (delta == 0) return
+        pendingScroll.addAndGet(if (delta > 0) 1 else -1)
+    }
+
     fun scrollPattern() {
-        // TODO
+        val raw = pendingScroll.getAndSet(0)
+        if (raw == 0) return
+        val delta = -raw // wheel up advances forward through Shape.entries
+        ShapeRouletteOverlay.onScroll(delta)
+        NetworkManager.selectedShape = ShapeRouletteOverlay.currentShape
+        NetworkManager.resendKeyPress()
+        lastTarget = null
     }
 
     fun onDisconnect() {

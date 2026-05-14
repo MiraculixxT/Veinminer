@@ -7,6 +7,7 @@ import de.miraculixx.veinminerClient.constants.FabricKeyBindings
 import de.miraculixx.veinminerClient.network.FabricClientPlatformNetwork
 import de.miraculixx.veinminerClient.network.NetworkManager
 import de.miraculixx.veinminerClient.render.FabricHUDRenderer
+import de.miraculixx.veinminerClient.render.FabricShapeRouletteRenderer
 import de.miraculixx.veinminerClient.render.HUDProvider
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
@@ -43,6 +44,7 @@ class VeinminerClient : ClientModInitializer {
         }
 
         HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(MOD_ID, "target-info"), FabricHUDRenderer)
+        HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(MOD_ID, "shape-roulette"), FabricShapeRouletteRenderer)
 
         mcCoroutineAsync(1.ticks) {
             ClientLifecycle.checkForUpdates(

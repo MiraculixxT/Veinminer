@@ -6,6 +6,7 @@ import de.miraculixx.veinminer.event.HighlightCache
 import de.miraculixx.veinminer.event.VeinMinerEvent
 import de.miraculixx.veinminer.event.VeinMinerEvent.key
 import de.miraculixx.veinminer.event.VeinMinerEvent.veinmine
+import de.miraculixx.veinminer.pattern.Shape
 import de.miraculixx.veinminer.utils.debug
 import de.miraculixx.veinminer.utils.mcServer
 import de.miraculixx.veinminer.utils.toNMS
@@ -42,6 +43,8 @@ object ServerCallbacksImpl : ServerCallbacks {
 
         if (debug) logger.info("$playerId requested to veinmine block at ${packet.blockPosition}")
 
+        NetworkRouter.lastSurface[playerId] = packet.surface
+
         val level = player.level()
         val position = packet.blockPosition.toNMS()
         val state = level.getBlockState(position)
@@ -52,8 +55,9 @@ object ServerCallbacksImpl : ServerCallbacks {
             return
         }
 
+        val shape = NetworkRouter.activeShape(playerId) ?: Shape.NORMAL
         val sourcePos = packet.blockPosition
-        val cacheKey = HighlightCache.Key(level, sourcePos, state.key().toString())
+        val cacheKey = HighlightCache.Key(level, sourcePos, state.key().toString(), shape, packet.surface)
         val cached = HighlightCache.get(cacheKey)
         if (cached != null) {
             NetworkRouter.sendHighlighting(playerId, BlockHighlighting(true, cached.second, cached.first))

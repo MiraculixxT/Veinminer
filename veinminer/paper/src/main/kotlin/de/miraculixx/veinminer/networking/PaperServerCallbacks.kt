@@ -14,6 +14,7 @@ import de.miraculixx.veinminer.network.NetworkRouter
 import de.miraculixx.veinminer.network.RequestBlockVein
 import de.miraculixx.veinminer.network.ServerCallbacks
 import de.miraculixx.veinminer.network.ServerConfiguration
+import de.miraculixx.veinminer.pattern.Shape
 import de.miraculixx.veinminer.utils.debug
 import org.bukkit.Bukkit
 import org.bukkit.event.player.PlayerQuitEvent
@@ -43,6 +44,8 @@ object PaperServerCallbacks : ServerCallbacks {
         val player = Bukkit.getPlayer(playerId) ?: return
         if (debug) Veinminer.INSTANCE.logger.info("$playerId requested to veinmine block at ${packet.blockPosition}")
 
+        NetworkRouter.lastSurface[playerId] = packet.surface
+
         val pos = packet.blockPosition
         val block = player.world.getBlockAt(pos.x, pos.y, pos.z)
         val action = VeinMinerEvent.allowedToVeinmine(player, block)
@@ -51,7 +54,8 @@ object PaperServerCallbacks : ServerCallbacks {
             return
         }
 
-        val cacheKey = HighlightCache.Key(player.world, pos, block.type.key.toString())
+        val shape = NetworkRouter.activeShape(playerId) ?: Shape.NORMAL
+        val cacheKey = HighlightCache.Key(player.world, pos, block.type.key.toString(), shape, packet.surface)
         val cached = HighlightCache.get(cacheKey)
         if (cached != null) {
             NetworkRouter.sendHighlighting(playerId, BlockHighlighting(true, cached.second, cached.first))
