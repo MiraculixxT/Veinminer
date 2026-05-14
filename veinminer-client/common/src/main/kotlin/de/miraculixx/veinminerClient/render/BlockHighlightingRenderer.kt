@@ -1,5 +1,6 @@
 package de.miraculixx.veinminerClient.render
 
+import com.mojang.blaze3d.pipeline.BlendFunction
 import com.mojang.blaze3d.pipeline.ColorTargetState
 import com.mojang.blaze3d.pipeline.DepthStencilState
 import com.mojang.blaze3d.pipeline.RenderPipeline
@@ -37,7 +38,7 @@ object BlockHighlightingRenderer {
                         .withLocation(Identifier.fromNamespaceAndPath("veinminer-client", "pipeline/highlight_translucent"))
                         .withDepthStencilState(DepthStencilState(CompareOp.ALWAYS_PASS, false))
                         .withCull(false)
-                        .withColorTargetState(ColorTargetState.DEFAULT)
+                        .withColorTargetState(ColorTargetState(BlendFunction.TRANSLUCENT))
                         .build()
                 )
             ).bufferSize(1536)
@@ -64,7 +65,7 @@ object BlockHighlightingRenderer {
         if (!isTranslucentPass) {
             renderBlocks(source, renderHighlighting, matrix, highlightingShape, 255)
         } else if (drawTranslucent) {
-            renderBlocks(source, renderHighlightingTranslucent, matrix, highlightingShape, 20)
+            renderBlocks(source, renderHighlightingTranslucent, matrix, highlightingShape, 50)
         }
 
         if (!isTranslucentPass) {
