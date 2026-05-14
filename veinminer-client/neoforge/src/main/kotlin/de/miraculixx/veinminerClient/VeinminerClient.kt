@@ -1,5 +1,6 @@
 package de.miraculixx.veinminerClient
 
+import com.mojang.blaze3d.platform.InputConstants
 import de.miraculixx.veinminer.extensions.mcCoroutineAsync
 import de.miraculixx.veinminer.extensions.ticks
 import de.miraculixx.veinminerClient.ClientLifecycle.MOD_ID
@@ -55,7 +56,10 @@ class VeinminerClient(modBus: IEventBus, container: ModContainer) {
             if (!NetworkManager.isVeinminerActive) return@addListener
             val v = event.scrollDeltaY
             if (v == 0.0) return@addListener
-            KeyBindManager.queueScroll(if (v > 0) 1 else -1)
+            val w = Minecraft.getInstance().window
+            val shift = InputConstants.isKeyDown(w, InputConstants.KEY_LSHIFT)
+                || InputConstants.isKeyDown(w, InputConstants.KEY_RSHIFT)
+            KeyBindManager.queueScroll(if (v > 0) 1 else -1, shift)
             event.isCanceled = true
         }
 

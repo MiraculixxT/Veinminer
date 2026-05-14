@@ -15,6 +15,7 @@ object HighlightCache {
         val blockKey: String,
         val shape: Shape,
         val surface: Surface,
+        val maxDepth: Int,
     )
 
     private data class Entry(val blocks: List<BlockPosition>, val toolIcon: String, val insertedMs: Long)

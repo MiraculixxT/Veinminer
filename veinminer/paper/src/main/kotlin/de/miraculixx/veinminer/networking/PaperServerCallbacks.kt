@@ -55,7 +55,8 @@ object PaperServerCallbacks : ServerCallbacks {
         }
 
         val shape = NetworkRouter.activeShape(playerId) ?: Shape.NORMAL
-        val cacheKey = HighlightCache.Key(player.world, pos, block.type.key.toString(), shape, packet.surface)
+        val maxDepth = NetworkRouter.maxDepth(playerId)
+        val cacheKey = HighlightCache.Key(player.world, pos, block.type.key.toString(), shape, packet.surface, maxDepth)
         val cached = HighlightCache.get(cacheKey)
         if (cached != null) {
             NetworkRouter.sendHighlighting(playerId, BlockHighlighting(true, cached.second, cached.first))

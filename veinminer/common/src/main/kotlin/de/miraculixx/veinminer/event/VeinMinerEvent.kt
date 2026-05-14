@@ -215,10 +215,14 @@ object VeinMinerEvent {
         val decreaseDurability = settings.decreaseDurability
         val delay = settings.delay
         val origin = BlockPosition(currentPosition.x, currentPosition.y, currentPosition.z)
+        val maxDepth = NetworkRouter.maxDepth(player.uuid)
         var dist = 0
+        var depthConsumed = 0
         var prevLayer: List<BlockPos> = listOf(currentPosition)
         for (layer in shape.strategy.layers(origin, face, maxChain)) {
             if (visited.size >= maxChain) break
+            if (depthConsumed >= maxDepth) break
+            depthConsumed++
             val matched = ArrayList<BlockPos>(layer.size)
             for (cand in layer) {
                 if (visited.size >= maxChain) break

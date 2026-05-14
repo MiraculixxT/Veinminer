@@ -14,8 +14,10 @@ object NetworkRouter {
     val registeredPlayers: MutableMap<UUID, String> = ConcurrentHashMap()
     val readyToVeinmine: MutableMap<UUID, Shape> = ConcurrentHashMap()
     val lastSurface: MutableMap<UUID, Surface> = ConcurrentHashMap()
+    val activeDepth: MutableMap<UUID, Int> = ConcurrentHashMap()
 
     fun activeShape(uuid: UUID): Shape? = readyToVeinmine[uuid]
+    fun maxDepth(uuid: UUID): Int = activeDepth[uuid] ?: Int.MAX_VALUE
     fun isReady(uuid: UUID): Boolean = readyToVeinmine.containsKey(uuid)
 
     private val lastMineRequestMs: MutableMap<UUID, Long> = ConcurrentHashMap()
@@ -35,7 +37,13 @@ object NetworkRouter {
         }
         registerC2S(platform, NetworkManager.PACKET_KEY_PRESS_ID) { uuid, bytes ->
             val packet = PacketCodecs.KEY.decode(bytes)
-            if (packet.pressed) readyToVeinmine[uuid] = packet.shape else readyToVeinmine.remove(uuid)
+            if (packet.pressed) {
+                readyToVeinmine[uuid] = packet.shape
+                activeDepth[uuid] = packet.maxDepth
+            } else {
+                readyToVeinmine.remove(uuid)
+                activeDepth.remove(uuid)
+            }
             callbacks.onKeyPress(uuid, packet)
         }
         registerC2S(platform, NetworkManager.PACKET_MINE_ID) { uuid, bytes ->
@@ -107,6 +115,7 @@ object NetworkRouter {
         registeredPlayers.remove(uuid)
         readyToVeinmine.remove(uuid)
         lastSurface.remove(uuid)
+        activeDepth.remove(uuid)
         lastMineRequestMs.remove(uuid)
     }
 }

@@ -16,11 +16,13 @@ object PacketCodecs {
     val KEY: PacketCodec<KeyPress> = object : PacketCodec<KeyPress> {
         override fun read(buf: FriendlyByteBuf) = KeyPress(
             pressed = buf.readBoolean(),
-            shape = Shape.valueOf(buf.readUtf())
+            shape = Shape.valueOf(buf.readUtf()),
+            maxDepth = buf.readVarInt()
         )
         override fun write(buf: FriendlyByteBuf, value: KeyPress) {
             buf.writeBoolean(value.pressed)
             buf.writeUtf(value.shape.name)
+            buf.writeVarInt(value.maxDepth)
         }
     }
 

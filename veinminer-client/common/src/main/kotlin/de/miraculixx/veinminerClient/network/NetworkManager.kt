@@ -24,6 +24,7 @@ object NetworkManager : ClientCallbacks {
     var isVeinminerActive = false
         private set
     var selectedShape: Shape = Shape.NORMAL
+    var selectedDepth: Int = 6
 
     var mustSneak = false
         private set
@@ -87,14 +88,14 @@ object NetworkManager : ClientCallbacks {
     }
 
     fun sendKeyPress(pressed: Boolean) {
-        ClientLifecycle.LOGGER.info("Sending veinmine state: $pressed (shape=$selectedShape)")
+        ClientLifecycle.LOGGER.info("Sending veinmine state: $pressed (shape=$selectedShape depth=$selectedDepth)")
         if (!isConnected()) return
-        ClientNetworkRouter.sendKeyPress(KeyPress(pressed, selectedShape))
+        ClientNetworkRouter.sendKeyPress(KeyPress(pressed, selectedShape, selectedDepth))
     }
 
     fun resendKeyPress() {
         if (!isConnected()) return
-        ClientNetworkRouter.sendKeyPress(KeyPress(true, selectedShape))
+        ClientNetworkRouter.sendKeyPress(KeyPress(true, selectedShape, selectedDepth))
     }
 
     private fun isConnected(): Boolean {

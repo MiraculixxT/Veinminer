@@ -95,21 +95,36 @@ object KeyBindManager {
         BlockHighlightingRenderer.setShape(emptyList())
     }
 
-    private val pendingScroll = AtomicInteger(0)
+    private val pendingShapeScroll = AtomicInteger(0)
+    private val pendingDepthScroll = AtomicInteger(0)
 
-    fun queueScroll(delta: Int) {
+    fun queueScroll(delta: Int, shift: Boolean) {
         if (delta == 0) return
-        pendingScroll.addAndGet(if (delta > 0) 1 else -1)
+        val sign = if (delta > 0) 1 else -1
+        if (shift) pendingDepthScroll.addAndGet(sign) else pendingShapeScroll.addAndGet(sign)
     }
 
     fun scrollPattern() {
-        val raw = pendingScroll.getAndSet(0)
-        if (raw == 0) return
-        val delta = -raw // wheel up advances forward through Shape.entries
-        ShapeRouletteOverlay.onScroll(delta)
-        NetworkManager.selectedShape = ShapeRouletteOverlay.currentShape
-        NetworkManager.resendKeyPress()
-        lastTarget = null
+        val rawShape = pendingShapeScroll.getAndSet(0)
+        val rawDepth = pendingDepthScroll.getAndSet(0)
+        if (rawShape == 0 && rawDepth == 0) return
+        var dirty = false
+        if (rawShape != 0) {
+            ShapeRouletteOverlay.onScroll(-rawShape) // wheel up advances forward
+            NetworkManager.selectedShape = ShapeRouletteOverlay.currentShape
+            dirty = true
+        }
+        if (rawDepth != 0) {
+            ShapeRouletteOverlay.onDepthScroll(-rawDepth)
+            if (NetworkManager.selectedDepth != ShapeRouletteOverlay.currentDepth) {
+                NetworkManager.selectedDepth = ShapeRouletteOverlay.currentDepth
+                dirty = true
+            }
+        }
+        if (dirty) {
+            NetworkManager.resendKeyPress()
+            lastTarget = null
+        }
     }
 
     fun onDisconnect() {

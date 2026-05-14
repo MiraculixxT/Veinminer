@@ -20,4 +20,10 @@ data class RequestBlockVein(
 data class KeyPress(
     val pressed: Boolean,
     val shape: Shape,
-)
+    val maxDepth: Int = UNLIMITED_DEPTH,
+) {
+    companion object {
+        /** Sentinel meaning "no depth cap" */
+        const val UNLIMITED_DEPTH: Int = Int.MAX_VALUE
+    }
+}
