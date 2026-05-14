@@ -12,6 +12,5 @@
   "veinminer.shape.tunnel_1x1": "Tunnel 1x1",
   "veinminer.shape.tunnel_2x2": "Tunnel 2x2",
   "veinminer.shape.tunnel_3x3": "Tunnel 3x3",
-  "veinminer.shape.flat": "Flach",
-  "veinminer.shape.depth": "Tiefe %s  %s"
+  "veinminer.shape.flat": "Flach"
 }
