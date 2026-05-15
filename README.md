@@ -26,9 +26,16 @@ Task shortcuts for easier testing.
 - `./gradlew :veinminer-client:veinminer-client-fabric:runClient`
 - `./gradlew :veinminer-client:veinminer-client-neoforge:runClient`
 
-### Building (bulked or project seperated)
+### Building (bulked or project separated)
 ```shell
 ./gradlew :veinminer:veinminer-paper:build :veinminer:veinminer-fabric:build :veinminer:veinminer-neoforge:build
 ./gradlew :veinminer-client:veinminer-client-fabric:build :veinminer-client:veinminer-client-neoforge:build
 ./gradlew :veinminer-enchant:build
+```
+
+### Publishing
+```shell
+./gradlew :veinminer:veinminer-paper:modrinth :veinminer:veinminer-fabric:modrinth :veinminer:veinminer-neoforge:modrinth
+./gradlew :veinminer-client:veinminer-client-fabric:modrinth :veinminer-client:veinminer-client-neoforge:modrinth
+./gradlew :veinminer-enchant:modrinth
 ```
