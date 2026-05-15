@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "id": "veinminer-enchantment",
+  "id": "veinminer_enchantment",
   "version": "${version}",
   "name": "Veinminer Enchantment",
   "description": "Addon for Veinminer to add an exclusive enchantment",
@@ -8,7 +8,7 @@
     "Miraculixx"
   ],
   "license": "${license}",
-  "icon": "assets/veinminer-enchantment/icon.png",
+  "icon": "assets/veinminer_enchantment/icon.png",
   "contact": {
     "homepage": "https://modrinth.com/mod/veinminer-enchantment",
     "issues": "https://dc.mutils.net"

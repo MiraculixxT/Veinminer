@@ -49,7 +49,7 @@ class Veinminer(modBus: IEventBus, container: ModContainer) {
         val mcVersion = DetectedVersion.tryDetectVersion().name()
 
         // Check for Veinminer-Enchantment
-        EventState.enchantmentActive = ModList.get().isLoaded("veinminer-enchantment")
+        EventState.enchantmentActive = ModList.get().isLoaded("veinminer_enchantment")
 
         // Registration
         ActiveHost.host = NeoForgeHost
