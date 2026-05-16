@@ -29,7 +29,7 @@ public class VeinminerEnchantmentBootstrapper implements PluginBootstrap {
         LifecycleEventManager<BootstrapContext> manager = context.getLifecycleManager();
 
         // Add new enchantment
-        final var VEINMINE = TypedKey.create(RegistryKey.ENCHANTMENT, Key.key("veinminer-enchantment:veinminer"));
+        final var VEINMINE = TypedKey.create(RegistryKey.ENCHANTMENT, Key.key("veinminer_enchantment:veinminer"));
 
         // Config
         final var config = VeinminerEnchantmentSettings.get();
@@ -39,7 +39,7 @@ public class VeinminerEnchantmentBootstrapper implements PluginBootstrap {
 
         manager.registerEventHandler(RegistryEvents.ENCHANTMENT.compose().newHandler(event -> event.registry().register(
             VEINMINE,
-            builder -> builder.description(Component.translatable("enchantment.veinmine", "Veinmine"))
+            builder -> builder.description(Component.translatable("enchantment.veinminer_enchantment.veinminer", "Veinmine"))
                 .supportedItems(event.getOrCreateTag(itemTag))
                 .weight(1)
                 .maxLevel(1)

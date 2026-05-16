@@ -16,7 +16,7 @@ object EventState {
     var enchantmentActive: Boolean = false
 
     val enchantmentKey: ResourceKey<Enchantment> =
-        ResourceKey.create(Registries.ENCHANTMENT, Identifier.fromNamespaceAndPath("veinminer-enchantment", "veinminer"))
+        ResourceKey.create(Registries.ENCHANTMENT, Identifier.fromNamespaceAndPath("veinminer_enchantment", "veinminer"))
 
     lateinit var configManager: BaseConfigManager<Identifier>
 

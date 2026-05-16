@@ -18,27 +18,24 @@ If you need any help or want to share some ideas to add, just hop on our Discord
 Task shortcuts for easier testing.
 
 ### Run Servers
-```shell
-./gradlew :veinminer:veinminer-paper:runServer
-```
-```shell
-./gradlew :veinminer:veinminer-fabric:runServer
-```
-```shell
-./gradlew :veinminer:veinminer-neoforge:runServer
-```
+- `./gradlew :veinminer:veinminer-paper:runServer`
+- `./gradlew :veinminer:veinminer-fabric:runServer`
+- `./gradlew :veinminer:veinminer-neoforge:runServer`
 
 ### Run Clients
-```shell
-./gradlew :veinminer-client:veinminer-client-fabric:runClient
-```
-```shell
-./gradlew :veinminer-client:veinminer-client-neoforge:runClient
-```
+- `./gradlew :veinminer-client:veinminer-client-fabric:runClient`
+- `./gradlew :veinminer-client:veinminer-client-neoforge:runClient`
 
-### Building (bulked or project seperated)
+### Building (bulked or project separated)
 ```shell
 ./gradlew :veinminer:veinminer-paper:build :veinminer:veinminer-fabric:build :veinminer:veinminer-neoforge:build
 ./gradlew :veinminer-client:veinminer-client-fabric:build :veinminer-client:veinminer-client-neoforge:build
 ./gradlew :veinminer-enchant:build
+```
+
+### Publishing
+```shell
+./gradlew :veinminer:veinminer-paper:modrinth :veinminer:veinminer-fabric:modrinth :veinminer:veinminer-neoforge:modrinth
+./gradlew :veinminer-client:veinminer-client-fabric:modrinth :veinminer-client:veinminer-client-neoforge:modrinth
+./gradlew :veinminer-enchant:modrinth
 ```

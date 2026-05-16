@@ -5,11 +5,11 @@ import org.slf4j.LoggerFactory
 
 class VeinminerEnchantment : ModInitializer {
     companion object {
-        const val MOD_ID = "veinminer-enchantment"
+        const val MOD_ID = "veinminer_enchantment"
         val LOGGER = LoggerFactory.getLogger(VeinminerEnchantment::class.java)
     }
 
     override fun onInitialize() {
-        LOGGER.info("Veinminer-Enchantment loaded (fabric)")
+        LOGGER.info("Veinminer_Enchantment loaded (fabric)")
     }
 }

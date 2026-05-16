@@ -26,7 +26,7 @@ class Veinminer : KPaper() {
     companion object {
         lateinit var INSTANCE: Veinminer
         val LOGGER = LogUtils.getLogger()
-        val VEINMINE = NamespacedKey("veinminer-enchantment", "veinminer")
+        val VEINMINE = NamespacedKey("veinminer_enchantment", "veinminer")
         var enchantmentActive = false
     }
 
@@ -51,7 +51,7 @@ class Veinminer : KPaper() {
         VeinMinerEvent
         NetworkRouter.init(PaperPlatformNetwork, PaperServerCallbacks)
 
-        val enchantmentContainer = server.pluginManager.getPlugin("veinminer-enchantment")
+        val enchantmentContainer = server.pluginManager.getPlugin("veinminer_enchantment")
         enchantmentActive = enchantmentContainer != null
 
         UpdateManager.startUpdateChecker(
