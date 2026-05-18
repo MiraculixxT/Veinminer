@@ -63,12 +63,12 @@ object NetworkManager : ClientCallbacks {
         groups = packet.groups.map {
             BlockGroup(
                 name = it.name,
-                blocks = it.blocks,
-                tools = it.tools,
+                blocks = it.blocks.mapNotNullTo(mutableSetOf(), ::parseId),
+                tools = it.tools.mapNotNullTo(mutableSetOf(), ::parseId),
                 override = it.override,
             )
         }
-        veinBlocks = packet.veinBlocks.toSet()
+        veinBlocks = packet.veinBlocks.mapNotNullTo(mutableSetOf(), ::parseId)
         enchantmentActive = packet.enchantmentActive
         enchantmentKey = packet.enchantmentKey?.let(::parseId)
         hostActive = packet.hostActive

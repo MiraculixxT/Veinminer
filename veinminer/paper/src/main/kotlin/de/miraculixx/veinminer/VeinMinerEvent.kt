@@ -19,6 +19,7 @@ import de.miraculixx.veinminer.network.NetworkRouter
 import de.miraculixx.veinminer.pattern.BlockAwareness
 import de.miraculixx.veinminer.pattern.VeinmineAction
 import de.miraculixx.veinminer.pattern.Veinmining
+import de.miraculixx.veinminer.utils.toVeinminer
 import io.papermc.paper.datacomponent.DataComponentTypes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -309,9 +310,6 @@ object VeinMinerEvent {
     private fun Player.removeAttribute() {
         getAttribute(Attribute.BLOCK_BREAK_SPEED)?.removeModifier(attributeNamespace)
     }
-
-    private fun Location.toVeinminer() = BlockPosition(blockX, blockY, blockZ)
-    private fun NamespacedKey.toVeinminer() = Identifier.fromNamespaceAndPath(namespace, key)
 
     /**
      * Custom block break event that is only triggered by Veinminer before each block break attempt.

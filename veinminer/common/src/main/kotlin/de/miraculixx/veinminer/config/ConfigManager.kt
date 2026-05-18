@@ -1,6 +1,7 @@
 package de.miraculixx.veinminer.config
 
 import de.miraculixx.veinminer.command.ActiveHost
+import de.miraculixx.veinminer.data.BlockGroup
 import de.miraculixx.veinminer.event.EventState
 import de.miraculixx.veinminer.network.NetworkRouter
 import de.miraculixx.veinminer.network.ServerConfiguration
@@ -28,8 +29,15 @@ object ConfigManager : BaseConfigManager<Identifier>(
             val conf = ServerConfiguration(
                 outdated = false,
                 settings = settings,
-                groups = groups.toList(),
-                veinBlocks = veinBlocks.toList(),
+                groups = groups.map { group ->
+                    BlockGroup(
+                        name = group.name,
+                        blocks = group.blocks.mapTo(mutableSetOf()) { it.toString() },
+                        tools = group.tools.mapTo(mutableSetOf()) { it.toString() },
+                        override = group.override
+                    )
+                },
+                veinBlocks = veinBlocks.map { it.toString() },
                 enchantmentActive = EventState.enchantmentActive,
                 enchantmentKey = EventState.enchantmentKey.identifier().toString(),
                 hostActive = ActiveHost.host.active,
