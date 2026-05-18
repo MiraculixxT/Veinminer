@@ -52,7 +52,7 @@ object NetworkManager : ClientCallbacks {
 
     override fun onConfiguration(packet: ServerConfiguration) {
         ClientLifecycle.LOGGER.info("Server configuration received (${packet.groups.size} groups, ${packet.veinBlocks.size} blocks)")
-        if (settings.debug) ClientLifecycle.LOGGER.info("Configuration packet: $packet")
+        if (packet.settings.debug) ClientLifecycle.LOGGER.info("Configuration packet: $packet")
         if (packet.outdated) {
             Minecraft.getInstance().toastManager.addToast(
                 SystemToast(SystemToast.SystemToastId.PERIODIC_NOTIFICATION, Component.literal("Veinminer Outdated"), Component.literal("Please update Veinminer"))
@@ -63,12 +63,12 @@ object NetworkManager : ClientCallbacks {
         groups = packet.groups.map {
             BlockGroup(
                 name = it.name,
-                blocks = it.blocks.mapNotNullTo(mutableSetOf(), ::parseId),
-                tools = it.tools.mapNotNullTo(mutableSetOf(), ::parseId),
+                blocks = it.blocks,
+                tools = it.tools,
                 override = it.override,
             )
         }
-        veinBlocks = packet.veinBlocks.mapNotNullTo(mutableSetOf(), ::parseId)
+        veinBlocks = packet.veinBlocks.toSet()
         enchantmentActive = packet.enchantmentActive
         enchantmentKey = packet.enchantmentKey?.let(::parseId)
         hostActive = packet.hostActive

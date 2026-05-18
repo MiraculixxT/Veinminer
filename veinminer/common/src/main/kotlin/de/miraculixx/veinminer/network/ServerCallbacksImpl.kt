@@ -26,8 +26,8 @@ object ServerCallbacksImpl : ServerCallbacks {
         val conf = ServerConfiguration(
             outdated = false,
             settings = settings,
-            groups = ConfigManager.groupsRaw.toList(),
-            veinBlocks = ConfigManager.veinBlocksRaw.toList(),
+            groups = ConfigManager.groups.toList(),
+            veinBlocks = ConfigManager.veinBlocks.toList(),
             enchantmentActive = EventState.enchantmentActive,
             enchantmentKey = EventState.enchantmentKey.identifier().toString(),
             hostActive = ActiveHost.host.active,

@@ -28,8 +28,8 @@ object ConfigManager : BaseConfigManager<Identifier>(
             val conf = ServerConfiguration(
                 outdated = false,
                 settings = settings,
-                groups = groupsRaw.toList(),
-                veinBlocks = veinBlocksRaw.toList(),
+                groups = groups.toList(),
+                veinBlocks = veinBlocks.toList(),
                 enchantmentActive = EventState.enchantmentActive,
                 enchantmentKey = EventState.enchantmentKey.identifier().toString(),
                 hostActive = ActiveHost.host.active,
