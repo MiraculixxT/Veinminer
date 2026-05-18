@@ -1,5 +1,6 @@
 package de.miraculixx.veinminerClient
 
+import com.mojang.blaze3d.platform.InputConstants
 import de.miraculixx.veinminer.extensions.mcCoroutineAsync
 import de.miraculixx.veinminer.extensions.ticks
 import de.miraculixx.veinminerClient.ClientLifecycle.MOD_ID
@@ -9,6 +10,8 @@ import de.miraculixx.veinminerClient.network.NetworkManager
 import de.miraculixx.veinminerClient.render.BlockHighlightingRenderer
 import de.miraculixx.veinminerClient.render.HUDProvider
 import de.miraculixx.veinminerClient.render.NeoHUDRenderer
+import de.miraculixx.veinminerClient.render.NeoShapeRouletteRenderer
+import net.neoforged.neoforge.client.event.InputEvent
 import net.minecraft.DetectedVersion
 import net.minecraft.client.Minecraft
 import net.minecraft.resources.Identifier
@@ -39,12 +42,25 @@ class VeinminerClient(modBus: IEventBus, container: ModContainer) {
         }
         modBus.addListener<RegisterGuiLayersEvent> { event ->
             event.registerAboveAll(Identifier.fromNamespaceAndPath(MOD_ID, "target-info"), NeoHUDRenderer)
+            event.registerAboveAll(Identifier.fromNamespaceAndPath(MOD_ID, "shape-roulette"), NeoShapeRouletteRenderer)
         }
 
         val gameBus = NeoForge.EVENT_BUS
 
         gameBus.addListener<ClientTickEvent.Post> { _ ->
             if (Minecraft.getInstance().level != null) KeyBindManager.tick()
+        }
+
+        gameBus.addListener<InputEvent.MouseScrollingEvent> { event ->
+            if (!KeyBindManager.isPressed) return@addListener
+            if (!NetworkManager.isVeinminerActive) return@addListener
+            val v = event.scrollDeltaY
+            if (v == 0.0) return@addListener
+            val w = Minecraft.getInstance().window
+            val shift = InputConstants.isKeyDown(w, InputConstants.KEY_LSHIFT)
+                || InputConstants.isKeyDown(w, InputConstants.KEY_RSHIFT)
+            KeyBindManager.queueScroll(if (v > 0) 1 else -1, shift)
+            event.isCanceled = true
         }
 
         gameBus.addListener<ClientPlayerNetworkEvent.LoggingIn> { _ ->

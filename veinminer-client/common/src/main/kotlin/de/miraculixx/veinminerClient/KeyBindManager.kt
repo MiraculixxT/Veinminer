@@ -5,6 +5,8 @@ import de.miraculixx.veinminerClient.constants.KeyBindings
 import de.miraculixx.veinminerClient.network.NetworkManager
 import de.miraculixx.veinminerClient.render.BlockHighlightingRenderer
 import de.miraculixx.veinminerClient.render.HUDProvider
+import de.miraculixx.veinminerClient.render.ShapeRouletteOverlay
+import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -93,8 +95,36 @@ object KeyBindManager {
         BlockHighlightingRenderer.setShape(emptyList())
     }
 
+    private val pendingShapeScroll = AtomicInteger(0)
+    private val pendingDepthScroll = AtomicInteger(0)
+
+    fun queueScroll(delta: Int, shift: Boolean) {
+        if (delta == 0) return
+        val sign = if (delta > 0) 1 else -1
+        if (shift) pendingDepthScroll.addAndGet(sign) else pendingShapeScroll.addAndGet(sign)
+    }
+
     fun scrollPattern() {
-        // TODO
+        val rawShape = pendingShapeScroll.getAndSet(0)
+        val rawDepth = pendingDepthScroll.getAndSet(0)
+        if (rawShape == 0 && rawDepth == 0) return
+        var dirty = false
+        if (rawShape != 0) {
+            ShapeRouletteOverlay.onScroll(-rawShape) // wheel up advances forward
+            NetworkManager.selectedShape = ShapeRouletteOverlay.currentShape
+            dirty = true
+        }
+        if (rawDepth != 0) {
+            ShapeRouletteOverlay.onDepthScroll(-rawDepth)
+            if (NetworkManager.selectedDepth != ShapeRouletteOverlay.currentDepth) {
+                NetworkManager.selectedDepth = ShapeRouletteOverlay.currentDepth
+                dirty = true
+            }
+        }
+        if (dirty) {
+            NetworkManager.resendKeyPress()
+            lastTarget = null
+        }
     }
 
     fun onDisconnect() {

@@ -63,8 +63,8 @@ object ClientNetworkRouter {
         send(NetworkManager.PACKET_JOIN_ID, PacketCodecs.JOIN, JoinInformation(version), markLoopback = true)
     }
 
-    fun sendKeyPress(pressed: Boolean) {
-        send(NetworkManager.PACKET_KEY_PRESS_ID, PacketCodecs.KEY, KeyPress(pressed))
+    fun sendKeyPress(packet: KeyPress) {
+        send(NetworkManager.PACKET_KEY_PRESS_ID, PacketCodecs.KEY, packet)
     }
 
     fun sendBlockRequest(packet: RequestBlockVein) {

@@ -1,13 +1,22 @@
 package de.miraculixx.veinminer.event
 
 import de.miraculixx.veinminer.data.BlockPosition
+import de.miraculixx.veinminer.pattern.Shape
+import de.miraculixx.veinminer.pattern.Surface
 import java.util.Collections
 
 object HighlightCache {
     private const val TTL_MS = 3000L
     private const val MAX_ENTRIES = 256
 
-    data class Key(val world: Any, val pos: BlockPosition, val blockKey: String)
+    data class Key(
+        val world: Any,
+        val pos: BlockPosition,
+        val blockKey: String,
+        val shape: Shape,
+        val surface: Surface,
+        val maxDepth: Int,
+    )
 
     private data class Entry(val blocks: List<BlockPosition>, val toolIcon: String, val insertedMs: Long)
 
