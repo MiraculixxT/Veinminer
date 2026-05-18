@@ -9,6 +9,7 @@ import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.context.CommandContext
 import de.miraculixx.veinminer.ActiveConfig
+import de.miraculixx.veinminer.config.ConfigManager
 import de.miraculixx.veinminer.data.BlockGroup
 import de.miraculixx.veinminer.data.VeinminerSettingsOverride
 import de.miraculixx.veinminer.utils.cBase
@@ -99,7 +100,7 @@ object VeinminerCommand {
                 applySetting("mergeItemDrops", { ActiveConfig.bridge.settings.mergeItemDrops }) { x, _ -> ActiveConfig.bridge.settings.mergeItemDrops = x }
                 applySetting("decreaseDurability", { ActiveConfig.bridge.settings.decreaseDurability }) { x, _ -> ActiveConfig.bridge.settings.decreaseDurability = x }
                 applySetting("miningSpeedModifier", { ActiveConfig.bridge.settings.miningSpeedModifier }) { x, _ -> ActiveConfig.bridge.settings.miningSpeedModifier = x }
-                applySetting("debug", { debug }) { x, _ -> debug = x }
+                applySetting("debug", { debug }) { x, _ -> ConfigManager.settings.debug = x }
                 literal("client") {
                     applySetting("allow", { ActiveConfig.bridge.settings.client.allow }) { x, _ -> ActiveConfig.bridge.settings.client.allow = x }
                     applySetting("require", { ActiveConfig.bridge.settings.client.require }) { x, _ -> ActiveConfig.bridge.settings.client.require = x }

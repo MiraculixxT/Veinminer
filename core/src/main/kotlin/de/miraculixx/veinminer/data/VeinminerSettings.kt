@@ -17,7 +17,7 @@ data class VeinminerSettings(
     var autoUpdate: Boolean = false,
     var decreaseDurability: Boolean = true,
     var miningSpeedModifier: Double = 0.0,
-    val debug: Boolean = false,
+    var debug: Boolean = false,
     val client: VeinminerClientSettings = VeinminerClientSettings()
 ) {
     /**

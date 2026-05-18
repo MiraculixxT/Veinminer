@@ -1,5 +1,8 @@
 package de.miraculixx.veinminer.utils
 
+import de.miraculixx.veinminer.ActiveConfig
+import de.miraculixx.veinminer.ConfigBridge
+import de.miraculixx.veinminer.command.ActiveHost
 import kotlinx.serialization.json.Json
 
 const val cRed = 0xff5555
@@ -14,6 +17,9 @@ const val permissionGroups = "veinminer.groups"
 const val permissionReload = "veinminer.reload"
 
 const val IDENTIFIER = "veinminer"
+
+val debug: Boolean
+    get() = ActiveConfig.bridge.settings.debug
 
 val json = Json {
     prettyPrint = true
