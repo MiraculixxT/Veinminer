@@ -1,33 +1,74 @@
 package de.miraculixx.veinminer.pattern
 
 import de.miraculixx.veinminer.data.BlockPosition
+import kotlin.math.abs
 
 /**
- * Generates candidate positions for a [Shape], grouped into ordered **layers**
- * stepping away from the source block. The consumer walks layers in order,
- * checks block-state matches and per-layer adjacency against the previous
- * matched set, and stops as soon as a layer yields no matches (the tunnel
- * is "cut off" by non-target blocks).
- *
- * Sequence is lazy: callers can abort at any layer without computing the tail.
+ * Block traversal algorithms that returns an abortable sequence.
+ * Uses [BlockAwareness] for context awareness.
  */
 fun interface ShapeStrategy {
-    fun layers(origin: BlockPosition, face: Surface, maxChain: Int): Sequence<List<BlockPosition>>
+    fun layers(veinmineAction: VeinmineAction, blockAwareness: BlockAwareness): Sequence<List<BlockPosition>>
 }
 
 /**
- * Use optimized per implementation flood fill with world awareness
+ * Layered flood fill in 3D
  */
 object NormalStrategy : ShapeStrategy {
-    override fun layers(origin: BlockPosition, face: Surface, maxChain: Int): Sequence<List<BlockPosition>> =
-        emptySequence()
+    override fun layers(veinmineAction: VeinmineAction, blockAwareness: BlockAwareness): Sequence<List<BlockPosition>> = sequence {
+        val searchRadius = veinmineAction.settings.searchRadius
+        val maxChain = veinmineAction.settings.maxChain
+        val targets = veinmineAction.targetTypes
+
+        val visited = LinkedHashSet<BlockPosition>()
+        val queue = ArrayDeque<Pair<BlockPosition, Int>>()
+        queue.add(veinmineAction.currentBlock to 0)
+
+        var currentDistance = 0
+        var currentLayer = ArrayList<BlockPosition>()
+
+        while (queue.isNotEmpty() && visited.size < maxChain) {
+            val (pos, distance) = queue.removeFirst()
+            if (!visited.add(pos)) continue
+
+            if (distance != currentDistance) {
+                if (currentLayer.isNotEmpty()) yield(currentLayer)
+                currentLayer = ArrayList()
+                currentDistance = distance
+            }
+            currentLayer.add(pos)
+
+            val nextDist = distance + 1
+            for (x in -searchRadius..searchRadius) {
+                for (y in -searchRadius..searchRadius) {
+                    for (z in -searchRadius..searchRadius) {
+                        if (x == 0 && y == 0 && z == 0) continue
+                        val next = BlockPosition(pos.x + x, pos.y + y, pos.z + z)
+                        if (next in visited) continue
+                        if (targets.isNotEmpty()) {
+                            val blockType = blockAwareness.getBlockType(next)
+                            if (blockType !in targets) continue
+                        }
+                        queue.add(next to nextDist)
+                    }
+                }
+            }
+        }
+
+        if (currentLayer.isNotEmpty()) yield(currentLayer)
+    }
 }
 
 /**
  * Single-layer flood-fill on the plane perpendicular to the drill axis
  */
 object FlatStrategy : ShapeStrategy {
-    override fun layers(origin: BlockPosition, face: Surface, maxChain: Int): Sequence<List<BlockPosition>> = sequence {
+    override fun layers(veinmineAction: VeinmineAction, blockAwareness: BlockAwareness): Sequence<List<BlockPosition>> = sequence {
+        val face = veinmineAction.face
+        val origin = veinmineAction.sourceLocation
+        val maxChain = veinmineAction.settings.maxChain
+        val targets = veinmineAction.targetTypes
+
         val (u, v) = face.basisVectors()
         yield(listOf(origin))
         var ring = 1
@@ -35,14 +76,15 @@ object FlatStrategy : ShapeStrategy {
             val layer = ArrayList<BlockPosition>(ring * 8)
             for (du in -ring..ring) {
                 for (dv in -ring..ring) {
-                    if (maxOf(kotlin.math.abs(du), kotlin.math.abs(dv)) != ring) continue
-                    layer.add(
-                        BlockPosition(
-                            origin.x + u.first * du + v.first * dv,
-                            origin.y + u.second * du + v.second * dv,
-                            origin.z + u.third * du + v.third * dv,
-                        )
+                    if (maxOf(abs(du), abs(dv)) != ring) continue
+                    val next = BlockPosition(
+                        origin.x + u.first * du + v.first * dv,
+                        origin.y + u.second * du + v.second * dv,
+                        origin.z + u.third * du + v.third * dv,
                     )
+                    val blockType = blockAwareness.getBlockType(next)
+                    if (blockType !in targets) continue
+                    layer.add(next)
                 }
             }
             yield(layer)
@@ -55,7 +97,12 @@ object FlatStrategy : ShapeStrategy {
  * With size=N, a NxN tunnel in the direction of the drill surface
  */
 class TunnelStrategy(private val size: Int) : ShapeStrategy {
-    override fun layers(origin: BlockPosition, face: Surface, maxChain: Int): Sequence<List<BlockPosition>> = sequence {
+    override fun layers(veinmineAction: VeinmineAction, blockAwareness: BlockAwareness): Sequence<List<BlockPosition>> = sequence {
+        val face = veinmineAction.face
+        val origin = veinmineAction.sourceLocation
+        val maxChain = veinmineAction.settings.maxChain
+        val targets = veinmineAction.targetTypes
+
         val drill = face.normalInward()
         val (u, v) = face.basisVectors()
         val area = size * size
@@ -66,13 +113,14 @@ class TunnelStrategy(private val size: Int) : ShapeStrategy {
             val layer = ArrayList<BlockPosition>(area)
             for (du in lo..hi) {
                 for (dv in lo..hi) {
-                    layer.add(
-                        BlockPosition(
-                            origin.x + drill.first * depth + u.first * du + v.first * dv,
-                            origin.y + drill.second * depth + u.second * du + v.second * dv,
-                            origin.z + drill.third * depth + u.third * du + v.third * dv,
-                        )
+                    val next = BlockPosition(
+                        origin.x + drill.first * depth + u.first * du + v.first * dv,
+                        origin.y + drill.second * depth + u.second * du + v.second * dv,
+                        origin.z + drill.third * depth + u.third * du + v.third * dv,
                     )
+                    val blockType = blockAwareness.getBlockType(next)
+                    if (blockType !in targets) continue
+                    layer.add(next)
                 }
             }
             yield(layer)

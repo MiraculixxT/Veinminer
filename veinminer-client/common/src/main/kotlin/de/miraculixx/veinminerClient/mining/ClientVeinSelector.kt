@@ -3,32 +3,31 @@ package de.miraculixx.veinminerClient.mining
 import de.miraculixx.veinminer.data.BlockPosition
 import de.miraculixx.veinminer.data.FixedBlockGroup
 import de.miraculixx.veinminer.data.VeinminerSettingsOverride
+import de.miraculixx.veinminer.pattern.BlockAwareness
 import de.miraculixx.veinminer.pattern.Shape
 import de.miraculixx.veinminer.pattern.Surface
-import de.miraculixx.veinminer.pattern.VeinSelector
+import de.miraculixx.veinminer.pattern.VeinmineAction
+import de.miraculixx.veinminer.pattern.Veinmining
 import de.miraculixx.veinminerClient.network.NetworkManager
-import net.minecraft.client.Minecraft
 import net.minecraft.client.player.LocalPlayer
 import net.minecraft.core.BlockPos
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.resources.Identifier
 import net.minecraft.tags.BlockTags
-import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.GameType
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.state.BlockState
 
 /**
- * Client-side mirror of the server's vein-mine gate + selection. Runs against the local
- * `ClientLevel` to drive the highlight overlay without a server round-trip. The server
- * stays authoritative on the actual break — false positives here just render a phantom
- * highlight that the server will silently ignore on swing.
+ * Client copy of veinmine check.
+ * If server & client desync, server takes authority and client just see ghost highlights
  */
 object ClientVeinSelector {
 
     data class Result(val positions: List<BlockPosition>, val toolIcon: String)
 
+    // Future me, don't try to unify with server check. Not worth it
     fun resolve(
         level: Level,
         player: LocalPlayer,
@@ -61,21 +60,33 @@ object ClientVeinSelector {
 
         val enchantKey = NetworkManager.enchantmentKey
         if (NetworkManager.enchantmentActive && enchantKey != null) {
-            val hasEnchant = mainHandItem.enchantments.keySet().any { it.identifier() == enchantKey }
+            val hasEnchant = mainHandItem.enchantments.keySet().any { it.`is`(enchantKey) }
             if (!hasEnchant) return null
         }
 
         val targets = if (isGroupBlock) blockGroup.blocks else setOf(material)
         val originPos = BlockPosition(origin.x, origin.y, origin.z)
-        val match: (BlockPosition) -> Boolean = { p ->
-            targets.contains(level.getBlockState(BlockPos(p.x, p.y, p.z)).key())
+        val blockAwareness = object : BlockAwareness {
+            override fun getBlockType(pos: BlockPosition): Identifier {
+                return level.getBlockState(BlockPos(pos.x, pos.y, pos.z)).key()
+            }
+
+            override fun breakBlock(pos: BlockPosition, ticks: Int): Boolean {
+                return false
+            }
         }
 
-        val hits = if (shape == Shape.NORMAL) {
-            VeinSelector.floodFill(originPos, match, settings.maxChain, settings.searchRadius)
-        } else {
-            VeinSelector.shapeFill(originPos, face, shape, match, settings.maxChain, settings.searchRadius, maxDepth)
-        }
+        val action = VeinmineAction(
+            currentBlock = originPos,
+            targetTypes = targets,
+            tool = mainHandItem,
+            processedBlocks = mutableSetOf(),
+            player = player,
+            sourceLocation = originPos,
+            settings = settings,
+            face = face
+        )
+        val hits = Veinmining.veinmine(action, blockAwareness, shape, maxDepth, false)
         return Result(hits.map { it.pos }, preferredToolIcon(state))
     }
 
@@ -106,11 +117,5 @@ object ClientVeinSelector {
         if (isEmpty) return 0
         if (maxDamage <= 0) return Int.MAX_VALUE
         return maxDamage - damageValue
-    }
-
-    private fun Player.gameMode(): GameType {
-        val mc = Minecraft.getInstance()
-        val info = mc.connection?.getPlayerInfo(uuid)
-        return info?.gameMode ?: GameType.SURVIVAL
     }
 }

@@ -10,18 +10,21 @@ import de.miraculixx.veinminer.Veinminer.Companion.VEINMINE
 import de.miraculixx.veinminer.config.PaperConfigManager
 import de.miraculixx.veinminer.data.BlockPosition
 import de.miraculixx.veinminer.data.FixedBlockGroup
-import de.miraculixx.veinminer.data.VeinminerSettings
 import de.miraculixx.veinminer.data.VeinminerSettingsOverride
 import de.miraculixx.veinminer.pattern.Shape
 import de.miraculixx.veinminer.pattern.Surface
 import de.miraculixx.veinminer.utils.debug
 import de.miraculixx.veinminer.utils.permissionVeinmine
 import de.miraculixx.veinminer.network.NetworkRouter
+import de.miraculixx.veinminer.pattern.BlockAwareness
+import de.miraculixx.veinminer.pattern.VeinmineAction
+import de.miraculixx.veinminer.pattern.Veinmining
 import io.papermc.paper.datacomponent.DataComponentTypes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import net.minecraft.resources.Identifier
 import org.bukkit.*
 import org.bukkit.attribute.Attribute
 import org.bukkit.attribute.AttributeModifier
@@ -39,7 +42,6 @@ import org.bukkit.event.block.BlockDamageEvent
 import org.bukkit.event.block.BlockExpEvent
 import org.bukkit.inventory.ItemStack
 import java.util.*
-import kotlin.math.abs
 import kotlin.time.Duration.Companion.milliseconds
 
 /**
@@ -152,15 +154,6 @@ object VeinMinerEvent {
         }
     }
 
-    fun getPreferredToolIcon(type: Material): String {
-        return when {
-            Tag.MINEABLE_AXE.isTagged(type) -> "axe"
-            Tag.MINEABLE_SHOVEL.isTagged(type) -> "shovel"
-            Tag.MINEABLE_HOE.isTagged(type) -> "hoe"
-            else -> "pickaxe"
-        }
-    }
-
     fun allowedToVeinmine(player: Player, block: Block): VeinmineAction? {
         if (debug) Veinminer.LOGGER.info("Checking if ${player.name} is allowed to veinmine ${block.type.key}")
 
@@ -211,7 +204,9 @@ object VeinMinerEvent {
         val blocks = if (isGroupBlock) blockGroup.blocks else setOf(material)
         if (debug) Veinminer.LOGGER.info(" - Allowed with $blocks")
         val face = NetworkRouter.lastSurface[player.uniqueId] ?: Surface.UP
-        return VeinmineAction(block, blocks, item, mutableSetOf(), player, block.location.toCenterLocation(), settings, face)
+        val currentPos = block.location.toVeinminer()
+        val blocksNMS = blocks.map { it.toVeinminer() }.toSet()
+        return VeinmineAction(currentPos, blocksNMS, item, mutableSetOf(), player, currentPos, settings, face)
     }
 
     /**
@@ -219,119 +214,42 @@ object VeinMinerEvent {
      * @return the number of blocks broken
      */
     fun VeinmineAction.veinmine(shouldBreak: Boolean): Int {
-        if (!targetTypes.contains(currentBlock.type.key)) return 0
-        val shape = NetworkRouter.activeShape(player.uniqueId) ?: Shape.NORMAL
-        return if (shape == Shape.NORMAL) floodFillMine(shouldBreak)
-        else shapeMine(shape, shouldBreak)
-    }
+        val iTool = tool as ItemStack
+        val iPlayer = player as Player
+        val world = iPlayer.world
 
-    private fun VeinmineAction.floodFillMine(shouldBreak: Boolean): Int {
-        val targets = targetTypes
-        val visited = processedBlocks
-        val maxChain = settings.maxChain
-        val searchRadius = settings.searchRadius
-        val decreaseDurability = settings.decreaseDurability
-        val needCorrectTool = settings.needCorrectTool
+        if (iTool.isEmpty) return 0
+        val shape = NetworkRouter.activeShape(iPlayer.uniqueId) ?: Shape.NORMAL
+        val maxDepth = NetworkRouter.maxDepth(iPlayer.uniqueId)
         val delay = settings.delay
 
-        val queue = ArrayDeque<VeinmineBlock>()
-        queue.add(VeinmineBlock(currentBlock, 0))
-
-        while (queue.isNotEmpty()) {
-            val vBlock = queue.removeFirst()
-            val block = vBlock.block
-            if (visited.contains(block)) continue
-            if (visited.size >= maxChain) break
-
-            if (shouldBreak) {
-                if (needCorrectTool && tool.isEmpty) continue
-                if (decreaseDurability && tool.remainingDurability() <= 1) continue
-                scheduleBreak(block, vBlock.distance, delay)
+        val blockAwareness = object : BlockAwareness {
+            override fun getBlockType(pos: BlockPosition): Identifier {
+                return world.getBlockAt(pos.x, pos.y, pos.z).type.key.toVeinminer()
             }
-            visited.add(block)
 
-            val nextDist = vBlock.distance + 1
-            val world = block.world
-            val bx = block.x; val by = block.y; val bz = block.z
-            for (x in -searchRadius..searchRadius) {
-                for (y in -searchRadius..searchRadius) {
-                    for (z in -searchRadius..searchRadius) {
-                        if (x == 0 && y == 0 && z == 0) continue
-                        val newBlock = world.getBlockAt(bx + x, by + y, bz + z)
-                        if (visited.contains(newBlock)) continue
-                        if (!targets.contains(newBlock.type.key)) continue
-                        queue.add(VeinmineBlock(newBlock, nextDist))
-                    }
-                }
+            override fun breakBlock(pos: BlockPosition, ticks: Int): Boolean {
+                if (!shouldBreak) return false // safeguard
+                if ((tool as ItemStack).remainingDurability() <= 1) return false // tool "broken"
+                val state = world.getBlockAt(pos.x, pos.y, pos.z)
+                scheduleBreak(state, delay.toLong())
+                return true
             }
         }
-        return visited.size
+
+        val hits = Veinmining.veinmine(this, blockAwareness, shape, maxDepth, shouldBreak)
+        return hits.size
     }
 
-    private fun VeinmineAction.shapeMine(shape: Shape, shouldBreak: Boolean): Int {
-        val targets = targetTypes
-        val visited = processedBlocks
-        val maxChain = settings.maxChain
-        val searchRadius = settings.searchRadius
-        val decreaseDurability = settings.decreaseDurability
-        val needCorrectTool = settings.needCorrectTool
-        val delay = settings.delay
-        val world = currentBlock.world
-        val origin = BlockPosition(currentBlock.x, currentBlock.y, currentBlock.z)
-        val maxDepth = NetworkRouter.maxDepth(player.uniqueId)
-        var dist = 0
-        var depthConsumed = 0
-        var prevLayer: List<Block> = listOf(currentBlock)
-        for (layer in shape.strategy.layers(origin, face, maxChain)) {
-            if (visited.size >= maxChain) break
-            if (depthConsumed >= maxDepth) break
-            depthConsumed++
-            val matched = ArrayList<Block>(layer.size)
-            for (cand in layer) {
-                if (visited.size >= maxChain) break
-                val block = world.getBlockAt(cand.x, cand.y, cand.z)
-                if (visited.contains(block)) continue
-                if (block == currentBlock) {
-                    visited.add(block)
-                    matched.add(block)
-                    continue
-                }
-                if (!touchesAnyBlock(block, prevLayer, searchRadius)) continue
-                if (!targets.contains(block.type.key)) continue
-                if (shouldBreak) {
-                    if (needCorrectTool && tool.isEmpty) continue
-                    if (decreaseDurability && tool.remainingDurability() <= 1) continue
-                    scheduleBreak(block, dist++, delay)
-                }
-                visited.add(block)
-                matched.add(block)
-            }
-            if (matched.isEmpty()) break
-            prevLayer = matched
-        }
-        return visited.size
-    }
-
-    private fun touchesAnyBlock(block: Block, others: List<Block>, radius: Int): Boolean {
-        for (o in others) {
-            val dx = abs(block.x - o.x)
-            val dy = abs(block.y - o.y)
-            val dz = abs(block.z - o.z)
-            if (dx <= radius && dy <= radius && dz <= radius) return true
-        }
-        return false
-    }
-
-    private fun VeinmineAction.scheduleBreak(block: Block, distance: Int, delay: Int) {
-        val tickDelay = (delay * distance).toLong()
+    private fun VeinmineAction.scheduleBreak(block: Block, delay: Long) {
         if (VeinminerCompatibility.runsAsync) {
-            if (tickDelay == 0L) {
+            if (delay == 0L) {
                 server.regionScheduler.execute(Veinminer.INSTANCE, block.location) { triggerBreaking(block) }
             } else {
-                server.regionScheduler.runDelayed(Veinminer.INSTANCE, block.location, { triggerBreaking(block) }, tickDelay)
+                server.regionScheduler.runDelayed(Veinminer.INSTANCE, block.location, { triggerBreaking(block) }, delay)
             }
         } else {
-            taskRunLater(tickDelay, true) { triggerBreaking(block) }
+            taskRunLater(delay, true) { triggerBreaking(block) }
         }
     }
 
@@ -339,17 +257,20 @@ object VeinMinerEvent {
         // Delay if necessary & check again if the block is still valid
         if (!VeinminerCompatibility.runsAsync) {
             if (settings.delay != 0) {
-                if (!targetTypes.contains(block.type.key)) return
+                if (!targetTypes.contains(block.type.key.toVeinminer())) return
             }
         }
-        // Re-check remaining durability at execution time to prevent queued tasks from breaking the tool.
-        if (settings.decreaseDurability && tool.remainingDurability() <= 1) return
+        // Re-check remaining durability at execution time to prevent queued tasks from breaking the tool
+        val iTool = tool as? ItemStack ?: return
+        if (settings.decreaseDurability && iTool.remainingDurability() <= 1) return
 
         // Check if other plugins cancel the event
-        val veinminerEvent = VeinminerEvent(block, player, sourceLocation, block.getXP(tool))
+        val iPlayer = player as? Player ?: return
+        val sourceLoc = Location(iPlayer.world, sourceLocation.x.toDouble(), sourceLocation.y.toDouble(), sourceLocation.z.toDouble())
+        val veinminerEvent = VeinminerEvent(block, iPlayer, sourceLoc, block.getXP(iTool))
         if (!veinminerEvent.callEvent()) return
         block.destroy()
-        if (settings.decreaseDurability) damageItem(tool, 1, player)
+        if (settings.decreaseDurability) damageItem(iTool, 1, iPlayer)
     }
 
     /**
@@ -389,6 +310,9 @@ object VeinMinerEvent {
         getAttribute(Attribute.BLOCK_BREAK_SPEED)?.removeModifier(attributeNamespace)
     }
 
+    private fun Location.toVeinminer() = BlockPosition(blockX, blockY, blockZ)
+    private fun NamespacedKey.toVeinminer() = Identifier.fromNamespaceAndPath(namespace, key)
+
     /**
      * Custom block break event that is only triggered by Veinminer before each block break attempt.
      * Cancelling this event will prevent Veinminer from breaking the block and continuing in this direction.
@@ -419,19 +343,4 @@ object VeinMinerEvent {
     class VeinminerDropEvent(
         block: Block, val blockState: BlockState, val player: Player, var items: MutableList<ItemStack>, var exp: Int
     ) : BlockExpEvent(block, exp)
-
-    data class VeinmineAction(
-        val currentBlock: Block,
-        val targetTypes: Set<NamespacedKey>,
-        val tool: ItemStack,
-        val processedBlocks: MutableSet<Block>,
-        val player: Player,
-        val sourceLocation: Location,
-        val settings: VeinminerSettings,
-        val face: Surface
-    )
-
-    data class VeinmineBlock(
-        val block: Block, val distance: Int
-    )
 }
