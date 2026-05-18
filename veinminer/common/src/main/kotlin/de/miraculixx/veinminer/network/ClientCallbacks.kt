@@ -5,5 +5,4 @@ package de.miraculixx.veinminer.network
  */
 interface ClientCallbacks {
     fun onConfiguration(packet: ServerConfiguration)
-    fun onHighlight(packet: BlockHighlighting)
 }

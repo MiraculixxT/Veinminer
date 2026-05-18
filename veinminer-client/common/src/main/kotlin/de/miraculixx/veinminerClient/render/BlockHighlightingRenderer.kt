@@ -60,7 +60,7 @@ object BlockHighlightingRenderer {
 
         val matrix = stack.last().pose()
 
-        val drawTranslucent = NetworkManager.translucentBlockHighlight
+        val drawTranslucent = NetworkManager.settings.client.translucentBlockHighlight
 
         if (!isTranslucentPass) {
             renderBlocks(source, renderHighlighting, matrix, highlightingShape, 255)

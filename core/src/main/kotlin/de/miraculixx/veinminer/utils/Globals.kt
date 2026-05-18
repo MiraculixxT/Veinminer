@@ -15,8 +15,6 @@ const val permissionReload = "veinminer.reload"
 
 const val IDENTIFIER = "veinminer"
 
-var debug = false
-
 val json = Json {
     prettyPrint = true
     ignoreUnknownKeys = true

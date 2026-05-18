@@ -1,16 +1,14 @@
 package de.miraculixx.veinminerClient
 
-import de.miraculixx.veinminer.extensions.ticks
+import de.miraculixx.veinminer.pattern.Surface
+import de.miraculixx.veinminer.utils.toVeinminer
 import de.miraculixx.veinminerClient.constants.KeyBindings
+import de.miraculixx.veinminerClient.mining.ClientVeinSelector
 import de.miraculixx.veinminerClient.network.NetworkManager
 import de.miraculixx.veinminerClient.render.BlockHighlightingRenderer
 import de.miraculixx.veinminerClient.render.HUDProvider
 import de.miraculixx.veinminerClient.render.ShapeRouletteOverlay
 import java.util.concurrent.atomic.AtomicInteger
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.toasts.SystemToast
 import net.minecraft.core.BlockPos
@@ -23,11 +21,11 @@ import net.minecraft.world.phys.HitResult
 object KeyBindManager {
     var lastTarget: BlockPos? = null
         private set
-    var lastItem: ItemStack? = null
-        private set
+    private var lastItem: ItemStack? = null
+    private var lastFace: Surface = Surface.UP
     var isPressed = false
         private set(value) {
-            NetworkManager.sendKeyPress(value)
+            NetworkManager.sendKeyPress(value, lastFace)
             field = value
         }
     private var isToggled = false
@@ -68,15 +66,12 @@ object KeyBindManager {
 
     fun checkBlockTarget() {
         val instance = Minecraft.getInstance()
+        val player = instance.player ?: return
+        val level = instance.level ?: return
         val target = instance.hitResult as? BlockHitResult ?: return
         val pos = target.blockPos
-        val holding = instance.player?.inventory?.selectedItem ?: return
+        val holding = player.inventory.selectedItem
         if (holding.item == Items.AIR) return resetTarget()
-
-        val itemChanged = holding != lastItem
-        if (pos == lastTarget && !itemChanged) return
-        lastTarget = pos
-        lastItem = holding
 
         if (target.type != HitResult.Type.BLOCK) {
             resetTarget()
@@ -84,11 +79,28 @@ object KeyBindManager {
             return
         }
 
-        CoroutineScope(Dispatchers.Default).launch {
-            if (itemChanged) delay(1.ticks) // wait for server to update the held item
-            resetTarget()
-            NetworkManager.sendBlockRequest(pos, target.direction)
+        val face = target.direction.toVeinminer()
+        val itemChanged = holding != lastItem
+        val faceChanged = face != lastFace
+        val targetChanged = pos != lastTarget
+        if (!itemChanged && !faceChanged && !targetChanged) return
+
+        lastTarget = pos
+        lastItem = holding
+        if (faceChanged) {
+            lastFace = face
+            NetworkManager.resendKeyPress(face)
         }
+
+        val result = ClientVeinSelector.resolve(level, player, pos, face, NetworkManager.selectedShape, NetworkManager.selectedDepth)
+
+        if (result == null) {
+            resetTarget()
+            HUDProvider.instance.updateTarget("forbidden")
+            return
+        }
+        HUDProvider.instance.updateTarget(result.toolIcon)
+        BlockHighlightingRenderer.setShape(result.positions)
     }
 
     private fun resetTarget() {
@@ -122,7 +134,7 @@ object KeyBindManager {
             }
         }
         if (dirty) {
-            NetworkManager.resendKeyPress()
+            NetworkManager.resendKeyPress(lastFace)
             lastTarget = null
         }
     }

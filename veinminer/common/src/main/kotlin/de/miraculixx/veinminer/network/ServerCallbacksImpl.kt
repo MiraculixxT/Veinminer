@@ -2,15 +2,9 @@ package de.miraculixx.veinminer.network
 
 import de.miraculixx.veinminer.command.ActiveHost
 import de.miraculixx.veinminer.config.ConfigManager
-import de.miraculixx.veinminer.event.HighlightCache
-import de.miraculixx.veinminer.event.VeinMinerEvent
-import de.miraculixx.veinminer.event.VeinMinerEvent.key
-import de.miraculixx.veinminer.event.VeinMinerEvent.veinmine
-import de.miraculixx.veinminer.pattern.Shape
-import de.miraculixx.veinminer.utils.debug
+import de.miraculixx.veinminer.event.EventState
 import de.miraculixx.veinminer.utils.mcServer
-import de.miraculixx.veinminer.utils.toNMS
-import de.miraculixx.veinminer.utils.toVeinminer
+import de.miraculixx.veinminer.utils.permissionVeinmine
 import java.util.UUID
 
 /**
@@ -20,8 +14,8 @@ object ServerCallbacksImpl : ServerCallbacks {
     private val logger get() = ActiveHost.host.logger
 
     override fun onJoinAccepted(playerId: UUID, packet: JoinInformation) {
-        val server = mcServer ?: return invalidUserInformation("join (no server)")
-        val player = server.playerList.getPlayer(playerId) ?: return invalidUserInformation("join player")
+        val server = mcServer ?: return logger.warn("Not enough information to handle 'join (no server)' packet!")
+        val player = server.playerList.getPlayer(playerId) ?: return logger.warn("Not enough information to handle 'join player' packet!")
 
         val settings = ConfigManager.settings
         if (!settings.client.allow) return
@@ -29,50 +23,20 @@ object ServerCallbacksImpl : ServerCallbacks {
         logger.info("${player.scoreboardName} joined with Veinminer version ${packet.veinminerClientVersion}")
         NetworkRouter.registeredPlayers[playerId] = packet.veinminerClientVersion
 
-        val conf = ServerConfiguration(settings.cooldown, settings.mustSneak, false, settings.client.translucentBlockHighlight)
+        val conf = ServerConfiguration(
+            outdated = false,
+            settings = settings,
+            groups = ConfigManager.groupsRaw.toList(),
+            veinBlocks = ConfigManager.veinBlocksRaw.toList(),
+            enchantmentActive = EventState.enchantmentActive,
+            enchantmentKey = EventState.enchantmentKey.identifier().toString(),
+            hostActive = ActiveHost.host.active,
+            hasUsePermission = EventState.checkPermission(player, permissionVeinmine),
+        )
         NetworkRouter.sendConfiguration(playerId, conf)
     }
 
     override fun onKeyPress(playerId: UUID, packet: KeyPress) {
-        if (debug) logger.info("$playerId pressed hotkey (${packet.pressed})")
-    }
-
-    override fun onMineRequest(playerId: UUID, packet: RequestBlockVein) {
-        val server = mcServer ?: return invalidUserInformation("mine (no server)")
-        val player = server.playerList.getPlayer(playerId) ?: return invalidUserInformation("mine player")
-
-        if (debug) logger.info("$playerId requested to veinmine block at ${packet.blockPosition}")
-
-        NetworkRouter.lastSurface[playerId] = packet.surface
-
-        val level = player.level()
-        val position = packet.blockPosition.toNMS()
-        val state = level.getBlockState(position)
-
-        val action = VeinMinerEvent.allowedToVeinmine(level, player, position, state)
-        if (action == null) {
-            NetworkRouter.sendHighlighting(playerId, BlockHighlighting(false, "", emptyList()))
-            return
-        }
-
-        val shape = NetworkRouter.activeShape(playerId) ?: Shape.NORMAL
-        val maxDepth = NetworkRouter.maxDepth(playerId)
-        val sourcePos = packet.blockPosition
-        val cacheKey = HighlightCache.Key(level, sourcePos, state.key().toString(), shape, packet.surface, maxDepth)
-        val cached = HighlightCache.get(cacheKey)
-        if (cached != null) {
-            NetworkRouter.sendHighlighting(playerId, BlockHighlighting(true, cached.second, cached.first))
-            return
-        }
-
-        action.copy(settings = action.settings.copy(delay = 0)).veinmine(false)
-        val blocks = action.processedBlocks.map { it.toVeinminer() }
-        val toolIcon = VeinMinerEvent.getPreferredToolIcon(state)
-        HighlightCache.put(cacheKey, blocks, toolIcon)
-        NetworkRouter.sendHighlighting(playerId, BlockHighlighting(true, toolIcon, blocks))
-    }
-
-    private fun invalidUserInformation(type: String) {
-        logger.warn("Not enough information to handle '$type' packet!")
+        if (ConfigManager.settings.debug) logger.info("$playerId pressed hotkey (${packet.pressed})")
     }
 }

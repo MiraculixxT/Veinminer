@@ -12,7 +12,6 @@ import de.miraculixx.veinminer.data.BlockPosition
 import de.miraculixx.veinminer.data.FixedBlockGroup
 import de.miraculixx.veinminer.data.VeinminerSettings
 import de.miraculixx.veinminer.data.VeinminerSettingsOverride
-import de.miraculixx.veinminer.event.HighlightCache
 import de.miraculixx.veinminer.pattern.Shape
 import de.miraculixx.veinminer.pattern.Surface
 import de.miraculixx.veinminer.utils.debug
@@ -135,7 +134,6 @@ object VeinMinerEvent {
             return@listen
         }
 
-        HighlightCache.invalidate(block.world, BlockPosition(block.x, block.y, block.z))
         val veinmineInfo = allowedToVeinmine(player, block) ?: return@listen
         it.isCancelled = true // Cancel the original event
 

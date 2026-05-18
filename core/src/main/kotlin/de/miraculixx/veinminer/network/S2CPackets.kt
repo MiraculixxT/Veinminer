@@ -1,19 +1,17 @@
 package de.miraculixx.veinminer.network
 
-import de.miraculixx.veinminer.data.BlockPosition
+import de.miraculixx.veinminer.data.BlockGroup
+import de.miraculixx.veinminer.data.VeinminerSettings
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class ServerConfiguration(
-    val cooldown: Int,
-    val mustSneak: Boolean,
     val outdated: Boolean,
-    val translucentBlockHighlight: Boolean,
-)
-
-@Serializable
-data class BlockHighlighting(
-    val allowed: Boolean,
-    val icon: String,
-    val blocks: List<BlockPosition>
+    val settings: VeinminerSettings,
+    val groups: List<BlockGroup<String>>,
+    val veinBlocks: List<String>,
+    val enchantmentActive: Boolean,
+    val enchantmentKey: String?,
+    val hostActive: Boolean,
+    val hasUsePermission: Boolean,
 )

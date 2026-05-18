@@ -1,5 +1,11 @@
 package de.miraculixx.veinminer.config
 
+import de.miraculixx.veinminer.command.ActiveHost
+import de.miraculixx.veinminer.event.EventState
+import de.miraculixx.veinminer.network.NetworkRouter
+import de.miraculixx.veinminer.network.ServerConfiguration
+import de.miraculixx.veinminer.utils.mcServer
+import de.miraculixx.veinminer.utils.permissionVeinmine
 import kotlinx.serialization.modules.SerializersModule
 import net.minecraft.resources.Identifier
 import kotlin.io.path.Path
@@ -13,4 +19,24 @@ object ConfigManager : BaseConfigManager<Identifier>(
     jsonModule = SerializersModule {
         contextual(Identifier::class, ResourceLocationSerializer)
     }
-)
+) {
+    override fun onAfterReload() {
+        val server = mcServer ?: return
+        val playerList = server.playerList
+        NetworkRouter.registeredPlayers.keys.forEach { uuid ->
+            val player = playerList.getPlayer(uuid) ?: return@forEach
+            val conf = ServerConfiguration(
+                outdated = false,
+                settings = settings,
+                groups = groupsRaw.toList(),
+                veinBlocks = veinBlocksRaw.toList(),
+                enchantmentActive = EventState.enchantmentActive,
+                enchantmentKey = EventState.enchantmentKey.identifier().toString(),
+                hostActive = ActiveHost.host.active,
+                hasUsePermission = EventState.checkPermission(player, permissionVeinmine),
+            )
+            NetworkRouter.sendConfiguration(uuid, conf)
+        }
+        if (settings.debug) ActiveHost.host.logger.info("Sending config to ${NetworkRouter.registeredPlayers.size} players")
+    }
+}

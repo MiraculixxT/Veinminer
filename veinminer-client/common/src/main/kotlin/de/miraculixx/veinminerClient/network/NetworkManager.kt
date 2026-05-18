@@ -2,23 +2,19 @@
 
 package de.miraculixx.veinminerClient.network
 
-import de.miraculixx.veinminer.network.BlockHighlighting
+import de.miraculixx.veinminer.data.BlockGroup
+import de.miraculixx.veinminer.data.VeinminerSettings
 import de.miraculixx.veinminer.network.ClientCallbacks
 import de.miraculixx.veinminer.network.ClientNetworkRouter
 import de.miraculixx.veinminer.network.KeyPress
-import de.miraculixx.veinminer.network.RequestBlockVein
 import de.miraculixx.veinminer.network.ServerConfiguration
 import de.miraculixx.veinminer.pattern.Shape
-import de.miraculixx.veinminer.utils.debug
+import de.miraculixx.veinminer.pattern.Surface
 import de.miraculixx.veinminerClient.ClientLifecycle
-import de.miraculixx.veinminerClient.render.BlockHighlightingRenderer
-import de.miraculixx.veinminerClient.render.HUDProvider
-import de.miraculixx.veinminer.utils.toVeinminer
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.toasts.SystemToast
-import net.minecraft.core.BlockPos
-import net.minecraft.core.Direction
 import net.minecraft.network.chat.Component
+import net.minecraft.resources.Identifier
 
 object NetworkManager : ClientCallbacks {
     var isVeinminerActive = false
@@ -26,11 +22,19 @@ object NetworkManager : ClientCallbacks {
     var selectedShape: Shape = Shape.NORMAL
     var selectedDepth: Int = 6
 
-    var mustSneak = false
+    var settings: VeinminerSettings = VeinminerSettings()
         private set
-    var cooldown = 0
+    var groups: List<BlockGroup<Identifier>> = emptyList()
         private set
-    var translucentBlockHighlight = true
+    var veinBlocks: Set<Identifier> = emptySet()
+        private set
+    var enchantmentActive: Boolean = false
+        private set
+    var enchantmentKey: Identifier? = null
+        private set
+    var hostActive: Boolean = true
+        private set
+    var hasUsePermission: Boolean = true
         private set
 
     private var initialized = false
@@ -47,38 +51,39 @@ object NetworkManager : ClientCallbacks {
     }
 
     override fun onConfiguration(packet: ServerConfiguration) {
-        ClientLifecycle.LOGGER.info("Server configuration: $packet")
+        ClientLifecycle.LOGGER.info("Server configuration received (${packet.groups.size} groups, ${packet.veinBlocks.size} blocks)")
+        if (settings.debug) ClientLifecycle.LOGGER.info("Configuration packet: $packet")
         if (packet.outdated) {
             Minecraft.getInstance().toastManager.addToast(
                 SystemToast(SystemToast.SystemToastId.PERIODIC_NOTIFICATION, Component.literal("Veinminer Outdated"), Component.literal("Please update Veinminer"))
             )
         }
         isVeinminerActive = true
-        mustSneak = packet.mustSneak
-        cooldown = packet.cooldown
-        translucentBlockHighlight = packet.translucentBlockHighlight
+        settings = packet.settings
+        groups = packet.groups.map {
+            BlockGroup(
+                name = it.name,
+                blocks = it.blocks.mapNotNullTo(mutableSetOf(), ::parseId),
+                tools = it.tools.mapNotNullTo(mutableSetOf(), ::parseId),
+                override = it.override,
+            )
+        }
+        veinBlocks = packet.veinBlocks.mapNotNullTo(mutableSetOf(), ::parseId)
+        enchantmentActive = packet.enchantmentActive
+        enchantmentKey = packet.enchantmentKey?.let(::parseId)
+        hostActive = packet.hostActive
+        hasUsePermission = packet.hasUsePermission
     }
 
-    override fun onHighlight(packet: BlockHighlighting) {
-        if (debug) ClientLifecycle.LOGGER.info("Received block highlight: $packet")
-        if (!packet.allowed) {
-            HUDProvider.instance.updateTarget("forbidden")
-            BlockHighlightingRenderer.setShape(emptyList())
-            return
-        }
-        HUDProvider.instance.updateTarget(packet.icon)
-        BlockHighlightingRenderer.setShape(packet.blocks)
+    private fun parseId(raw: String): Identifier? = try {
+        Identifier.parse(raw)
+    } catch (_: Exception) {
+        null
     }
 
     fun onDisconnect() {
         isVeinminerActive = false
         ClientNetworkRouter.onDisconnect()
-    }
-
-    fun sendBlockRequest(position: BlockPos, direction: Direction) {
-        if (debug) ClientLifecycle.LOGGER.info("Sending veinmine request: ($position, $direction)")
-        if (!isConnected()) return
-        ClientNetworkRouter.sendBlockRequest(RequestBlockVein(position.toVeinminer(), direction.toVeinminer()))
     }
 
     fun sendJoin(version: String) {
@@ -87,15 +92,15 @@ object NetworkManager : ClientCallbacks {
         ClientNetworkRouter.sendJoin(version)
     }
 
-    fun sendKeyPress(pressed: Boolean) {
-        ClientLifecycle.LOGGER.info("Sending veinmine state: $pressed (shape=$selectedShape depth=$selectedDepth)")
+    fun sendKeyPress(pressed: Boolean, surface: Surface = Surface.UP) {
+        if (settings.debug) ClientLifecycle.LOGGER.info("Sending veinmine state: $pressed (shape=$selectedShape depth=$selectedDepth surface=$surface)")
         if (!isConnected()) return
-        ClientNetworkRouter.sendKeyPress(KeyPress(pressed, selectedShape, selectedDepth))
+        ClientNetworkRouter.sendKeyPress(KeyPress(pressed, selectedShape, selectedDepth, surface))
     }
 
-    fun resendKeyPress() {
+    fun resendKeyPress(surface: Surface = Surface.UP) {
         if (!isConnected()) return
-        ClientNetworkRouter.sendKeyPress(KeyPress(true, selectedShape, selectedDepth))
+        ClientNetworkRouter.sendKeyPress(KeyPress(true, selectedShape, selectedDepth, surface))
     }
 
     private fun isConnected(): Boolean {

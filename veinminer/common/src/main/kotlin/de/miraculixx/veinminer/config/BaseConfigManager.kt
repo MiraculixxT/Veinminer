@@ -3,7 +3,6 @@ package de.miraculixx.veinminer.config
 import de.miraculixx.veinminer.ConfigBridge
 import de.miraculixx.veinminer.data.BlockGroup
 import de.miraculixx.veinminer.data.VeinminerSettings
-import de.miraculixx.veinminer.event.HighlightCache
 import de.miraculixx.veinminer.extensions.load
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
@@ -48,8 +47,13 @@ abstract class BaseConfigManager<T>(
         if (fromDisc) settings = loadSettings()
         if (loadBlocks(fromDisc)) saveBlocks()
         if (loadGroups(fromDisc)) saveGroups()
-        HighlightCache.clear()
+        onAfterReload()
     }
+
+    /**
+     * Hook for loader to broadcast updated configuration to all registered clients.
+     */
+    protected open fun onAfterReload() {}
 
     /**
      * Saves the current config to the disc and reparses the raw data into native identifiers.

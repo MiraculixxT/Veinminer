@@ -8,8 +8,6 @@ import java.util.UUID
  * Mirror of [NetworkRouter] for the client side. Centralizes encode/decode +
  * loopback handling so loader-leaf modules only own the tiny
  * [ClientPlatformNetwork] adapter and the [ClientCallbacks] state.
- *
- * TODO: Moving into client common module. But needing to depend on base common module for this?
  */
 object ClientNetworkRouter {
     @Volatile
@@ -17,11 +15,6 @@ object ClientNetworkRouter {
 
     private val logger: Logger = ActiveHost.host.logger
 
-    /**
-     * Predicate for "is this a singleplayer integrated server with the base mod
-     * available". When true, send paths bypass the wire and dispatch through
-     * [NetworkRouter.dispatchC2S]; receive paths come back via [LocalLoopback].
-     */
     @Volatile
     private var loopbackPredicate: () -> Boolean = { false }
 
@@ -40,7 +33,6 @@ object ClientNetworkRouter {
 
         platform.registerC2S(NetworkManager.PACKET_JOIN_ID)
         platform.registerC2S(NetworkManager.PACKET_KEY_PRESS_ID)
-        platform.registerC2S(NetworkManager.PACKET_MINE_ID)
 
         platform.registerS2C(NetworkManager.PACKET_CONFIGURATION_ID) { bytes ->
             try {
@@ -49,14 +41,6 @@ object ClientNetworkRouter {
                 logger.warn("Failed to decode S2C 'configuration': ${e.message}")
             }
         }
-        platform.registerS2C(NetworkManager.PACKET_HIGHLIGHT_ID) { bytes ->
-            try {
-                callbacks.onHighlight(PacketCodecs.HIGHLIGHT.decode(bytes))
-            } catch (e: Exception) {
-                logger.warn("Failed to decode S2C 'highlight': ${e.message}")
-            }
-        }
-
     }
 
     fun sendJoin(version: String) {
@@ -65,10 +49,6 @@ object ClientNetworkRouter {
 
     fun sendKeyPress(packet: KeyPress) {
         send(NetworkManager.PACKET_KEY_PRESS_ID, PacketCodecs.KEY, packet)
-    }
-
-    fun sendBlockRequest(packet: RequestBlockVein) {
-        send(NetworkManager.PACKET_MINE_ID, PacketCodecs.MINE, packet)
     }
 
     private fun <T> send(channel: String, codec: PacketCodec<T>, packet: T, markLoopback: Boolean = false) {

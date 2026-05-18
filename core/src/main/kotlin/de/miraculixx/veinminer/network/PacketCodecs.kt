@@ -1,8 +1,8 @@
 package de.miraculixx.veinminer.network
 
-import de.miraculixx.veinminer.data.BlockPosition
 import de.miraculixx.veinminer.pattern.Shape
 import de.miraculixx.veinminer.pattern.Surface
+import de.miraculixx.veinminer.utils.json
 import net.minecraft.network.FriendlyByteBuf
 
 object PacketCodecs {
@@ -17,60 +17,24 @@ object PacketCodecs {
         override fun read(buf: FriendlyByteBuf) = KeyPress(
             pressed = buf.readBoolean(),
             shape = Shape.valueOf(buf.readUtf()),
-            maxDepth = buf.readVarInt()
+            maxDepth = buf.readVarInt(),
+            surface = Surface.valueOf(buf.readUtf()),
         )
         override fun write(buf: FriendlyByteBuf, value: KeyPress) {
             buf.writeBoolean(value.pressed)
             buf.writeUtf(value.shape.name)
             buf.writeVarInt(value.maxDepth)
-        }
-    }
-
-    val MINE: PacketCodec<RequestBlockVein> = object : PacketCodec<RequestBlockVein> {
-        override fun read(buf: FriendlyByteBuf) = RequestBlockVein(
-            blockPosition = readBlockPosition(buf),
-            surface = Surface.valueOf(buf.readUtf())
-        )
-        override fun write(buf: FriendlyByteBuf, value: RequestBlockVein) {
-            writeBlockPosition(buf, value.blockPosition)
             buf.writeUtf(value.surface.name)
         }
     }
 
     val CONFIGURATION: PacketCodec<ServerConfiguration> = object : PacketCodec<ServerConfiguration> {
-        override fun read(buf: FriendlyByteBuf) = ServerConfiguration(
-            cooldown = buf.readVarInt(),
-            mustSneak = buf.readBoolean(),
-            outdated = buf.readBoolean(),
-            translucentBlockHighlight = buf.readBoolean()
-        )
+        override fun read(buf: FriendlyByteBuf): ServerConfiguration =
+            json.decodeFromString(ServerConfiguration.serializer(), buf.readUtf(MAX_CONFIG_PAYLOAD))
         override fun write(buf: FriendlyByteBuf, value: ServerConfiguration) {
-            buf.writeVarInt(value.cooldown)
-            buf.writeBoolean(value.mustSneak)
-            buf.writeBoolean(value.outdated)
-            buf.writeBoolean(value.translucentBlockHighlight)
+            buf.writeUtf(json.encodeToString(ServerConfiguration.serializer(), value), MAX_CONFIG_PAYLOAD)
         }
     }
 
-    val HIGHLIGHT: PacketCodec<BlockHighlighting> = object : PacketCodec<BlockHighlighting> {
-        override fun read(buf: FriendlyByteBuf) = BlockHighlighting(
-            allowed = buf.readBoolean(),
-            icon = buf.readUtf(),
-            blocks = buf.readList { readBlockPosition(it) }
-        )
-        override fun write(buf: FriendlyByteBuf, value: BlockHighlighting) {
-            buf.writeBoolean(value.allowed)
-            buf.writeUtf(value.icon)
-            buf.writeCollection(value.blocks) { b, pos -> writeBlockPosition(b, pos) }
-        }
-    }
-
-    private fun readBlockPosition(buf: FriendlyByteBuf): BlockPosition =
-        BlockPosition(buf.readVarInt(), buf.readVarInt(), buf.readVarInt())
-
-    private fun writeBlockPosition(buf: FriendlyByteBuf, pos: BlockPosition) {
-        buf.writeVarInt(pos.x)
-        buf.writeVarInt(pos.y)
-        buf.writeVarInt(pos.z)
-    }
+    private const val MAX_CONFIG_PAYLOAD = 1 shl 20 // 1 MiB headroom for large group sets
 }

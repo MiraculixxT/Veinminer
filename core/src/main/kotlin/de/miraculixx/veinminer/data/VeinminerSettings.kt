@@ -17,6 +17,7 @@ data class VeinminerSettings(
     var autoUpdate: Boolean = false,
     var decreaseDurability: Boolean = true,
     var miningSpeedModifier: Double = 0.0,
+    val debug: Boolean = false,
     val client: VeinminerClientSettings = VeinminerClientSettings()
 ) {
     /**
@@ -40,6 +41,7 @@ data class VeinminerSettings(
             mergeItemDrops = mergeItemDrops,
             decreaseDurability = g?.decreaseDurability ?: (if (isClient) c.decreaseDurability ?: decreaseDurability else decreaseDurability),
             miningSpeedModifier = g?.miningSpeedModifier ?: (if (isClient) c.miningSpeedModifier ?: miningSpeedModifier else miningSpeedModifier),
+            debug = debug,
             client = client
         )
     }
