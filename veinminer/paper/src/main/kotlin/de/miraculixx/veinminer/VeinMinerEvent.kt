@@ -224,7 +224,6 @@ object VeinMinerEvent {
         if (iTool.isEmpty) return 0
         val shape = NetworkRouter.activeShape(iPlayer.uniqueId) ?: Shape.NORMAL
         val maxDepth = NetworkRouter.maxDepth(iPlayer.uniqueId)
-        val delay = settings.delay
 
         val blockAwareness = object : BlockAwareness {
             override fun getBlockType(pos: BlockPosition): Identifier {
