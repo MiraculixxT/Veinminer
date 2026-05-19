@@ -58,8 +58,7 @@ object KeyBindManager {
             scrollPattern()
         } else {
             if (isPressed) isPressed = false
-            HUDProvider.instance.updateTarget(null)
-            BlockHighlightingRenderer.setShape(emptyList())
+            resetTarget(true)
             lastTarget = null
         }
     }
@@ -71,11 +70,10 @@ object KeyBindManager {
         val target = instance.hitResult as? BlockHitResult ?: return
         val pos = target.blockPos
         val holding = player.inventory.selectedItem
-        if (holding.item == Items.AIR) return resetTarget()
+        if (holding.item == Items.AIR) return resetTarget(true)
 
         if (target.type != HitResult.Type.BLOCK) {
             resetTarget()
-            HUDProvider.instance.updateTarget("forbidden")
             return
         }
 
@@ -96,15 +94,16 @@ object KeyBindManager {
 
         if (result == null) {
             resetTarget()
-            HUDProvider.instance.updateTarget("forbidden")
             return
         }
         HUDProvider.instance.updateTarget(result.toolIcon)
         BlockHighlightingRenderer.setShape(result.positions)
     }
 
-    private fun resetTarget() {
+    private fun resetTarget(hide: Boolean = false) {
         BlockHighlightingRenderer.setShape(emptyList())
+        if (hide) HUDProvider.instance.updateTarget(null)
+        else HUDProvider.instance.updateTarget("forbidden")
     }
 
     private val pendingShapeScroll = AtomicInteger(0)
@@ -141,5 +140,8 @@ object KeyBindManager {
 
     fun onDisconnect() {
         notifiedOnce = false
+        isPressed = false
+        lastTarget = null
+        isToggled = false
     }
 }
