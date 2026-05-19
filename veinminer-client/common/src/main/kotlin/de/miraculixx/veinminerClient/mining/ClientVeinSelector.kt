@@ -80,7 +80,6 @@ object ClientVeinSelector {
             currentBlock = originPos,
             targetTypes = targets,
             tool = mainHandItem,
-            processedBlocks = mutableSetOf(),
             player = player,
             sourceLocation = originPos,
             settings = settings,

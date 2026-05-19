@@ -9,12 +9,11 @@ interface BlockAwareness {
     fun breakBlock(pos: BlockPosition, ticks: Int): Boolean
 }
 
-data class VeinmineAction(
+data class VeinmineAction<Tool, Player>(
     val currentBlock: BlockPosition,
     val targetTypes: Set<Identifier>,
-    val tool: Any, // ItemStack, platform dependent
-    val processedBlocks: MutableSet<BlockPosition>,
-    val player: Any, // Player/ServerPlayer, platform dependent
+    val tool: Tool,
+    val player: Player,
     val sourceLocation: BlockPosition,
     val settings: VeinminerSettings,
     val face: Surface

@@ -15,7 +15,7 @@ object Veinmining {
      * Use [shouldBreak]=false for a pure preview
      */
     fun veinmine(
-        action: VeinmineAction,
+        action: VeinmineAction<*, *>,
         blockAwareness: BlockAwareness,
         shape: Shape,
         maxDepth: Int = Int.MAX_VALUE,

@@ -8,14 +8,14 @@ import kotlin.math.abs
  * Uses [BlockAwareness] for context awareness.
  */
 fun interface ShapeStrategy {
-    fun layers(veinmineAction: VeinmineAction, blockAwareness: BlockAwareness): Sequence<List<BlockPosition>>
+    fun layers(veinmineAction: VeinmineAction<*, *>, blockAwareness: BlockAwareness): Sequence<List<BlockPosition>>
 }
 
 /**
  * Layered flood fill in 3D
  */
 object NormalStrategy : ShapeStrategy {
-    override fun layers(veinmineAction: VeinmineAction, blockAwareness: BlockAwareness): Sequence<List<BlockPosition>> = sequence {
+    override fun layers(veinmineAction: VeinmineAction<*, *>, blockAwareness: BlockAwareness): Sequence<List<BlockPosition>> = sequence {
         val searchRadius = veinmineAction.settings.searchRadius
         val maxChain = veinmineAction.settings.maxChain
         val targets = veinmineAction.targetTypes
@@ -63,7 +63,7 @@ object NormalStrategy : ShapeStrategy {
  * Single-layer flood-fill on the plane perpendicular to the drill axis
  */
 object FlatStrategy : ShapeStrategy {
-    override fun layers(veinmineAction: VeinmineAction, blockAwareness: BlockAwareness): Sequence<List<BlockPosition>> = sequence {
+    override fun layers(veinmineAction: VeinmineAction<*, *>, blockAwareness: BlockAwareness): Sequence<List<BlockPosition>> = sequence {
         val face = veinmineAction.face
         val origin = veinmineAction.sourceLocation
         val maxChain = veinmineAction.settings.maxChain
@@ -97,7 +97,7 @@ object FlatStrategy : ShapeStrategy {
  * With size=N, a NxN tunnel in the direction of the drill surface
  */
 class TunnelStrategy(private val size: Int) : ShapeStrategy {
-    override fun layers(veinmineAction: VeinmineAction, blockAwareness: BlockAwareness): Sequence<List<BlockPosition>> = sequence {
+    override fun layers(veinmineAction: VeinmineAction<*, *>, blockAwareness: BlockAwareness): Sequence<List<BlockPosition>> = sequence {
         val face = veinmineAction.face
         val origin = veinmineAction.sourceLocation
         val maxChain = veinmineAction.settings.maxChain

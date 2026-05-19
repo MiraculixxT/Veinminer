@@ -155,7 +155,7 @@ object VeinMinerEvent {
         }
     }
 
-    fun allowedToVeinmine(player: Player, block: Block): VeinmineAction? {
+    fun allowedToVeinmine(player: Player, block: Block): VeinmineAction<ItemStack, Player>? {
         if (debug) Veinminer.LOGGER.info("Checking if ${player.name} is allowed to veinmine ${block.type.key}")
 
         // Check if player is in creative
@@ -207,16 +207,16 @@ object VeinMinerEvent {
         val face = NetworkRouter.lastSurface[player.uniqueId] ?: Surface.UP
         val currentPos = block.location.toVeinminer()
         val blocksNMS = blocks.map { it.toVeinminer() }.toSet()
-        return VeinmineAction(currentPos, blocksNMS, item, mutableSetOf(), player, currentPos, settings, face)
+        return VeinmineAction(currentPos, blocksNMS, item, player, currentPos, settings, face)
     }
 
     /**
      * Recursively break blocks around the source block until the vein stops
      * @return the number of blocks broken
      */
-    fun VeinmineAction.veinmine(shouldBreak: Boolean): Int {
-        val iTool = tool as ItemStack
-        val iPlayer = player as Player
+    fun VeinmineAction<ItemStack, Player>.veinmine(shouldBreak: Boolean): Int {
+        val iTool = tool
+        val iPlayer = player
         val world = iPlayer.world
 
         if (iTool.isEmpty) return 0
@@ -231,9 +231,9 @@ object VeinMinerEvent {
 
             override fun breakBlock(pos: BlockPosition, ticks: Int): Boolean {
                 if (!shouldBreak) return false // safeguard
-                if ((tool as ItemStack).remainingDurability() <= 1) return false // tool "broken"
+                if (tool.remainingDurability() <= 1) return false // tool "broken"
                 val state = world.getBlockAt(pos.x, pos.y, pos.z)
-                scheduleBreak(state, delay.toLong())
+                scheduleBreak(state, ticks.toLong())
                 return true
             }
         }
@@ -242,7 +242,7 @@ object VeinMinerEvent {
         return hits.size
     }
 
-    private fun VeinmineAction.scheduleBreak(block: Block, delay: Long) {
+    private fun VeinmineAction<ItemStack, Player>.scheduleBreak(block: Block, delay: Long) {
         if (VeinminerCompatibility.runsAsync) {
             if (delay == 0L) {
                 server.regionScheduler.execute(Veinminer.INSTANCE, block.location) { triggerBreaking(block) }
@@ -254,19 +254,15 @@ object VeinMinerEvent {
         }
     }
 
-    private fun VeinmineAction.triggerBreaking(block: Block) {
-        // Delay if necessary & check again if the block is still valid
-        if (!VeinminerCompatibility.runsAsync) {
-            if (settings.delay != 0) {
-                if (!targetTypes.contains(block.type.key.toVeinminer())) return
-            }
-        }
+    private fun VeinmineAction<ItemStack, Player>.triggerBreaking(block: Block) {
+        // Re-check the queued block as it may have changed.
+        if (!targetTypes.contains(block.type.key.toVeinminer())) return
         // Re-check remaining durability at execution time to prevent queued tasks from breaking the tool
-        val iTool = tool as? ItemStack ?: return
+        val iTool = tool
         if (settings.decreaseDurability && iTool.remainingDurability() <= 1) return
 
         // Check if other plugins cancel the event
-        val iPlayer = player as? Player ?: return
+        val iPlayer = player
         val sourceLoc = Location(iPlayer.world, sourceLocation.x.toDouble(), sourceLocation.y.toDouble(), sourceLocation.z.toDouble())
         val veinminerEvent = VeinminerEvent(block, iPlayer, sourceLoc, block.getXP(iTool))
         if (!veinminerEvent.callEvent()) return
