@@ -2,7 +2,6 @@ package de.miraculixx.veinminer.networking
 
 import de.miraculixx.kpaper.event.listen
 import de.miraculixx.veinminer.Veinminer
-import de.miraculixx.veinminer.config.ConfigManager
 import de.miraculixx.veinminer.config.PaperConfigManager
 import de.miraculixx.veinminer.data.BlockGroup
 import de.miraculixx.veinminer.network.JoinInformation
@@ -48,6 +47,6 @@ object PaperServerCallbacks : ServerCallbacks {
     }
 
     override fun onKeyPress(playerId: UUID, packet: KeyPress) {
-        if (ConfigManager.settings.debug) Veinminer.INSTANCE.logger.info("$playerId pressed hotkey (${packet.pressed})")
+        if (PaperConfigManager.settings.debug) Veinminer.INSTANCE.logger.info("$playerId pressed hotkey (${packet.pressed})")
     }
 }
