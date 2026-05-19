@@ -42,7 +42,7 @@ paper {
     loader = "$group.veinminerEnchant.paper.VeinminerEnchantmentLoader"
     generateLibrariesJson = true
 
-    name = "Veinminer-Enchantment"
+    name = "Veinminer_Enchantment"
     version = project.version.toString()
     description = "Adds a veinminer enchantment to the game"
     author = "Miraculixx"
