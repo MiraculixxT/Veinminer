@@ -8,6 +8,7 @@ import de.miraculixx.veinminer.pattern.Shape
 import de.miraculixx.veinminer.pattern.Surface
 import de.miraculixx.veinminer.pattern.VeinmineAction
 import de.miraculixx.veinminer.pattern.Veinmining
+import de.miraculixx.veinminer.pattern.isMatureAgeTarget
 import de.miraculixx.veinminerClient.network.NetworkManager
 import net.minecraft.client.player.LocalPlayer
 import net.minecraft.core.BlockPos
@@ -42,6 +43,7 @@ object ClientVeinSelector {
 
         val state = level.getBlockState(origin)
         val material = state.key().takeIf { !state.isAir } ?: return null
+        if (!state.isMatureAgeTarget()) return null
 
         val blockGroup = groupedBlocks(material)
         val isGroupBlock = blockGroup.blocks.isNotEmpty()
@@ -69,6 +71,10 @@ object ClientVeinSelector {
         val blockAwareness = object : BlockAwareness {
             override fun getBlockType(pos: BlockPosition): Identifier {
                 return level.getBlockState(BlockPos(pos.x, pos.y, pos.z)).key()
+            }
+
+            override fun isActionTarget(pos: BlockPosition): Boolean {
+                return level.getBlockState(BlockPos(pos.x, pos.y, pos.z)).isMatureAgeTarget()
             }
 
             override fun breakBlock(pos: BlockPosition, ticks: Int): Boolean {
