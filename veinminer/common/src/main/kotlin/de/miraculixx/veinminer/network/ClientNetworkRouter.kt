@@ -3,6 +3,7 @@ package de.miraculixx.veinminer.network
 import de.miraculixx.veinminer.command.ActiveHost
 import org.slf4j.Logger
 import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Mirror of [NetworkRouter] for the client side. Centralizes encode/decode +
@@ -20,6 +21,8 @@ object ClientNetworkRouter {
 
     @Volatile
     private var localPlayerId: () -> UUID? = { null }
+
+    private val clientboundHandlers: MutableMap<String, (ByteArray) -> Unit> = ConcurrentHashMap()
 
     fun init(
         platform: ClientPlatformNetwork,
@@ -41,6 +44,14 @@ object ClientNetworkRouter {
                 logger.warn("Failed to decode S2C 'configuration': ${e.message}")
             }
         }
+    }
+
+    fun registerClientboundHandler(channel: String, handler: (ByteArray) -> Unit) {
+        clientboundHandlers[channel] = handler
+    }
+
+    fun dispatchClientbound(channel: String, payload: ByteArray) {
+        clientboundHandlers[channel]?.invoke(payload)
     }
 
     fun sendJoin(version: String) {

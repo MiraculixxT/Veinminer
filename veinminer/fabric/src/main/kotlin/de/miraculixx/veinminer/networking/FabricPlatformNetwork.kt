@@ -1,7 +1,7 @@
 package de.miraculixx.veinminer.networking
 
 import de.miraculixx.veinminer.Veinminer
-import de.miraculixx.veinminer.network.ClientPayloadDispatch
+import de.miraculixx.veinminer.network.ClientNetworkRouter
 import de.miraculixx.veinminer.network.LocalLoopback
 import de.miraculixx.veinminer.network.PlatformNetwork
 import de.miraculixx.veinminer.network.VeinminerPayload
@@ -44,13 +44,11 @@ object FabricPlatformNetwork : PlatformNetwork {
         if (registeredS2C.add(channel)) {
             PayloadTypeRegistry.clientboundPlay().register(type, rawBytesCodec(type))
             // The base mod owns the single canonical clientbound receiver in any client-side
-            // environment (singleplayer integrated server, or a Fabric client install carrying
-            // the base mod). The receiver routes payloads to ClientPayloadDispatch where the
-            // veinminer-client addon plugs its callbacks. This avoids cross-mod registration
-            // races and makes Fabric/NeoForge wire dispatch symmetric.
+            // environment. The receiver routes payloads to ClientNetworkRouter where the
+            // veinminer-client addon plugs its callbacks.
             if (FabricLoader.getInstance().environmentType == EnvType.CLIENT) {
                 ClientPlayNetworking.registerGlobalReceiver(type) { payload, _ ->
-                    ClientPayloadDispatch.dispatch(channel, payload.bytes)
+                    ClientNetworkRouter.dispatchClientbound(channel, payload.bytes)
                 }
             }
         }
@@ -59,7 +57,7 @@ object FabricPlatformNetwork : PlatformNetwork {
     override fun sendS2C(playerId: UUID, channel: String, payload: ByteArray) {
         val type = typeFor(channel)
         if (LocalLoopback.isLoopbackPlayer(playerId)) {
-            ClientPayloadDispatch.dispatch(channel, payload)
+            ClientNetworkRouter.dispatchClientbound(channel, payload)
             return
         }
         val player = mcServer?.playerList?.getPlayer(playerId) ?: return

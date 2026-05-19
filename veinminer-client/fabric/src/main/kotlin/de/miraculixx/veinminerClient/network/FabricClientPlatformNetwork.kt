@@ -1,6 +1,6 @@
 package de.miraculixx.veinminerClient.network
 
-import de.miraculixx.veinminer.network.ClientPayloadDispatch
+import de.miraculixx.veinminer.network.ClientNetworkRouter
 import de.miraculixx.veinminer.network.ClientPlatformNetwork
 import de.miraculixx.veinminer.network.VeinminerPayload
 import de.miraculixx.veinminer.network.payloadType
@@ -19,11 +19,10 @@ object FabricClientPlatformNetwork : ClientPlatformNetwork {
         typeFor(channel)
     }
 
-    // S2C wire registration (codec + global receiver) is owned by the base mod, which routes
-    // payloads to ClientPayloadDispatch. The addon just plugs its callback in.
+    // S2C wire registration is owned by the base mod. The addon just plugs its callback in.
     override fun registerS2C(channel: String, handler: (ByteArray) -> Unit) {
         typeFor(channel)
-        ClientPayloadDispatch.register(channel, handler)
+        ClientNetworkRouter.registerClientboundHandler(channel, handler)
     }
 
     override fun sendC2S(channel: String, payload: ByteArray) {

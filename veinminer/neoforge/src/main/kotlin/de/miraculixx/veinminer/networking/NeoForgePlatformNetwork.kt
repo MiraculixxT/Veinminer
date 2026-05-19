@@ -1,7 +1,7 @@
 package de.miraculixx.veinminer.networking
 
 import de.miraculixx.veinminer.Veinminer
-import de.miraculixx.veinminer.network.ClientPayloadDispatch
+import de.miraculixx.veinminer.network.ClientNetworkRouter
 import de.miraculixx.veinminer.network.LocalLoopback
 import de.miraculixx.veinminer.network.NetworkManager
 import de.miraculixx.veinminer.network.PlatformNetwork
@@ -57,7 +57,7 @@ object NeoForgePlatformNetwork : PlatformNetwork {
     override fun sendS2C(playerId: UUID, channel: String, payload: ByteArray) {
         val type = typeFor(channel)
         if (LocalLoopback.isLoopbackPlayer(playerId)) {
-            ClientPayloadDispatch.dispatch(channel, payload)
+            ClientNetworkRouter.dispatchClientbound(channel, payload)
             return
         }
         val player = mcServer?.playerList?.getPlayer(playerId) ?: return
@@ -79,7 +79,7 @@ object NeoForgePlatformNetwork : PlatformNetwork {
         val type = typeFor(channel)
         // playToClient registration claimed by base mod for better ownership
         reg.playToClient(type, rawBytesCodec(type)) { payload: VeinminerPayload, _: IPayloadContext ->
-            ClientPayloadDispatch.dispatch(channel, payload.bytes)
+            ClientNetworkRouter.dispatchClientbound(channel, payload.bytes)
         }
     }
 }
