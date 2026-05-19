@@ -35,7 +35,7 @@ object NetworkRouter {
             val packet = PacketCodecs.KEY.decode(bytes)
             if (packet.pressed) {
                 readyToVeinmine[uuid] = packet.shape
-                activeDepth[uuid] = packet.maxDepth
+                activeDepth[uuid] = packet.maxDepth.coerceIn(2..Int.MAX_VALUE)
             } else {
                 readyToVeinmine.remove(uuid)
                 activeDepth.remove(uuid)

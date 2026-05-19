@@ -23,6 +23,7 @@ import net.minecraft.core.BlockPos
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.resources.Identifier
 import net.minecraft.server.level.ServerLevel
+import net.minecraft.stats.Stats
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.EquipmentSlot
 import net.minecraft.world.entity.ai.attributes.AttributeModifier
@@ -98,7 +99,7 @@ object VeinMinerEvent {
         val info = allowedToVeinmine(world, player, pos, state) ?: return true
 
         val amount = info.veinmine(true)
-        player.awardStat(net.minecraft.stats.Stats.BLOCK_MINED.get(state.block), amount - 1)
+        player.awardStat(Stats.BLOCK_MINED.get(state.block), (amount - 1).coerceAtLeast(0))
 
         val cooldownTime = info.settings.cooldown
         if (cooldownTime > 0) {
