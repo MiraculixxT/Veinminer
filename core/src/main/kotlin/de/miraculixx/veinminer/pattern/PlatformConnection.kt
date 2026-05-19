@@ -6,6 +6,7 @@ import net.minecraft.resources.Identifier
 
 interface BlockAwareness {
     fun getBlockType(pos: BlockPosition): Identifier
+    fun isActionTarget(pos: BlockPosition): Boolean = true
     fun breakBlock(pos: BlockPosition, ticks: Int): Boolean
 }
 

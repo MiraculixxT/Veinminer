@@ -39,15 +39,17 @@ object Veinmining {
             for (cand in layer) {
                 if (visited.size >= maxChain) break
                 if (cand in visited) continue
+                val eligible = blockAwareness.isActionTarget(cand)
                 if (cand == origin) {
                     visited.add(cand)
                     matched.add(cand)
-                    out.add(Hit(cand, 0))
+                    if (eligible) out.add(Hit(cand, 0))
                     continue
                 }
                 if (!touchesAny(cand, prevLayer, searchRadius)) continue
                 visited.add(cand)
                 matched.add(cand)
+                if (!eligible) continue
                 out.add(Hit(cand, layerDepth))
                 if (shouldBreak) {
                     if (!blockAwareness.breakBlock(cand, delay * layerDepth)) {

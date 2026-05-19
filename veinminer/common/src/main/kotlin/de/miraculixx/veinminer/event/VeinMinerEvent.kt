@@ -15,6 +15,7 @@ import de.miraculixx.veinminer.pattern.Surface
 import de.miraculixx.veinminer.pattern.BlockAwareness
 import de.miraculixx.veinminer.pattern.VeinmineAction
 import de.miraculixx.veinminer.pattern.Veinmining
+import de.miraculixx.veinminer.pattern.isMatureAgeTarget
 import de.miraculixx.veinminer.utils.mcServer
 import de.miraculixx.veinminer.utils.permissionVeinmine
 import de.miraculixx.veinminer.utils.toNMS
@@ -120,6 +121,7 @@ object VeinMinerEvent {
         val uuid = player.uuid
         val hasClient = NetworkRouter.registeredPlayers.contains(uuid)
         val material = state.key().takeIf { !state.isAir } ?: return null
+        if (!state.isMatureAgeTarget()) return null
 
         if (hasClient && !NetworkRouter.isReady(uuid)) return null
 
@@ -167,6 +169,10 @@ object VeinMinerEvent {
                 return world.getBlockState(BlockPos(pos.x, pos.y, pos.z)).key()
             }
 
+            override fun isActionTarget(pos: BlockPosition): Boolean {
+                return world.getBlockState(BlockPos(pos.x, pos.y, pos.z)).isMatureAgeTarget()
+            }
+
             override fun breakBlock(pos: BlockPosition, ticks: Int): Boolean {
                 if (!shouldBreak) return false // safeguard
                 if (tool.remainingDurability() <= 1) return false // tool "broken"
@@ -189,6 +195,7 @@ object VeinMinerEvent {
             val world = iPlayer.level()
             val state = world.getBlockState(pos)
             if (!targetTypes.contains(state.key())) return@mcCoroutineSync
+            if (!state.isMatureAgeTarget()) return@mcCoroutineSync
             val iTool = tool
             if (settings.decreaseDurability && iTool.remainingDurability() <= 1) return@mcCoroutineSync
             state.destroyBlock(iTool, world, pos, iPlayer, sourceLocation.toNMS())
