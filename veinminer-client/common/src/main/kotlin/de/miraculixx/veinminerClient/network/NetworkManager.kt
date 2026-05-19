@@ -87,14 +87,14 @@ object NetworkManager : ClientCallbacks {
     }
 
     fun sendJoin(version: String) {
-        ClientLifecycle.LOGGER.info("Sending join: ($version)")
         if (!isConnected()) return
+        ClientLifecycle.LOGGER.info("Sending join: ($version)")
         ClientNetworkRouter.sendJoin(version)
     }
 
     fun sendKeyPress(pressed: Boolean, surface: Surface = Surface.UP) {
-        if (settings.debug) ClientLifecycle.LOGGER.info("Sending veinmine state: $pressed (shape=$selectedShape depth=$selectedDepth surface=$surface)")
         if (!isConnected()) return
+        if (settings.debug) ClientLifecycle.LOGGER.info("Sending veinmine state: $pressed (shape=$selectedShape depth=$selectedDepth surface=$surface)")
         ClientNetworkRouter.sendKeyPress(KeyPress(pressed, selectedShape, selectedDepth, surface))
     }
 
