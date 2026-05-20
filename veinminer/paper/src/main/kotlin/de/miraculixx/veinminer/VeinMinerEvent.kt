@@ -19,6 +19,7 @@ import de.miraculixx.veinminer.network.NetworkRouter
 import de.miraculixx.veinminer.pattern.BlockAwareness
 import de.miraculixx.veinminer.pattern.VeinmineAction
 import de.miraculixx.veinminer.pattern.Veinmining
+import de.miraculixx.veinminer.pattern.isMatureAgeTarget
 import de.miraculixx.veinminer.utils.toVeinminer
 import io.papermc.paper.datacomponent.DataComponentTypes
 import kotlinx.coroutines.CoroutineScope
@@ -164,6 +165,7 @@ object VeinMinerEvent {
         val uuid = player.uniqueId
         val hasClient = NetworkRouter.registeredPlayers.contains(uuid)
         val material = block.type.key
+        if (!block.nmsState().isMatureAgeTarget()) return null
 
         // Check if player has the client mod and pressed the key
         if (hasClient && !NetworkRouter.isReady(uuid)) return null
@@ -222,11 +224,14 @@ object VeinMinerEvent {
         if (iTool.isEmpty) return 0
         val shape = NetworkRouter.activeShape(iPlayer.uniqueId) ?: Shape.NORMAL
         val maxDepth = NetworkRouter.maxDepth(iPlayer.uniqueId)
-        val delay = settings.delay
 
         val blockAwareness = object : BlockAwareness {
             override fun getBlockType(pos: BlockPosition): Identifier {
                 return world.getBlockAt(pos.x, pos.y, pos.z).type.key.toVeinminer()
+            }
+
+            override fun isActionTarget(pos: BlockPosition): Boolean {
+                return world.getBlockAt(pos.x, pos.y, pos.z).nmsState().isMatureAgeTarget()
             }
 
             override fun breakBlock(pos: BlockPosition, ticks: Int): Boolean {
@@ -257,6 +262,7 @@ object VeinMinerEvent {
     private fun VeinmineAction<ItemStack, Player>.triggerBreaking(block: Block) {
         // Re-check the queued block as it may have changed.
         if (!targetTypes.contains(block.type.key.toVeinminer())) return
+        if (!block.nmsState().isMatureAgeTarget()) return
         // Re-check remaining durability at execution time to prevent queued tasks from breaking the tool
         val iTool = tool
         if (settings.decreaseDurability && iTool.remainingDurability() <= 1) return
@@ -298,9 +304,14 @@ object VeinMinerEvent {
     private fun Block.getXP(tool: ItemStack): Int {
         val craftBlock = this as CraftBlock
         val position = craftBlock.position
-        val nmsState = craftBlock.level.getBlockState(position)
         val nmsItem = (tool as CraftItemStack).handle ?: net.minecraft.world.item.ItemStack.EMPTY
-        return nmsState.block.getExpDrop(nmsState, craftBlock.craftWorld.handle, position, nmsItem, true)
+        val state = nmsState()
+        return state.block.getExpDrop(state, craftBlock.craftWorld.handle, position, nmsItem, true)
+    }
+
+    private fun Block.nmsState(): net.minecraft.world.level.block.state.BlockState {
+        val craftBlock = this as CraftBlock
+        return craftBlock.level.getBlockState(craftBlock.position)
     }
 
     private fun Player.removeAttribute() {
