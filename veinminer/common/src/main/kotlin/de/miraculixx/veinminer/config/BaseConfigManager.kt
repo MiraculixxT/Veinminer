@@ -31,10 +31,14 @@ abstract class BaseConfigManager<T>(
 
     final override var veinBlocksRaw: MutableSet<String> = mutableSetOf()
         private set
+    var networkVeinBlocks: List<String> = emptyList()
+        private set
     var veinBlocks: Set<T> = emptySet()
         private set
 
     final override var groupsRaw: MutableSet<BlockGroup<String>> = mutableSetOf()
+        private set
+    var networkGroups: List<BlockGroup<String>> = emptyList()
         private set
     var groups: Set<BlockGroup<T>> = emptySet()
         private set
@@ -47,6 +51,7 @@ abstract class BaseConfigManager<T>(
         if (fromDisc) settings = loadSettings()
         if (loadBlocks(fromDisc)) saveBlocks()
         if (loadGroups(fromDisc)) saveGroups()
+        refreshNetworkCache()
         onAfterReload()
     }
 
@@ -54,6 +59,18 @@ abstract class BaseConfigManager<T>(
      * Hook for loader to broadcast updated configuration to all registered clients.
      */
     protected open fun onAfterReload() {}
+
+    private fun refreshNetworkCache() {
+        networkGroups = groups.map { group ->
+            BlockGroup(
+                name = group.name,
+                blocks = group.blocks.mapTo(mutableSetOf()) { it.toString() },
+                tools = group.tools.mapTo(mutableSetOf()) { it.toString() },
+                override = group.override
+            )
+        }
+        networkVeinBlocks = veinBlocks.map { it.toString() }
+    }
 
     /**
      * Saves the current config to the disc and reparses the raw data into native identifiers.
@@ -65,6 +82,7 @@ abstract class BaseConfigManager<T>(
         saveSettings()
         saveBlocks()
         saveGroups()
+        refreshNetworkCache()
         onAfterReload()
     }
 

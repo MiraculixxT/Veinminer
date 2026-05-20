@@ -22,24 +22,9 @@ object ConfigManager : BaseConfigManager<Identifier>(
         contextual(Identifier::class, ResourceLocationSerializer)
     }
 ) {
-    var networkGroups: List<BlockGroup<String>> = emptyList()
-        private set
-    var networkVeinBlocks: List<String> = emptyList()
-        private set
-
     override fun onAfterReload() {
-        networkGroups = groups.map { group ->
-            BlockGroup(
-                name = group.name,
-                blocks = group.blocks.mapTo(mutableSetOf()) { it.toString() },
-                tools = group.tools.mapTo(mutableSetOf()) { it.toString() },
-                override = group.override
-            )
-        }
-        networkVeinBlocks = veinBlocks.map { it.toString() }
-
         val server = mcServer ?: return
-        val playerList = server.playerList
+        val playerList = server.playerList ?: return ActiveHost.host.logger.warn("No player list available!") // fabric can be null
         NetworkRouter.registeredPlayers.keys.forEach { uuid ->
             val player = playerList.getPlayer(uuid) ?: return@forEach
             val conf = ServerConfiguration(

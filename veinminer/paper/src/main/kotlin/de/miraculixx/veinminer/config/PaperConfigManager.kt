@@ -17,26 +17,11 @@ object PaperConfigManager : BaseConfigManager<NamespacedKey>(
         contextual(NamespacedKey::class, NamespacedKeySerializer)
     },
 ) {
-    var networkGroups: List<BlockGroup<String>> = emptyList()
-        private set
-    var networkVeinBlocks: List<String> = emptyList()
-        private set
-
     init {
         reload(true)
     }
 
     override fun onAfterReload() {
-        networkGroups = groups.map { group ->
-            BlockGroup(
-                name = group.name,
-                blocks = group.blocks.mapTo(mutableSetOf()) { it.toString() },
-                tools = group.tools.mapTo(mutableSetOf()) { it.toString() },
-                override = group.override
-            )
-        }
-        networkVeinBlocks = veinBlocks.map { it.toString() }
-
         NetworkRouter.registeredPlayers.keys.forEach { uuid ->
             val player = Bukkit.getPlayer(uuid) ?: return@forEach
             val conf = ServerConfiguration(
