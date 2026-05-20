@@ -257,13 +257,13 @@ object VeinminerCommand {
 
             literal("presets") {
                 executesAsync { source.msg("Quick add preconfigured groups & settings", cBase) }
-                fun CommandNodeBuilder<CommandSourceStack>.addPreset(name: String, blocks: Set<String>, tools: Set<String>, override: VeinminerSettingsOverride? = null) {
+                fun CommandNodeBuilder<CommandSourceStack>.addPreset(name: String, blocks: Set<String>, tools: Set<String>, override: VeinminerSettingsOverride = VeinminerSettingsOverride()) {
                     literal(name) {
                         executesAsync {
                             if (ActiveConfig.bridge.groupsRaw.any { it.name.equals(name, ignoreCase = true) }) {
                                 return@executesAsync source.msg("Group '$name' already exists", cRed)
                             }
-                            ActiveConfig.bridge.groupsRaw.add(BlockGroup(name, blocks.toMutableSet(), tools.toMutableSet()))
+                            ActiveConfig.bridge.groupsRaw.add(BlockGroup(name, blocks.toMutableSet(), tools.toMutableSet(), override))
                             source.msg("Added preset group '$name'\n - Blocks: $blocks\n - Tools: $tools", cGreen)
                             ActiveConfig.bridge.save()
                         }
