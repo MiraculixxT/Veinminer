@@ -22,23 +22,31 @@ object ConfigManager : BaseConfigManager<Identifier>(
         contextual(Identifier::class, ResourceLocationSerializer)
     }
 ) {
+    var networkGroups: List<BlockGroup<String>> = emptyList()
+        private set
+    var networkVeinBlocks: List<String> = emptyList()
+        private set
+
     override fun onAfterReload() {
+        networkGroups = groups.map { group ->
+            BlockGroup(
+                name = group.name,
+                blocks = group.blocks.mapTo(mutableSetOf()) { it.toString() },
+                tools = group.tools.mapTo(mutableSetOf()) { it.toString() },
+                override = group.override
+            )
+        }
+        networkVeinBlocks = veinBlocks.map { it.toString() }
+
         val server = mcServer ?: return
-        val playerList = server.playerList ?: return ActiveHost.host.logger.warn("No player list available!")
+        val playerList = server.playerList
         NetworkRouter.registeredPlayers.keys.forEach { uuid ->
             val player = playerList.getPlayer(uuid) ?: return@forEach
             val conf = ServerConfiguration(
                 outdated = false,
                 settings = settings,
-                groups = groups.map { group ->
-                    BlockGroup(
-                        name = group.name,
-                        blocks = group.blocks.mapTo(mutableSetOf()) { it.toString() },
-                        tools = group.tools.mapTo(mutableSetOf()) { it.toString() },
-                        override = group.override
-                    )
-                },
-                veinBlocks = veinBlocks.map { it.toString() },
+                groups = networkGroups,
+                veinBlocks = networkVeinBlocks,
                 enchantmentActive = EventState.enchantmentActive,
                 enchantmentKey = EventState.enchantmentKey.identifier().toString(),
                 hostActive = ActiveHost.host.active,

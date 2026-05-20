@@ -1,6 +1,7 @@
 package de.miraculixx.veinminer.config
 
 import de.miraculixx.veinminer.Veinminer
+import de.miraculixx.veinminer.data.BlockGroup
 import de.miraculixx.veinminer.network.NetworkRouter
 import de.miraculixx.veinminer.network.ServerConfiguration
 import de.miraculixx.veinminer.utils.permissionVeinmine
@@ -16,18 +17,33 @@ object PaperConfigManager : BaseConfigManager<NamespacedKey>(
         contextual(NamespacedKey::class, NamespacedKeySerializer)
     },
 ) {
+    var networkGroups: List<BlockGroup<String>> = emptyList()
+        private set
+    var networkVeinBlocks: List<String> = emptyList()
+        private set
+
     init {
         reload(true)
     }
 
     override fun onAfterReload() {
+        networkGroups = groups.map { group ->
+            BlockGroup(
+                name = group.name,
+                blocks = group.blocks.mapTo(mutableSetOf()) { it.toString() },
+                tools = group.tools.mapTo(mutableSetOf()) { it.toString() },
+                override = group.override
+            )
+        }
+        networkVeinBlocks = veinBlocks.map { it.toString() }
+
         NetworkRouter.registeredPlayers.keys.forEach { uuid ->
             val player = Bukkit.getPlayer(uuid) ?: return@forEach
             val conf = ServerConfiguration(
                 outdated = false,
                 settings = settings,
-                groups = groupsRaw.toList(),
-                veinBlocks = veinBlocksRaw.toList(),
+                groups = networkGroups,
+                veinBlocks = networkVeinBlocks,
                 enchantmentActive = Veinminer.enchantmentActive,
                 enchantmentKey = Veinminer.VEINMINE.toString(),
                 hostActive = Veinminer.INSTANCE.isEnabled,

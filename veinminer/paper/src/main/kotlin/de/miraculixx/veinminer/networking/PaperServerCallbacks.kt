@@ -3,7 +3,6 @@ package de.miraculixx.veinminer.networking
 import de.miraculixx.kpaper.event.listen
 import de.miraculixx.veinminer.Veinminer
 import de.miraculixx.veinminer.config.PaperConfigManager
-import de.miraculixx.veinminer.data.BlockGroup
 import de.miraculixx.veinminer.network.JoinInformation
 import de.miraculixx.veinminer.network.KeyPress
 import de.miraculixx.veinminer.network.NetworkRouter
@@ -29,15 +28,8 @@ object PaperServerCallbacks : ServerCallbacks {
         val conf = ServerConfiguration(
             outdated = false,
             settings = settings,
-            groups = PaperConfigManager.groups.map { group ->
-                BlockGroup(
-                    name = group.name,
-                    blocks = group.blocks.mapTo(mutableSetOf()) { it.toString() },
-                    tools = group.tools.mapTo(mutableSetOf()) { it.toString() },
-                    override = group.override
-                )
-            },
-            veinBlocks = PaperConfigManager.veinBlocks.map { it.toString() },
+            groups = PaperConfigManager.networkGroups,
+            veinBlocks = PaperConfigManager.networkVeinBlocks,
             enchantmentActive = Veinminer.enchantmentActive,
             enchantmentKey = Veinminer.VEINMINE.toString(),
             hostActive = Veinminer.INSTANCE.isEnabled,

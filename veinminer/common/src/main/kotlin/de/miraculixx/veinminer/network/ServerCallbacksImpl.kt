@@ -2,7 +2,6 @@ package de.miraculixx.veinminer.network
 
 import de.miraculixx.veinminer.command.ActiveHost
 import de.miraculixx.veinminer.config.ConfigManager
-import de.miraculixx.veinminer.data.BlockGroup
 import de.miraculixx.veinminer.event.EventState
 import de.miraculixx.veinminer.utils.mcServer
 import de.miraculixx.veinminer.utils.permissionVeinmine
@@ -27,15 +26,8 @@ object ServerCallbacksImpl : ServerCallbacks {
         val conf = ServerConfiguration(
             outdated = false,
             settings = settings,
-            groups = ConfigManager.groups.map { group ->
-                BlockGroup(
-                    name = group.name,
-                    blocks = group.blocks.mapTo(mutableSetOf()) { it.toString() },
-                    tools = group.tools.mapTo(mutableSetOf()) { it.toString() },
-                    override = group.override
-                )
-            },
-            veinBlocks = ConfigManager.veinBlocks.map { it.toString() },
+            groups = ConfigManager.networkGroups,
+            veinBlocks = ConfigManager.networkVeinBlocks,
             enchantmentActive = EventState.enchantmentActive,
             enchantmentKey = EventState.enchantmentKey.identifier().toString(),
             hostActive = ActiveHost.host.active,
