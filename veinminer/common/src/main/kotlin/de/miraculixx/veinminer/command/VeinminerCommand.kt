@@ -254,6 +254,29 @@ object VeinminerCommand {
                     }
                 }
             }
+
+            literal("presets") {
+                executesAsync { source.msg("Quick add preconfigured groups & settings", cBase) }
+                fun CommandNodeBuilder<CommandSourceStack>.addPreset(name: String, blocks: Set<String>, tools: Set<String>, override: VeinminerSettingsOverride? = null) {
+                    literal(name) {
+                        executesAsync {
+                            if (ActiveConfig.bridge.groupsRaw.any { it.name.equals(name, ignoreCase = true) }) {
+                                return@executesAsync source.msg("Group '$name' already exists", cRed)
+                            }
+                            ActiveConfig.bridge.groupsRaw.add(BlockGroup(name, blocks.toMutableSet(), tools.toMutableSet()))
+                            source.msg("Added preset group '$name'\n - Blocks: $blocks\n - Tools: $tools", cGreen)
+                            ActiveConfig.bridge.save()
+                        }
+                    }
+                }
+
+                addPreset("Logs", mutableSetOf("#minecraft:logs", "minecraft:mushroom_stem", "minecraft:brown_mushroom_block", "minecraft:red_mushroom_block"), mutableSetOf("#minecraft:axes"))
+                addPreset("Leaves", mutableSetOf("#minecraft:leaves"), mutableSetOf("#minecraft:hoes", "minecraft:shears"))
+                addPreset("Crops", mutableSetOf("#minecraft:crops"), mutableSetOf("#minecraft:hoes", "#minecraft:axes", "minecraft:shears"))
+                addPreset("ConcretePowder", mutableSetOf("#minecraft:concrete_powder"), mutableSetOf("#minecraft:shovels"))
+                addPreset("Terracotta", mutableSetOf("#minecraft:terracotta"), mutableSetOf("#minecraft:pickaxes"))
+                addPreset("Grassy", mutableSetOf("#minecraft:edible_for_sheep", "minecraft:tall_grass", "minecraft:large_fern", "minecraft:bush", "minecraft:dead_bush"), mutableSetOf(), VeinminerSettingsOverride(searchRadius = 3, maxChain = 50))
+            }
         }
 
     private inline fun <reified T> CommandNodeBuilder<CommandSourceStack>.applySetting(

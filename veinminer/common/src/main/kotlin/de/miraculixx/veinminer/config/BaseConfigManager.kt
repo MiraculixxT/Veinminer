@@ -65,6 +65,7 @@ abstract class BaseConfigManager<T>(
         saveSettings()
         saveBlocks()
         saveGroups()
+        onAfterReload()
     }
 
     private fun loadBlocks(fromDisc: Boolean): Boolean {
