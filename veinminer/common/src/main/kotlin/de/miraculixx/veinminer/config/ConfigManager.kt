@@ -1,8 +1,6 @@
 package de.miraculixx.veinminer.config
 
-import de.miraculixx.veinminer.ActiveConfig
 import de.miraculixx.veinminer.command.ActiveHost
-import de.miraculixx.veinminer.data.BlockGroup
 import de.miraculixx.veinminer.event.EventState
 import de.miraculixx.veinminer.network.NetworkRouter
 import de.miraculixx.veinminer.network.ServerConfiguration
@@ -22,6 +20,7 @@ object ConfigManager : BaseConfigManager<Identifier>(
         contextual(Identifier::class, ResourceLocationSerializer)
     }
 ) {
+    @Suppress("USELESS_ELVIS")
     override fun onAfterReload() {
         val server = mcServer ?: return
         val playerList = server.playerList ?: return ActiveHost.host.logger.warn("No player list available!") // fabric can be null

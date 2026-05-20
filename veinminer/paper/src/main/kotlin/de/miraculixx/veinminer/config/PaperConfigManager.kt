@@ -1,7 +1,6 @@
 package de.miraculixx.veinminer.config
 
 import de.miraculixx.veinminer.Veinminer
-import de.miraculixx.veinminer.data.BlockGroup
 import de.miraculixx.veinminer.network.NetworkRouter
 import de.miraculixx.veinminer.network.ServerConfiguration
 import de.miraculixx.veinminer.utils.permissionVeinmine
