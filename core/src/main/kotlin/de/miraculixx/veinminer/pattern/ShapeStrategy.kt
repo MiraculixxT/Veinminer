@@ -1,6 +1,7 @@
 package de.miraculixx.veinminer.pattern
 
 import de.miraculixx.veinminer.data.BlockPosition
+import de.miraculixx.veinminer.data.VeinminerSettings
 import kotlin.math.abs
 
 /**
@@ -11,12 +12,14 @@ fun interface ShapeStrategy {
     fun layers(veinmineAction: VeinmineAction<*, *>, blockAwareness: BlockAwareness): Sequence<List<BlockPosition>>
 }
 
+fun VeinminerSettings.saveSearchRadius(): Int = searchRadius.coerceIn(1, 5)
+
 /**
  * Layered flood fill in 3D
  */
 object NormalStrategy : ShapeStrategy {
     override fun layers(veinmineAction: VeinmineAction<*, *>, blockAwareness: BlockAwareness): Sequence<List<BlockPosition>> = sequence {
-        val searchRadius = veinmineAction.settings.searchRadius
+        val searchRadius = veinmineAction.settings.saveSearchRadius()
         val maxChain = veinmineAction.settings.maxChain
         val targets = veinmineAction.targetTypes
 

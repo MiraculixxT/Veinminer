@@ -38,19 +38,19 @@ The advanced (V2) version is a more powerful version that is only usable with Fa
 To change a setting, enter `/veinminer settings ... [<new-value>]`. 
 To check the current state, leave out the new value argument.
 
-|        Setting         |                        Description                        | Default |
-|:----------------------:|:---------------------------------------------------------:|:-------:|
-|      `mustSneak`       |              Players must sneak to veinmine               | `false` |
-|       `cooldown`       |   Time between players are able to veinmine (in ticks)    |  `20`   |
-|        `delay`         |   Time between each automated block breaking (in ticks)   |   `1`   |
-|       `maxChain`       | Max amount of blocks that can break from one source block |  `100`  |
-|   `needCorrectTool`    |     If blocks have a required tool, this must be used     | `true`  |
-|     `searchRadius`     |   Amount of blocks in between blocks to count connected   |   `1`   |
-| `permissionRestricted` | Only players with `veinminer.use` permission can veinmine | `false` |
-|    `mergeItemDrops`    |       All item drops are merged to the source block       | `false` |
-|      `autoUpdate`      |  Check for updates and download new version if available  | `true`  |
-|  `durabilityDecrease`  |       If each mined block should reduce durability        | `true`  |
-| `miningSpeedModifier`  |     Increase block mining duration based on vein size     |  `0.0`  |
+|        Setting         |                        Description                         | Default |
+|:----------------------:|:----------------------------------------------------------:|:-------:|
+|      `mustSneak`       |               Players must sneak to veinmine               | `false` |
+|       `cooldown`       |    Time between players are able to veinmine (in ticks)    |  `20`   |
+|        `delay`         |   Time between each automated block breaking (in ticks)    |   `1`   |
+|       `maxChain`       | Max amount of blocks that can break from one source block  |  `100`  |
+|   `needCorrectTool`    |     If blocks have a required tool, this must be used      | `true`  |
+|     `searchRadius`     | Amount of blocks around connected blocks to search (max 5) |   `1`   |
+| `permissionRestricted` | Only players with `veinminer.use` permission can veinmine  | `false` |
+|    `mergeItemDrops`    |       All item drops are merged to the source block        | `false` |
+|      `autoUpdate`      |  Check for updates and download new version if available   | `true`  |
+|  `durabilityDecrease`  |        If each mined block should reduce durability        | `true`  |
+| `miningSpeedModifier`  |     Increase block mining duration based on vein size      |  `0.0`  |
 
 </details>
 <details><summary>Block Groups - Advanced Settings</summary>

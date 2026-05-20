@@ -22,20 +22,19 @@ object Veinmining {
         shouldBreak: Boolean = false,
     ): List<Hit> {
         val origin = action.currentBlock
-        val searchRadius = action.settings.searchRadius
+        val searchRadius = action.settings.saveSearchRadius()
         val maxChain = action.settings.maxChain
         val delay = action.settings.delay
 
         val visited = LinkedHashSet<BlockPosition>()
         val out = ArrayList<Hit>()
-        var depthConsumed = 0
+        var layerDepth = 0
+        var matchedDepth = 0
         var prevLayer: List<BlockPosition> = listOf(origin)
 
         for (layer in shape.strategy.layers(action, blockAwareness)) {
             if (visited.size >= maxChain) break
-            if (depthConsumed >= maxDepth) break
-            val layerDistance = depthConsumed
-            depthConsumed++
+            if (layerDepth >= maxDepth) break
             val matched = ArrayList<BlockPosition>(layer.size)
             for (cand in layer) {
                 if (visited.size >= maxChain) break
@@ -49,16 +48,21 @@ object Veinmining {
                 if (!touchesAny(cand, prevLayer, searchRadius)) continue
                 visited.add(cand)
                 matched.add(cand)
-                out.add(Hit(cand, layerDistance))
+                out.add(Hit(cand, layerDepth))
                 if (shouldBreak) {
-                    if (!blockAwareness.breakBlock(cand, delay * layerDistance)) {
+                    if (!blockAwareness.breakBlock(cand, delay * layerDepth)) {
                         matched.clear() // block break fail = abort
                         break
                     }
                 }
             }
-            if (matched.isEmpty()) break
-            prevLayer = matched
+            if (matched.isNotEmpty()) {
+                prevLayer = matched
+                matchedDepth = layerDepth
+            } else if (layerDepth - matchedDepth > searchRadius) {
+                break
+            }
+            layerDepth++
         }
         return out
     }
