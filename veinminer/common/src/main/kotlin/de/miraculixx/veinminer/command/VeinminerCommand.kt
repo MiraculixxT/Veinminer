@@ -100,7 +100,7 @@ object VeinminerCommand {
                 applySetting("mergeItemDrops", { ActiveConfig.bridge.settings.mergeItemDrops }) { x, _ -> ActiveConfig.bridge.settings.mergeItemDrops = x }
                 applySetting("decreaseDurability", { ActiveConfig.bridge.settings.decreaseDurability }) { x, _ -> ActiveConfig.bridge.settings.decreaseDurability = x }
                 applySetting("miningSpeedModifier", { ActiveConfig.bridge.settings.miningSpeedModifier }) { x, _ -> ActiveConfig.bridge.settings.miningSpeedModifier = x }
-                applySetting("debug", { debug }) { x, _ -> ConfigManager.settings.debug = x }
+                applySetting("debug", { debug }) { x, _ -> ActiveConfig.bridge.settings.debug = x }
                 literal("client") {
                     applySetting("allow", { ActiveConfig.bridge.settings.client.allow }) { x, _ -> ActiveConfig.bridge.settings.client.allow = x }
                     applySetting("require", { ActiveConfig.bridge.settings.client.require }) { x, _ -> ActiveConfig.bridge.settings.client.require = x }
@@ -272,7 +272,7 @@ object VeinminerCommand {
 
                 addPreset("Logs", mutableSetOf("#minecraft:logs", "minecraft:mushroom_stem", "minecraft:brown_mushroom_block", "minecraft:red_mushroom_block"), mutableSetOf("#minecraft:axes"))
                 addPreset("Leaves", mutableSetOf("#minecraft:leaves"), mutableSetOf("#minecraft:hoes", "minecraft:shears"))
-                addPreset("Crops", mutableSetOf("#minecraft:crops"), mutableSetOf("#minecraft:hoes", "#minecraft:axes", "minecraft:shears"))
+                addPreset("Crops", mutableSetOf("#minecraft:crops"), mutableSetOf())
                 addPreset("ConcretePowder", mutableSetOf("#minecraft:concrete_powder"), mutableSetOf("#minecraft:shovels"))
                 addPreset("Terracotta", mutableSetOf("#minecraft:terracotta"), mutableSetOf("#minecraft:pickaxes"))
                 addPreset("Grassy", mutableSetOf("#minecraft:edible_for_sheep", "minecraft:tall_grass", "minecraft:large_fern", "minecraft:bush", "minecraft:dead_bush"), mutableSetOf(), VeinminerSettingsOverride(searchRadius = 3, maxChain = 50))

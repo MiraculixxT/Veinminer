@@ -6,6 +6,7 @@ import de.miraculixx.veinminer.data.BlockGroup
 import de.miraculixx.veinminer.data.VeinminerSettings
 import de.miraculixx.veinminer.network.ClientCallbacks
 import de.miraculixx.veinminer.network.ClientNetworkRouter
+import de.miraculixx.veinminer.network.ClientPlatformNetwork
 import de.miraculixx.veinminer.network.KeyPress
 import de.miraculixx.veinminer.network.ServerConfiguration
 import de.miraculixx.veinminer.pattern.Shape
@@ -39,7 +40,7 @@ object NetworkManager : ClientCallbacks {
 
     private var initialized = false
 
-    fun init(platform: de.miraculixx.veinminer.network.ClientPlatformNetwork) {
+    fun init(platform: ClientPlatformNetwork) {
         if (initialized) return
         initialized = true
         ClientNetworkRouter.init(
