@@ -139,10 +139,9 @@ object VeinMinerEvent {
         }
 
         val veinmineInfo = allowedToVeinmine(player, block) ?: return@listen
-        it.isCancelled = true // Cancel the original event
 
         val amount = veinmineInfo.veinmine(true)
-        player.incrementStatistic(Statistic.MINE_BLOCK, block.type, amount) // Not -1 because we cancel the event
+        player.incrementStatistic(Statistic.MINE_BLOCK, block.type, (amount - 1).coerceAtLeast(0))
 
         // Check for cooldown config
         val cooldownTime = veinmineInfo.settings.cooldown
