@@ -30,11 +30,11 @@ object Veinmining {
         val out = ArrayList<Hit>()
         var depthConsumed = 0
         var prevLayer: List<BlockPosition> = listOf(origin)
-        var dist = 0
 
         for (layer in shape.strategy.layers(action, blockAwareness)) {
             if (visited.size >= maxChain) break
             if (depthConsumed >= maxDepth) break
+            val layerDistance = depthConsumed
             depthConsumed++
             val matched = ArrayList<BlockPosition>(layer.size)
             for (cand in layer) {
@@ -49,10 +49,9 @@ object Veinmining {
                 if (!touchesAny(cand, prevLayer, searchRadius)) continue
                 visited.add(cand)
                 matched.add(cand)
-                val distance = ++dist
-                out.add(Hit(cand, distance))
+                out.add(Hit(cand, layerDistance))
                 if (shouldBreak) {
-                    if (!blockAwareness.breakBlock(cand, delay * distance)) {
+                    if (!blockAwareness.breakBlock(cand, delay * layerDistance)) {
                         matched.clear() // block break fail = abort
                         break
                     }
