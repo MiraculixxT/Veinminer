@@ -43,5 +43,6 @@ modrinth {
     })
     dependencies {
         required.project("kotlin-lang-forge")
+        optional.project("veinminer-client")
     }
 }
