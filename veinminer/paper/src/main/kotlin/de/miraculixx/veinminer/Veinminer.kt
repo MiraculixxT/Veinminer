@@ -9,6 +9,7 @@ import de.miraculixx.kpaper.extensions.bukkit.cmp
 import de.miraculixx.kpaper.extensions.bukkit.plus
 import de.miraculixx.kpaper.extensions.pluginManager
 import de.miraculixx.kpaper.main.KPaper
+import de.miraculixx.kpaper.runnables.taskRunLater
 import de.miraculixx.veinminer.command.ActiveHost
 import de.miraculixx.veinminer.command.PaperVeinminerCommand
 import de.miraculixx.veinminer.config.PaperConfigManager
@@ -41,6 +42,7 @@ class Veinminer : KPaper() {
         }
 
         ActiveHost.host = PaperHost
+        ActiveConfig.bridge = PaperConfigManager
 
         PaperConfigManager
         PaperVeinminerCommand.register()
@@ -68,6 +70,11 @@ class Veinminer : KPaper() {
                     )
                 }
             }
+        }
+
+        taskRunLater(1) {
+            VeinMinerEvent.enabled = true // Combat pesky plugins calling events before server boot
+            LOGGER.info("All events enabled!")
         }
     }
 
