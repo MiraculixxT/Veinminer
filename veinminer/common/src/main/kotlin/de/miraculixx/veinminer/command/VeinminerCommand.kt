@@ -255,6 +255,7 @@ object VeinminerCommand {
             }
 
             literal("presets") {
+                requiresPermission(permissionGroups)
                 executesAsync { source.msg("Quick add preconfigured groups & settings", cBase) }
                 fun CommandNodeBuilder<CommandSourceStack>.addPreset(name: String, blocks: Set<String>, tools: Set<String>, override: VeinminerSettingsOverride = VeinminerSettingsOverride()) {
                     literal(name) {
