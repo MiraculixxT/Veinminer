@@ -5,7 +5,7 @@
 
 ## ⛏️ Veinminer Hotkey
 
-Addon for the popular [Veinminer](https://modrinth.com/project/veinminer) mod/plugin that adds a custom hotkey and veinmine preview. As long as this addon is installed, veinmining is only possible with the hotkey pressed (still respecting block rules and settings).
+Addon for the popular [Veinminer](https://modrinth.com/project/veinminer) mod/plugin that adds a custom hotkey, veinmine preview & pattern control. As long as this addon is installed, veinmining is only possible with the hotkey pressed (still respecting block rules and settings).
 
 **Hold Hotkey**: `Y` or `Z` (can be changed in client controls, default is depending on your key layout)<br>
 **Toggle Hotkey**: `unbound` (bind in client controls)
@@ -17,7 +17,11 @@ Works together with the [enchantment addon](https://modrinth.com/project/veinmin
 ![showcase](https://i.imgur.com/aJRZTBw.gif)
 
 ## ⚙ Settings
-The client mod itself does not provide settings, but the server can configure client behavior with the following options. The client mod will automatically disable itself if the server (or client if using in single-player) does not have Veinminer installed.
+Pattern settings can be configured by holding the hotkey and scrolling up/down.
+Additionally holding shift allows changing the mining depth/width.
+![settings ui preview](https://cdn.modrinth.com/data/dxa0Bm8m/images/51815a5329111963717ca8c3493719214db65258.webp)
+
+The server can configure client behavior with the following options. The client mod will automatically disable itself if the server does not have Veinminer installed.
 
 **Command**: `/veinminer settings client ...`
 
