@@ -1,4 +1,5 @@
 import net.minecrell.pluginyml.bukkit.BukkitPluginDescription
+import xyz.jpenilla.runtask.task.AbstractRun
 
 plugins {
     kotlin("jvm")
@@ -32,6 +33,10 @@ dependencies {
     library("org.jetbrains.kotlinx:kotlinx-serialization-cbor:1.+")
 
     library("de.miraculixx:kpaper:1.+")
+}
+
+tasks.withType<AbstractRun>().configureEach {
+    runDirectory.set(layout.projectDirectory.dir("run-21"))
 }
 
 paper {

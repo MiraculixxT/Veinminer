@@ -16,11 +16,13 @@ neoForge {
     runs {
         register("server") {
             server()
+            gameDirectory.set(layout.projectDirectory.dir("run-21"))
             programArgument("--nogui")
         }
 
         register("client") {
             client()
+            gameDirectory.set(layout.projectDirectory.dir("run-21"))
         }
     }
 }

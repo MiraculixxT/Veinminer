@@ -62,6 +62,10 @@ loom {
     enableTransitiveAccessWideners.set(false)
 
     runs {
+        configureEach {
+            runDir("run-21")
+        }
+
         named("client") {
             programArgs("--username", "Dev")
         }
