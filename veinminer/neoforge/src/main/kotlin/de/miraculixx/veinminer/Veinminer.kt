@@ -27,7 +27,7 @@ import net.neoforged.neoforge.common.NeoForge
 import net.neoforged.neoforge.event.RegisterCommandsEvent
 import net.neoforged.neoforge.event.entity.player.PlayerEvent
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent
-import net.neoforged.neoforge.event.level.block.BreakBlockEvent
+import net.neoforged.neoforge.event.level.BlockEvent
 import net.neoforged.neoforge.event.server.ServerStartingEvent
 import net.neoforged.neoforge.event.server.ServerStoppedEvent
 import org.slf4j.Logger
@@ -69,7 +69,7 @@ class Veinminer(modBus: IEventBus, container: ModContainer) {
         }
 
         // Block break
-        gameBus.addListener<BreakBlockEvent> { event ->
+        gameBus.addListener<BlockEvent.BreakEvent> { event ->
             val player = event.player
             val world = player.level()
             if (world.isClientSide) return@addListener

@@ -1,7 +1,11 @@
+import net.fabricmc.loom.api.LoomGradleExtensionAPI
+
 plugins {
-    id("net.fabricmc.fabric-loom")
+    id("net.fabricmc.fabric-loom-remap")
     id("io.github.dexman545.outlet")
 }
+
+val loomExtension = extensions.getByType<LoomGradleExtensionAPI>()
 
 repositories {
     mavenCentral()
@@ -29,23 +33,24 @@ dependencies {
     // Fabric configuration
     //
     minecraft("com.mojang:minecraft:$gameVersion")
+    add("mappings", loomExtension.officialMojangMappings())
     println("Game Version: $gameVersion\nSupported Versions: ${outlet.mcVersionRange}")
     println("FabricLoader: ${outlet.loaderVersion()}\nFabricAPI: ${outlet.fapiVersion()}")
-    implementation("net.fabricmc:fabric-loader:${outlet.loaderVersion()}")
-    implementation("net.fabricmc.fabric-api:fabric-api:${outlet.fapiVersion()}")
+    add("modImplementation", "net.fabricmc:fabric-loader:${outlet.loaderVersion()}")
+    add("modImplementation", "net.fabricmc.fabric-api:fabric-api:${outlet.fapiVersion()}")
 
     //
     // Kotlin libraries
     //
     val flkVersion = outlet.latestModrinthModVersion("fabric-language-kotlin", outlet.mcVersions())
     println("Fabric Language Kotlin: $flkVersion")
-    implementation("net.fabricmc:fabric-language-kotlin:$flkVersion")
+    add("modImplementation", "net.fabricmc:fabric-language-kotlin:$flkVersion")
 
     //
     // Permissions configuration
     //
     val fabricPermAPI by properties // doesn't update their version tags good enough for auto...
-    implementation(include("me.lucko:fabric-permissions-api:$fabricPermAPI")!!)
+    add("modImplementation", include("me.lucko:fabric-permissions-api:$fabricPermAPI")!!)
 
     // Add all non-mod dependencies to the jar
     transitiveInclude.resolvedConfiguration.resolvedArtifacts.forEach {
@@ -54,6 +59,8 @@ dependencies {
 }
 
 loom {
+    enableTransitiveAccessWideners.set(false)
+
     runs {
         named("client") {
             programArgs("--username", "Dev")

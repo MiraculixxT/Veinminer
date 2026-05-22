@@ -17,18 +17,18 @@ dependencies {
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(25))
+        languageVersion.set(JavaLanguageVersion.of(21))
     }
 }
 
 tasks {
     compileJava {
         options.encoding = "UTF-8"
-        options.release.set(25)
+        options.release.set(21)
     }
     compileKotlin {
         compilerOptions {
-            jvmTarget = JvmTarget.JVM_25
+            jvmTarget = JvmTarget.JVM_21
             freeCompilerArgs.add("-Xcontext-parameters")
         }
     }

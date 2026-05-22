@@ -310,7 +310,7 @@ object VeinMinerEvent {
 
     private fun Block.nmsState(): net.minecraft.world.level.block.state.BlockState {
         val craftBlock = this as CraftBlock
-        return craftBlock.level.getBlockState(craftBlock.position)
+        return craftBlock.craftWorld.handle.getBlockState(craftBlock.position)
     }
 
     private fun Player.removeAttribute() {

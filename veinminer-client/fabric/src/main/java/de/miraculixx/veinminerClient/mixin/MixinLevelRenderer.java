@@ -19,7 +19,7 @@ public class MixinLevelRenderer {
     private void renderVeinminerHighlights(MultiBufferSource.BufferSource bufferSource,
                                            PoseStack poseStack,
                                            boolean onlyTranslucentBlocks,
-                                           net.minecraft.client.renderer.state.level.LevelRenderState levelRenderState,
+                                           net.minecraft.client.renderer.state.LevelRenderState levelRenderState,
                                            CallbackInfo ci) {
         BlockHighlightingRenderer.INSTANCE.render(
                 poseStack,

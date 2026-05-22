@@ -5,7 +5,7 @@ import de.miraculixx.veinminer.pattern.Shape
 import net.minecraft.client.DeltaTracker
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.Font
-import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.renderer.RenderPipelines
 import net.minecraft.client.resources.sounds.SimpleSoundInstance
 import net.minecraft.network.chat.Component
@@ -68,7 +68,7 @@ object ShapeRouletteOverlay {
         if (idx >= 0) depthIndex = idx
     }
 
-    fun render(graphics: GuiGraphicsExtractor, deltaTracker: DeltaTracker) {
+    fun render(graphics: GuiGraphics, deltaTracker: DeltaTracker) {
         val elapsed = System.currentTimeMillis() - lastInteractionMs
         if (lastInteractionMs == 0L || elapsed > FADE_DELAY_MS + FADE_DURATION_MS) return
         advance(deltaTracker.realtimeDeltaTicks)
@@ -91,7 +91,7 @@ object ShapeRouletteOverlay {
         drawDepthBar(graphics, font, entries[centerIdx], x1, y1, alpha)
     }
 
-    private fun drawPanel(g: GuiGraphicsExtractor, x1: Int, y1: Int, x2: Int, y2: Int, alpha: Int) {
+    private fun drawPanel(g: GuiGraphics, x1: Int, y1: Int, x2: Int, y2: Int, alpha: Int) {
         g.fill(x1, y1, x2, y2, mixAlpha(alpha, 0xC0, 0x101418))
         g.fill(x1, y1, x2, y1 + 1, mixAlpha(alpha, 0x60, 0xFFFFFF))     // top highlight
         g.fill(x1, y2 - 1, x2, y2, mixAlpha(alpha, 0x60, 0x000000))     // bottom shadow
@@ -100,7 +100,7 @@ object ShapeRouletteOverlay {
     }
 
     private fun drawCarousel(
-        g: GuiGraphicsExtractor,
+        g: GuiGraphics,
         font: Font,
         entries: List<Shape>,
         size: Int,
@@ -133,11 +133,11 @@ object ShapeRouletteOverlay {
             val textX = iconX + ICON_SIZE + 5
             val textY = rowY + (ROW_HEIGHT - 8) / 2
             val rgb = if (rel == 0) accent else 0xC8C8C8
-            g.text(font, Component.translatable("veinminer.shape.${shape.name.lowercase()}"), textX, textY, mixAlpha(rowAlpha, 0xFF, rgb))
+            g.drawString(font, Component.translatable("veinminer.shape.${shape.name.lowercase()}"), textX, textY, mixAlpha(rowAlpha, 0xFF, rgb))
         }
     }
 
-    private fun drawDepthBar(g: GuiGraphicsExtractor, font: Font, selectedShape: Shape, x1: Int, y1: Int, alpha: Int) {
+    private fun drawDepthBar(g: GuiGraphics, font: Font, selectedShape: Shape, x1: Int, y1: Int, alpha: Int) {
         val barX = x1 + PAD_X + 4
         val barY = y1 + PAD_Y + 3 * ROW_HEIGHT + 4
         val accent = colorFor(selectedShape)
@@ -151,7 +151,7 @@ object ShapeRouletteOverlay {
         val labelX = barX + DEPTH_VALUES.size * (BAR_CELL_W + BAR_GAP) + 4
         val labelY = barY - 2
         val label = if (depthIndex == DEPTH_VALUES.lastIndex) "∞" else currentDepth.toString()
-        g.text(font, Component.literal(label), labelX, labelY, mixAlpha(alpha, 0xFF, 0xFFFFFF))
+        g.drawString(font, Component.literal(label), labelX, labelY, mixAlpha(alpha, 0xFF, 0xFFFFFF))
     }
 
     /** Per-shape accent color (RGB) */

@@ -1,21 +1,12 @@
 package de.miraculixx.veinminerClient.render
 
-import com.mojang.blaze3d.pipeline.BlendFunction
-import com.mojang.blaze3d.pipeline.ColorTargetState
-import com.mojang.blaze3d.pipeline.DepthStencilState
-import com.mojang.blaze3d.pipeline.RenderPipeline
-import com.mojang.blaze3d.platform.CompareOp
 import com.mojang.blaze3d.vertex.PoseStack
 import de.miraculixx.veinminer.data.BlockPosition
-import de.miraculixx.veinminerClient.ClientLifecycle
 import de.miraculixx.veinminerClient.KeyBindManager
 import de.miraculixx.veinminerClient.network.NetworkManager
 import net.minecraft.client.renderer.MultiBufferSource
-import net.minecraft.client.renderer.RenderPipelines
-import net.minecraft.client.renderer.rendertype.RenderSetup
 import net.minecraft.client.renderer.rendertype.RenderType
 import net.minecraft.client.renderer.rendertype.RenderTypes
-import net.minecraft.resources.Identifier
 import net.minecraft.world.phys.Vec3
 import net.minecraft.world.phys.shapes.Shapes
 import net.minecraft.world.phys.shapes.VoxelShape
@@ -27,24 +18,7 @@ object BlockHighlightingRenderer {
     private var highlightingShape: VoxelShape = Shapes.empty()
 
     private val renderHighlighting: RenderType by lazy { RenderTypes.lines() }
-
-    // Custom renderer, unavailable under Iris
-    private val renderHighlightingTranslucent: RenderType by lazy {
-        RenderType.create(
-            "${ClientLifecycle.MOD_ID}:highlight_translucent",
-            RenderSetup.builder(
-                RenderPipelines.register(
-                    RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
-                        .withLocation(Identifier.fromNamespaceAndPath("veinminer-client", "pipeline/highlight_translucent"))
-                        .withDepthStencilState(DepthStencilState(CompareOp.ALWAYS_PASS, false))
-                        .withCull(false)
-                        .withColorTargetState(ColorTargetState(BlendFunction.TRANSLUCENT))
-                        .build()
-                )
-            ).bufferSize(1536)
-                .createRenderSetup()
-        )
-    }
+    private val renderHighlightingTranslucent: RenderType by lazy { RenderTypes.linesTranslucent() }
 
 
     // OrderedSubmitNodeCollector

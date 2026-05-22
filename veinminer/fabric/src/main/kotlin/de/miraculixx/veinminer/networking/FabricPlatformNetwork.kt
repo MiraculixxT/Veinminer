@@ -28,7 +28,7 @@ object FabricPlatformNetwork : PlatformNetwork {
     override fun registerC2S(channel: String, handler: (UUID, ByteArray) -> Unit) {
         val type = typeFor(channel)
         if (registeredC2S.add(channel)) {
-            PayloadTypeRegistry.serverboundPlay().register(type, rawBytesCodec(type))
+            PayloadTypeRegistry.playC2S().register(type, rawBytesCodec(type))
         }
         ServerPlayNetworking.registerGlobalReceiver(type) { payload, ctx ->
             try {
@@ -42,7 +42,7 @@ object FabricPlatformNetwork : PlatformNetwork {
     override fun registerS2C(channel: String) {
         val type = typeFor(channel)
         if (registeredS2C.add(channel)) {
-            PayloadTypeRegistry.clientboundPlay().register(type, rawBytesCodec(type))
+            PayloadTypeRegistry.playS2C().register(type, rawBytesCodec(type))
             // The base mod owns the single canonical clientbound receiver in any client-side
             // environment. The receiver routes payloads to ClientNetworkRouter where the
             // veinminer-client addon plugs its callbacks.

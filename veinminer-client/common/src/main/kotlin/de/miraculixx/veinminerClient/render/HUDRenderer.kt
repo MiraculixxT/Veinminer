@@ -2,7 +2,7 @@ package de.miraculixx.veinminerClient.render
 
 import net.minecraft.client.DeltaTracker
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.renderer.RenderPipelines
 import net.minecraft.resources.Identifier
 
@@ -14,7 +14,7 @@ abstract class HUDRenderer {
     private val FORBIDDEN_ICON = Identifier.fromNamespaceAndPath("veinminer_client", "textures/gui/sprite/forbidden.png")
     private var target: Identifier? = null
 
-    fun renderCrosshair(graphics: GuiGraphicsExtractor, deltaTracker: DeltaTracker) {
+    fun renderCrosshair(graphics: GuiGraphics, deltaTracker: DeltaTracker) {
         if (target == null) return
 
         val client = Minecraft.getInstance()

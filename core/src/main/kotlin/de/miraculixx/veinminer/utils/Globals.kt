@@ -17,7 +17,7 @@ const val permissionReload = "veinminer.reload"
 const val IDENTIFIER = "veinminer"
 
 val debug: Boolean
-    get() = ActiveConfig.bridge.settings.debug
+    get() = runCatching { ActiveConfig.bridge.settings.debug }.getOrNull() ?: false
 
 val json = Json {
     prettyPrint = true
