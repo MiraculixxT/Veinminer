@@ -52,7 +52,7 @@ import kotlin.time.Duration.Companion.milliseconds
  */
 object VeinMinerEvent {
     private val cooldown = mutableSetOf<UUID>()
-    var enabled: Boolean = true
+    var enabled: Boolean = false
     private val attributeNamespace = NamespacedKey(Veinminer.INSTANCE, "veinmine_speed")
 
     /**
@@ -92,7 +92,7 @@ object VeinMinerEvent {
         val amount = veinmineInfo.veinmine(false)
         if (amount <= 1) return@listen
 
-        val speed = veinmineInfo.settings.calculateBreakSpeedModifier(amount, multiplicator)
+        val speed = veinmineInfo.settings.calculateBreakSpeedModifier(amount, multiplicator).coerceAtLeast(0.0)
         val modifier = AttributeModifier(attributeNamespace, speed, AttributeModifier.Operation.MULTIPLY_SCALAR_1)
         val attribute = player.getAttribute(Attribute.BLOCK_BREAK_SPEED) ?: return@listen
         attribute.removeModifier(attributeNamespace)
@@ -141,7 +141,7 @@ object VeinMinerEvent {
         val veinmineInfo = allowedToVeinmine(player, block) ?: return@listen
 
         val amount = veinmineInfo.veinmine(true)
-        player.incrementStatistic(Statistic.MINE_BLOCK, block.type, (amount - 1).coerceAtLeast(0))
+        if (amount > 1) player.incrementStatistic(Statistic.MINE_BLOCK, block.type, amount - 1)
 
         // Check for cooldown config
         val cooldownTime = veinmineInfo.settings.cooldown

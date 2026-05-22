@@ -16,10 +16,6 @@ object PaperConfigManager : BaseConfigManager<NamespacedKey>(
         contextual(NamespacedKey::class, NamespacedKeySerializer)
     },
 ) {
-    init {
-        reload(true)
-    }
-
     override fun onAfterReload() {
         NetworkRouter.registeredPlayers.keys.forEach { uuid ->
             val player = Bukkit.getPlayer(uuid) ?: return@forEach

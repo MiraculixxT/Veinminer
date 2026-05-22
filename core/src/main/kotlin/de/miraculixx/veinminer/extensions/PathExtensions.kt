@@ -1,7 +1,6 @@
 package de.miraculixx.veinminer.extensions
 
 import de.miraculixx.veinminer.command.ActiveHost
-import de.miraculixx.veinminer.utils.debug
 import de.miraculixx.veinminer.utils.json
 import kotlinx.serialization.json.Json
 import net.kyori.adventure.text.format.TextColor
@@ -17,7 +16,6 @@ inline fun <reified T> Path.load(default: T, instance: Json = json): T {
         val string = instance.encodeToString(default)
         writeText(string)
         ActiveHost.host.logger.info("Created ${this.fileName} default config")
-        if (debug) ActiveHost.host.logger.info("Content: $string")
         default
     } else {
         try {
