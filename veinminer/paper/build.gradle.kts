@@ -6,8 +6,17 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":core"))
-    implementation(project(":veinminer:veinminer-common"))
+    compileOnly(project(":core"))
+    compileOnly(project(":veinminer:veinminer-common"))
+}
+
+val coreSourceSets = project(":core").extensions.getByType<SourceSetContainer>()
+val commonSourceSets = project(":veinminer:veinminer-common").extensions.getByType<SourceSetContainer>()
+
+tasks.shadowJar {
+    dependsOn(":core:classes", ":veinminer:veinminer-common:classes")
+    from(coreSourceSets.named("main").map { it.output })
+    from(commonSourceSets.named("main").map { it.output })
 }
 
 sourceSets {

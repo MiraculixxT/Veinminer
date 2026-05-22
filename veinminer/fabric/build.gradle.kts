@@ -5,12 +5,36 @@ plugins {
 }
 
 dependencies {
-    implementation(include(project(":core"))!!)
-    implementation(include(project(":veinminer:veinminer-common"))!!)
+    implementation(project(":core")) {
+        attributes {
+            attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, objects.named(LibraryElements.CLASSES))
+        }
+    }
+    implementation(project(":veinminer:veinminer-common")) {
+        attributes {
+            attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, objects.named(LibraryElements.CLASSES))
+        }
+    }
+}
+
+val coreSourceSets = project(":core").extensions.getByType<SourceSetContainer>()
+val commonSourceSets = project(":veinminer:veinminer-common").extensions.getByType<SourceSetContainer>()
+
+tasks.jar {
+    dependsOn(":core:classes", ":veinminer:veinminer-common:classes")
+    from(coreSourceSets.named("main").map { it.output })
+    from(commonSourceSets.named("main").map { it.output })
 }
 
 loom {
     accessWidenerPath = file("src/main/resources/veinminer.accesswidener")
+    mods {
+        create("veinminer") {
+            sourceSet(sourceSets.main.get())
+            sourceSet(coreSourceSets["main"])
+            sourceSet(commonSourceSets["main"])
+        }
+    }
 }
 
 sourceSets {
