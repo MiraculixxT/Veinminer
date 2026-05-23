@@ -4,7 +4,7 @@ import de.miraculixx.veinminer.data.BlockPosition
 import de.miraculixx.veinminer.data.FixedBlockGroup
 import de.miraculixx.veinminer.data.VeinminerSettingsOverride
 import de.miraculixx.veinminer.pattern.BlockAwareness
-import de.miraculixx.veinminer.pattern.Shape
+import de.miraculixx.veinminer.pattern.PatternConfig
 import de.miraculixx.veinminer.pattern.Surface
 import de.miraculixx.veinminer.pattern.VeinmineAction
 import de.miraculixx.veinminer.pattern.Veinmining
@@ -34,7 +34,7 @@ object ClientVeinSelector {
         player: LocalPlayer,
         origin: BlockPos,
         face: Surface,
-        shape: Shape,
+        pattern: PatternConfig,
         maxDepth: Int,
     ): Result? {
         if (!NetworkManager.isVeinminerActive) return null
@@ -91,7 +91,7 @@ object ClientVeinSelector {
             settings = settings,
             face = face
         )
-        val hits = Veinmining.veinmine(action, blockAwareness, shape, maxDepth, false)
+        val hits = Veinmining.veinmine(action, blockAwareness, pattern.strategy(), maxDepth, false)
         return Result(hits.map { it.pos }, preferredToolIcon(state))
     }
 

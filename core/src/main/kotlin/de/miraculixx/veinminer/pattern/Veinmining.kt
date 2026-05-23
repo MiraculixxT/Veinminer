@@ -20,6 +20,14 @@ object Veinmining {
         shape: Shape,
         maxDepth: Int = Int.MAX_VALUE,
         shouldBreak: Boolean = false,
+    ): List<Hit> = veinmine(action, blockAwareness, shape.strategy, maxDepth, shouldBreak)
+
+    fun veinmine(
+        action: VeinmineAction<*, *>,
+        blockAwareness: BlockAwareness,
+        strategy: ShapeStrategy,
+        maxDepth: Int = Int.MAX_VALUE,
+        shouldBreak: Boolean = false,
     ): List<Hit> {
         val origin = action.currentBlock
         val searchRadius = action.settings.saveSearchRadius()
@@ -32,7 +40,7 @@ object Veinmining {
         var matchedDepth = 0
         var prevLayer: List<BlockPosition> = listOf(origin)
 
-        for (layer in shape.strategy.layers(action, blockAwareness)) {
+        for (layer in strategy.layers(action, blockAwareness)) {
             if (visited.size >= maxChain) break
             if (layerDepth >= maxDepth) break
             val matched = ArrayList<BlockPosition>(layer.size)

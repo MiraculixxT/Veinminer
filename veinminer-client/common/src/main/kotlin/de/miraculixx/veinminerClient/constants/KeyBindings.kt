@@ -5,4 +5,5 @@ import net.minecraft.client.KeyMapping
 object KeyBindings {
     var hold: KeyMapping? = null
     var toggle: KeyMapping? = null
+    var config: KeyMapping? = null
 }

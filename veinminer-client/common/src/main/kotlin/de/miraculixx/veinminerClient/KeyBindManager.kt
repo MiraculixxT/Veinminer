@@ -2,6 +2,8 @@ package de.miraculixx.veinminerClient
 
 import de.miraculixx.veinminer.pattern.Surface
 import de.miraculixx.veinminer.utils.toVeinminer
+import de.miraculixx.veinminerClient.config.ClientPatternConfig
+import de.miraculixx.veinminerClient.config.PatternConfigScreen
 import de.miraculixx.veinminerClient.constants.KeyBindings
 import de.miraculixx.veinminerClient.mining.ClientVeinSelector
 import de.miraculixx.veinminerClient.network.NetworkManager
@@ -34,6 +36,9 @@ object KeyBindManager {
     fun tick() {
         val toggleKey = KeyBindings.toggle ?: return
         val holdKey = KeyBindings.hold ?: return
+        if (KeyBindings.config?.consumeClick() == true) {
+            Minecraft.getInstance().setScreen(PatternConfigScreen(Minecraft.getInstance().screen))
+        }
 
         if (toggleKey.consumeClick()) isToggled = !isToggled
         val currentlyActive = isToggled || holdKey.isDown
@@ -90,7 +95,7 @@ object KeyBindManager {
             NetworkManager.resendKeyPress(face)
         }
 
-        val result = ClientVeinSelector.resolve(level, player, pos, face, NetworkManager.selectedShape, NetworkManager.selectedDepth)
+        val result = ClientVeinSelector.resolve(level, player, pos, face, NetworkManager.selectedPattern, NetworkManager.selectedDepth)
 
         if (result == null) {
             resetTarget()
@@ -121,12 +126,12 @@ object KeyBindManager {
         if (rawShape == 0 && rawDepth == 0) return
         var dirty = false
         if (rawShape != 0) {
-            ShapeRouletteOverlay.onScroll(-rawShape) // wheel up advances forward
-            NetworkManager.selectedShape = ShapeRouletteOverlay.currentShape
+            ShapeRouletteOverlay.onScroll(if (ClientPatternConfig.settings.invertedScroll) rawShape else -rawShape)
+            NetworkManager.selectedPattern = ShapeRouletteOverlay.currentPattern
             dirty = true
         }
         if (rawDepth != 0) {
-            ShapeRouletteOverlay.onDepthScroll(-rawDepth)
+            ShapeRouletteOverlay.onDepthScroll(if (ClientPatternConfig.settings.invertedScroll) rawDepth else -rawDepth)
             if (NetworkManager.selectedDepth != ShapeRouletteOverlay.currentDepth) {
                 NetworkManager.selectedDepth = ShapeRouletteOverlay.currentDepth
                 dirty = true

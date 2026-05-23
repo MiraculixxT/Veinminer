@@ -9,9 +9,11 @@ import de.miraculixx.veinminer.network.ClientNetworkRouter
 import de.miraculixx.veinminer.network.ClientPlatformNetwork
 import de.miraculixx.veinminer.network.KeyPress
 import de.miraculixx.veinminer.network.ServerConfiguration
+import de.miraculixx.veinminer.pattern.PatternConfig
 import de.miraculixx.veinminer.pattern.Shape
 import de.miraculixx.veinminer.pattern.Surface
 import de.miraculixx.veinminerClient.ClientLifecycle
+import de.miraculixx.veinminerClient.config.ClientPatternConfig
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.toasts.SystemToast
 import net.minecraft.network.chat.Component
@@ -21,6 +23,8 @@ object NetworkManager : ClientCallbacks {
     var isVeinminerActive = false
         private set
     var selectedShape: Shape = Shape.NORMAL
+        private set
+    lateinit var selectedPattern: PatternConfig
     var selectedDepth: Int = 6
 
     var settings: VeinminerSettings = VeinminerSettings()
@@ -95,13 +99,18 @@ object NetworkManager : ClientCallbacks {
 
     fun sendKeyPress(pressed: Boolean, surface: Surface = Surface.UP) {
         if (!isConnected()) return
-        if (settings.debug) ClientLifecycle.LOGGER.info("Sending veinmine state: $pressed (shape=$selectedShape depth=$selectedDepth surface=$surface)")
-        ClientNetworkRouter.sendKeyPress(KeyPress(pressed, selectedShape, selectedDepth, surface))
+        val legacyShape = ClientPatternConfig.legacyShape(selectedPattern)
+        val serverPressed = pressed && legacyShape != null
+        if (legacyShape != null) selectedShape = legacyShape
+        if (settings.debug) {
+            ClientLifecycle.LOGGER.info("Sending veinmine state: $serverPressed (pattern=${selectedPattern.id} shape=$selectedShape depth=$selectedDepth surface=$surface)")
+        }
+        ClientNetworkRouter.sendKeyPress(KeyPress(serverPressed, selectedShape, selectedDepth, surface))
     }
 
     fun resendKeyPress(surface: Surface = Surface.UP) {
         if (!isConnected()) return
-        ClientNetworkRouter.sendKeyPress(KeyPress(true, selectedShape, selectedDepth, surface))
+        sendKeyPress(true, surface)
     }
 
     private fun isConnected(): Boolean {

@@ -1,7 +1,8 @@
 package de.miraculixx.veinminerClient.render
 
 import de.miraculixx.veinminer.network.KeyPress
-import de.miraculixx.veinminer.pattern.Shape
+import de.miraculixx.veinminer.pattern.PatternConfig
+import de.miraculixx.veinminerClient.config.ClientPatternConfig
 import net.minecraft.client.DeltaTracker
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.Font
@@ -9,7 +10,6 @@ import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.renderer.RenderPipelines
 import net.minecraft.client.resources.sounds.SimpleSoundInstance
 import net.minecraft.network.chat.Component
-import net.minecraft.resources.Identifier
 import net.minecraft.sounds.SoundEvents
 import kotlin.math.abs
 import kotlin.math.max
@@ -53,19 +53,21 @@ object ShapeRouletteOverlay {
         playClick(0.8f + 0.4f * (depthIndex.toFloat() / DEPTH_VALUES.size))
     }
 
-    val currentShape: Shape
+    val currentPattern: PatternConfig
         get() {
-            val size = Shape.entries.size
-            return Shape.entries[((cursor % size).toInt() + size) % size]
+            val entries = ClientPatternConfig.enabledPatterns()
+            val size = entries.size
+            return entries[((cursor % size).toInt() + size) % size]
         }
 
     val currentDepth: Int get() = DEPTH_VALUES[depthIndex]
 
-    fun syncTo(shape: Shape, depth: Int) {
-        cursor = shape.ordinal.toLong()
+    fun syncTo(pattern: PatternConfig, depth: Int) {
+        val idx = ClientPatternConfig.enabledPatterns().indexOfFirst { it.id == pattern.id }
+        cursor = idx.coerceAtLeast(0).toLong()
         animated = cursor.toFloat()
-        val idx = DEPTH_VALUES.indexOf(depth)
-        if (idx >= 0) depthIndex = idx
+        val depthIdx = DEPTH_VALUES.indexOf(depth)
+        if (depthIdx >= 0) depthIndex = depthIdx
     }
 
     fun render(graphics: GuiGraphicsExtractor, deltaTracker: DeltaTracker) {
@@ -76,7 +78,7 @@ object ShapeRouletteOverlay {
         if (alpha <= 0) return
 
         val font = Minecraft.getInstance().font
-        val entries = Shape.entries
+        val entries = ClientPatternConfig.enabledPatterns()
         val size = entries.size
         val centerIdx = ((cursor % size).toInt() + size) % size
 
@@ -102,7 +104,7 @@ object ShapeRouletteOverlay {
     private fun drawCarousel(
         g: GuiGraphicsExtractor,
         font: Font,
-        entries: List<Shape>,
+        entries: List<PatternConfig>,
         size: Int,
         centerIdx: Int,
         x1: Int,
@@ -112,9 +114,9 @@ object ShapeRouletteOverlay {
     ) {
         for (rel in -1..1) {
             val idx = ((centerIdx + rel) % size + size) % size
-            val shape = entries[idx]
+            val pattern = entries[idx]
             val rowY = y1 + PAD_Y + (rel + 1) * ROW_HEIGHT
-            val accent = colorFor(shape)
+            val accent = colorFor(pattern)
             if (rel == 0) { // highlight box
                 // selected row tint + left accent bar
                 g.fill(x1 + 2, rowY - 1, x2 - 2, rowY + ROW_HEIGHT - 1, mixAlpha(alpha, 0x35, accent))
@@ -125,7 +127,7 @@ object ShapeRouletteOverlay {
             val rowAlpha = if (rel == 0) alpha else (alpha * 0.55).toInt().coerceAtLeast(0)
             val iconTint = if (rel == 0) mixAlpha(rowAlpha, 0xFF, accent) else mixAlpha(rowAlpha, 0xFF, 0xFFFFFF)
             g.blit(
-                RenderPipelines.GUI_TEXTURED, iconFor(shape),
+                RenderPipelines.GUI_TEXTURED, pattern.icon(),
                 iconX, iconY, 0f, 0f,
                 ICON_SIZE, ICON_SIZE, ICON_TEX_SIZE, ICON_TEX_SIZE,
                 iconTint
@@ -133,14 +135,14 @@ object ShapeRouletteOverlay {
             val textX = iconX + ICON_SIZE + 5
             val textY = rowY + (ROW_HEIGHT - 8) / 2
             val rgb = if (rel == 0) accent else 0xC8C8C8
-            g.text(font, Component.translatable("veinminer.shape.${shape.name.lowercase()}"), textX, textY, mixAlpha(rowAlpha, 0xFF, rgb))
+            g.text(font, Component.literal(ClientPatternConfig.displayName(pattern)), textX, textY, mixAlpha(rowAlpha, 0xFF, rgb))
         }
     }
 
-    private fun drawDepthBar(g: GuiGraphicsExtractor, font: Font, selectedShape: Shape, x1: Int, y1: Int, alpha: Int) {
+    private fun drawDepthBar(g: GuiGraphicsExtractor, font: Font, selectedPattern: PatternConfig, x1: Int, y1: Int, alpha: Int) {
         val barX = x1 + PAD_X + 4
         val barY = y1 + PAD_Y + 3 * ROW_HEIGHT + 4
-        val accent = colorFor(selectedShape)
+        val accent = colorFor(selectedPattern)
         val filled = depthIndex + 1
         for (i in DEPTH_VALUES.indices) {
             val cellX = barX + i * (BAR_CELL_W + BAR_GAP)
@@ -154,20 +156,7 @@ object ShapeRouletteOverlay {
         g.text(font, Component.literal(label), labelX, labelY, mixAlpha(alpha, 0xFF, 0xFFFFFF))
     }
 
-    /** Per-shape accent color (RGB) */
-    private fun colorFor(shape: Shape): Int = when (shape) {
-        Shape.NORMAL -> 0x73D45C        // green
-        Shape.TUNNEL_1X1 -> 0xF0C56E    // orange (light)
-        Shape.TUNNEL_2X2 -> 0xF09E4A    // orange (mid)
-        Shape.TUNNEL_3X3 -> 0xE87434    // orange (dark)
-        Shape.FLAT -> 0x6FB7F0          // blue
-    }
-
-    private fun iconFor(shape: Shape): Identifier =
-        Identifier.fromNamespaceAndPath(
-            "veinminer_client",
-            "textures/gui/sprite/shape/${shape.name.lowercase()}.png"
-        )
+    private fun colorFor(pattern: PatternConfig): Int = pattern.color and 0xFFFFFF
 
     private fun mixAlpha(alpha: Int, alphaFrac: Int, rgb: Int): Int {
         val a = (alpha * alphaFrac / 255).coerceIn(0, 255)

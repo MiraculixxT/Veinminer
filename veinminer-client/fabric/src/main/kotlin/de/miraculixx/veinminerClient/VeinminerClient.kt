@@ -3,6 +3,7 @@ package de.miraculixx.veinminerClient
 import de.miraculixx.veinminer.extensions.mcCoroutineAsync
 import de.miraculixx.veinminer.extensions.ticks
 import de.miraculixx.veinminerClient.ClientLifecycle.MOD_ID
+import de.miraculixx.veinminerClient.config.ClientPatternConfig
 import de.miraculixx.veinminerClient.constants.FabricKeyBindings
 import de.miraculixx.veinminerClient.network.FabricClientPlatformNetwork
 import de.miraculixx.veinminerClient.network.NetworkManager
@@ -28,6 +29,8 @@ class VeinminerClient : ClientModInitializer {
         ClientLifecycle.veinminerAvailable = fabricLoader.getModContainer("veinminer").getOrNull() != null
 
         HUDProvider.instance = FabricHUDRenderer
+        ClientPatternConfig.load()
+        NetworkManager.selectedPattern = ClientPatternConfig.enabledPatterns().first()
         FabricKeyBindings.register()
         NetworkManager.init(FabricClientPlatformNetwork)
 
