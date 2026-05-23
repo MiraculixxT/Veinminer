@@ -7,6 +7,7 @@
   "key.category.veinminer_client.keybinds": "Veinminer",
   "key.veinminer_client.hold": "Veinmining (Halten)",
   "key.veinminer_client.toggle": "Veinmining (Umschalten)",
+  "key.veinminer_client.config": "Client-Einstellungen öffnen",
 
   "veinminer.shape.normal": "Normal",
   "veinminer.shape.tunnel_1x1": "Tunnel 1x1",
