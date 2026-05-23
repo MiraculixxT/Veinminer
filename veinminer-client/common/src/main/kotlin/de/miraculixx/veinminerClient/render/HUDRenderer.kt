@@ -1,5 +1,6 @@
 package de.miraculixx.veinminerClient.render
 
+import de.miraculixx.veinminerClient.ClientLifecycle
 import net.minecraft.client.DeltaTracker
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphicsExtractor
@@ -7,11 +8,11 @@ import net.minecraft.client.renderer.RenderPipelines
 import net.minecraft.resources.Identifier
 
 abstract class HUDRenderer {
-    private val AXE_ICON = Identifier.fromNamespaceAndPath("veinminer_client", "textures/gui/sprite/axe.png")
-    private val PICKAXE_ICON = Identifier.fromNamespaceAndPath("veinminer_client", "textures/gui/sprite/pickaxe.png")
-    private val SHOVEL_ICON = Identifier.fromNamespaceAndPath("veinminer_client", "textures/gui/sprite/shovel.png")
-    private val HOE_ICON = Identifier.fromNamespaceAndPath("veinminer_client", "textures/gui/sprite/hoe.png")
-    private val FORBIDDEN_ICON = Identifier.fromNamespaceAndPath("veinminer_client", "textures/gui/sprite/forbidden.png")
+    private val AXE_ICON = icon("axe")
+    private val PICKAXE_ICON = icon("pickaxe")
+    private val SHOVEL_ICON = icon("shovel")
+    private val HOE_ICON = icon("hoe")
+    private val FORBIDDEN_ICON = icon("forbidden")
     private var target: Identifier? = null
 
     fun renderCrosshair(graphics: GuiGraphicsExtractor, deltaTracker: DeltaTracker) {
@@ -33,4 +34,6 @@ abstract class HUDRenderer {
             else -> PICKAXE_ICON
         }
     }
+
+    private fun icon(tool: String) = Identifier.fromNamespaceAndPath(ClientLifecycle.MOD_ID, "textures/gui/sprites/tooltip/${tool}.png")
 }
