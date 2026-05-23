@@ -97,9 +97,20 @@ object FlatStrategy : ShapeStrategy {
 }
 
 /**
- * With size=N, a NxN tunnel in the direction of the drill surface
+ * Rectangular traversal in the direction of the drill surface.
+ * Width follows the first surface basis vector, height follows the second.
+ * Overriding [heightOffsetAt] transforms the tunnel into a direction (e.g. stair stepping)
  */
-class TunnelStrategy(private val size: Int) : ShapeStrategy {
+abstract class TunnelLikeStrategy(
+    private val width: Int,
+    private val height: Int,
+    strategyName: String,
+) : ShapeStrategy {
+    init {
+        require(width > 0) { "$strategyName width must be positive ($width)" }
+        require(height > 0) { "$strategyName height must be positive ($height)" }
+    }
+
     override fun layers(veinmineAction: VeinmineAction<*, *>, blockAwareness: BlockAwareness): Sequence<List<BlockPosition>> = sequence {
         val face = veinmineAction.face
         val origin = veinmineAction.sourceLocation
@@ -108,18 +119,20 @@ class TunnelStrategy(private val size: Int) : ShapeStrategy {
 
         val drill = face.normalInward()
         val (u, v) = face.basisVectors()
-        val area = size * size
+        val area = width * height
         val maxDepth = (maxChain / area).coerceAtLeast(1)
-        val lo = -(size - 1) / 2
-        val hi = lo + size - 1
+        val widthRange = centeredOffsets(width)
+        val heightRange = centeredOffsets(height)
         for (depth in 0 until maxDepth) {
             val layer = ArrayList<BlockPosition>(area)
-            for (du in lo..hi) {
-                for (dv in lo..hi) {
+            val heightOffset = heightOffsetAt(depth)
+            for (du in widthRange) {
+                for (dv in heightRange) {
+                    val steppedDv = dv + heightOffset
                     val next = BlockPosition(
-                        origin.x + drill.first * depth + u.first * du + v.first * dv,
-                        origin.y + drill.second * depth + u.second * du + v.second * dv,
-                        origin.z + drill.third * depth + u.third * du + v.third * dv,
+                        origin.x + drill.first * depth + u.first * du + v.first * steppedDv,
+                        origin.y + drill.second * depth + u.second * du + v.second * steppedDv,
+                        origin.z + drill.third * depth + u.third * du + v.third * steppedDv,
                     )
                     val blockType = blockAwareness.getBlockType(next)
                     if (blockType !in targets) continue
@@ -129,6 +142,29 @@ class TunnelStrategy(private val size: Int) : ShapeStrategy {
             yield(layer)
         }
     }
+
+    protected open fun heightOffsetAt(depth: Int): Int = 0
+}
+
+/**
+ * Rectangular tunnel in the direction of the drill surface.
+ */
+class TunnelStrategy(width: Int, height: Int) : TunnelLikeStrategy(width, height, "Tunnel") {
+    constructor(size: Int) : this(size, size)
+}
+
+/**
+ * Rectangular tunnel that steps by one block along the height axis each depth.
+ */
+class StairsStrategy(private val relativeUp: Boolean, width: Int, height: Int) : TunnelLikeStrategy(width, height, "Stairs") {
+    constructor(relativeUp: Boolean, size: Int) : this(relativeUp, size, size)
+
+    override fun heightOffsetAt(depth: Int): Int = depth * if (relativeUp) 1 else -1
+}
+
+private fun centeredOffsets(size: Int): IntRange {
+    val lo = -(size - 1) / 2
+    return lo..<lo + size
 }
 
 fun Surface.normalOutward(): Triple<Int, Int, Int> = when (this) {
