@@ -768,7 +768,9 @@ private fun bounds(x0: Int, y0: Int, x1: Int, y1: Int, pose: Matrix3x2fc, scisso
     return scissorArea?.intersection(bounds) ?: bounds
 }
 
-private val GUI_RENDER_STATE_FIELD = GuiGraphicsExtractor::class.java.getField("guiRenderState")
+private val GUI_RENDER_STATE_FIELD = GuiGraphicsExtractor::class.java.getDeclaredField("guiRenderState").apply {
+    isAccessible = true
+}
 
 private fun PatternConfig.hasSize(): Boolean = type == PatternType.TUNNEL || type == PatternType.STAIRS
 

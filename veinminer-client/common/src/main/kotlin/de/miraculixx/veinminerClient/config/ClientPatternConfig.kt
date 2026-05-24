@@ -5,12 +5,9 @@ import de.miraculixx.veinminer.pattern.DefaultPatterns
 import de.miraculixx.veinminer.pattern.PatternConfig
 import de.miraculixx.veinminer.pattern.PatternType
 import de.miraculixx.veinminer.utils.json
-import de.miraculixx.veinminerClient.ClientLifecycle
 import kotlinx.serialization.Serializable
 import java.nio.file.Path
 import kotlin.io.path.createParentDirectories
-import kotlin.io.path.exists
-import kotlin.io.path.readText
 import kotlin.io.path.writeText
 
 @Serializable
