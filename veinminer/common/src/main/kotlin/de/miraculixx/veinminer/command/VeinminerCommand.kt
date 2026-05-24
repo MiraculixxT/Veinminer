@@ -48,6 +48,8 @@ object VeinminerCommand {
 
             literal("blocks") {
                 requiresPermission(permissionBlocks)
+                executesAsync { source.msg("Correct Syntax: /veinminer blocks <add/remove> <block>", cRed) }
+
                 literal("add") {
                     argument("block", BlockPredicateArgument.blockPredicate(ctx)) {
                         executesAsync {
@@ -89,6 +91,8 @@ object VeinminerCommand {
 
             literal("settings") {
                 requiresPermission(permissionSettings)
+                executesAsync { source.msg("Correct Syntax: /veinminer settings <setting> [<new-value>]", cRed) }
+
                 applySetting("mustSneak", { ActiveConfig.bridge.settings.mustSneak }) { x, _ -> ActiveConfig.bridge.settings.mustSneak = x }
                 applySetting("cooldown", { ActiveConfig.bridge.settings.cooldown }) { x, _ -> ActiveConfig.bridge.settings.cooldown = x }
                 applySetting("delay", { ActiveConfig.bridge.settings.delay }) { x, _ -> ActiveConfig.bridge.settings.delay = x }
