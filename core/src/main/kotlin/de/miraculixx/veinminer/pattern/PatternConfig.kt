@@ -73,19 +73,19 @@ object DefaultPatterns {
             height = 3,
         ),
         PatternConfig(
-            id = "stairs_up_1x2",
+            id = "stairs_up_1x3",
             type = PatternType.STAIRS,
             color = 0xB48CF0,
             width = 1,
-            height = 2,
+            height = 3,
             stairsUp = true
         ),
         PatternConfig(
-            id = "stairs_down_1x2",
+            id = "stairs_down_1x3",
             type = PatternType.STAIRS,
             color = 0x70519E,
             width = 1,
-            height = 2,
+            height = 3,
             stairsUp = false
         ),
     )
