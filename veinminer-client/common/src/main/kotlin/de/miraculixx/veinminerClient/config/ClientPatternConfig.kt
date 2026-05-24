@@ -5,10 +5,12 @@ import de.miraculixx.veinminer.pattern.DefaultPatterns
 import de.miraculixx.veinminer.pattern.PatternConfig
 import de.miraculixx.veinminer.pattern.PatternType
 import de.miraculixx.veinminer.utils.json
+import de.miraculixx.veinminerClient.ClientLifecycle
 import kotlinx.serialization.Serializable
-import net.minecraft.client.Minecraft
 import java.nio.file.Path
 import kotlin.io.path.createParentDirectories
+import kotlin.io.path.exists
+import kotlin.io.path.readText
 import kotlin.io.path.writeText
 
 @Serializable
@@ -18,18 +20,17 @@ data class ClientPatternSettings(
 )
 
 object ClientPatternConfig {
-    private val configFile: Path by lazy {
-        Minecraft.getInstance().gameDirectory.toPath()
-            .resolve("config")
-            .resolve("Veinminer")
-            .resolve("client_patterns.json")
-    }
+    private var configFile = Path.of("config", "Veinminer", "client_patterns.json")
 
     var settings: ClientPatternSettings = ClientPatternSettings()
         private set
 
+    fun configure(configDir: Path) {
+        configFile = configDir.resolve("Veinminer").resolve("client_patterns.json")
+    }
+
     fun load() {
-        configFile.load(ClientPatternSettings(), json)
+        settings = configFile.load(ClientPatternSettings(), json)
         ensureValid(save = true)
     }
 

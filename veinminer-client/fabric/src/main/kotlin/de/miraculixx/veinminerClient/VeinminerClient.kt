@@ -29,6 +29,7 @@ class VeinminerClient : ClientModInitializer {
         ClientLifecycle.veinminerAvailable = fabricLoader.getModContainer("veinminer").getOrNull() != null
 
         HUDProvider.instance = FabricHUDRenderer
+        ClientPatternConfig.configure(fabricLoader.configDir)
         ClientPatternConfig.load()
         NetworkManager.selectedPattern = ClientPatternConfig.enabledPatterns().first()
         FabricKeyBindings.register()
