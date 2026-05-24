@@ -6,11 +6,11 @@ import de.miraculixx.veinminer.data.BlockGroup
 import de.miraculixx.veinminer.data.VeinminerSettings
 import de.miraculixx.veinminer.network.ClientCallbacks
 import de.miraculixx.veinminer.network.ClientNetworkRouter
+import de.miraculixx.veinminer.network.ClientPatternSync
 import de.miraculixx.veinminer.network.ClientPlatformNetwork
 import de.miraculixx.veinminer.network.KeyPress
 import de.miraculixx.veinminer.network.ServerConfiguration
 import de.miraculixx.veinminer.pattern.PatternConfig
-import de.miraculixx.veinminer.pattern.Shape
 import de.miraculixx.veinminer.pattern.Surface
 import de.miraculixx.veinminerClient.ClientLifecycle
 import de.miraculixx.veinminerClient.config.ClientPatternConfig
@@ -21,8 +21,6 @@ import net.minecraft.resources.Identifier
 
 object NetworkManager : ClientCallbacks {
     var isVeinminerActive = false
-        private set
-    var selectedShape: Shape = Shape.NORMAL
         private set
     lateinit var selectedPattern: PatternConfig
     var selectedDepth: Int = 6
@@ -95,17 +93,21 @@ object NetworkManager : ClientCallbacks {
         if (!isConnected()) return
         ClientLifecycle.LOGGER.info("Sending join: ($version)")
         ClientNetworkRouter.sendJoin(version)
+        sendPatternConfig()
+    }
+
+    fun sendPatternConfig() {
+        if (!canSend()) return
+        ClientNetworkRouter.sendPatterns(ClientPatternSync(ClientPatternConfig.settings.patterns))
     }
 
     fun sendKeyPress(pressed: Boolean, surface: Surface = Surface.UP) {
         if (!isConnected()) return
-        val legacyShape = ClientPatternConfig.legacyShape(selectedPattern)
-        val serverPressed = pressed && legacyShape != null
-        if (legacyShape != null) selectedShape = legacyShape
+        if (pressed) sendPatternConfig()
         if (settings.debug) {
-            ClientLifecycle.LOGGER.info("Sending veinmine state: $serverPressed (pattern=${selectedPattern.id} shape=$selectedShape depth=$selectedDepth surface=$surface)")
+            ClientLifecycle.LOGGER.info("Sending veinmine state: $pressed (pattern=${selectedPattern.id} depth=$selectedDepth surface=$surface)")
         }
-        ClientNetworkRouter.sendKeyPress(KeyPress(serverPressed, selectedShape, selectedDepth, surface))
+        ClientNetworkRouter.sendKeyPress(KeyPress(pressed, selectedDepth, surface, selectedPattern.networkId()))
     }
 
     fun resendKeyPress(surface: Surface = Surface.UP) {
@@ -114,8 +116,13 @@ object NetworkManager : ClientCallbacks {
     }
 
     private fun isConnected(): Boolean {
-        if (Minecraft.getInstance().connection != null) return true
+        if (canSend()) return true
         ClientLifecycle.LOGGER.warn("Can not send packet without server connection!")
         return false
     }
+
+    private fun canSend(): Boolean = Minecraft.getInstance().connection != null
+
+    private fun PatternConfig.networkId(): String? =
+        id.takeIf { it.isNotBlank() && it.length <= 64 && it.all { c -> c.isLetterOrDigit() || c == '_' || c == '-' || c == '.' || c == ':' } }
 }

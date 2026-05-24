@@ -144,6 +144,7 @@ class PatternConfigScreen(private val parent: Screen?) : Screen(Component.litera
     private fun saveAndClose() {
         ClientPatternConfig.save()
         syncSelection()
+        NetworkManager.sendPatternConfig()
         minecraft.setScreen(parent)
     }
 

@@ -11,12 +11,12 @@ import de.miraculixx.veinminer.config.PaperConfigManager
 import de.miraculixx.veinminer.data.BlockPosition
 import de.miraculixx.veinminer.data.FixedBlockGroup
 import de.miraculixx.veinminer.data.VeinminerSettingsOverride
-import de.miraculixx.veinminer.pattern.Shape
 import de.miraculixx.veinminer.pattern.Surface
 import de.miraculixx.veinminer.utils.debug
 import de.miraculixx.veinminer.utils.permissionVeinmine
 import de.miraculixx.veinminer.network.NetworkRouter
 import de.miraculixx.veinminer.pattern.BlockAwareness
+import de.miraculixx.veinminer.pattern.NormalStrategy
 import de.miraculixx.veinminer.pattern.VeinmineAction
 import de.miraculixx.veinminer.pattern.Veinmining
 import de.miraculixx.veinminer.pattern.isMatureAgeTarget
@@ -221,7 +221,7 @@ object VeinMinerEvent {
         val world = iPlayer.world
 
         if (iTool.isEmpty) return 0
-        val shape = NetworkRouter.activeShape(iPlayer.uniqueId) ?: Shape.NORMAL
+        val strategy = NetworkRouter.activeStrategy(iPlayer.uniqueId) ?: NormalStrategy
         val maxDepth = NetworkRouter.maxDepth(iPlayer.uniqueId)
 
         val blockAwareness = object : BlockAwareness {
@@ -242,7 +242,7 @@ object VeinMinerEvent {
             }
         }
 
-        val hits = Veinmining.veinmine(this, blockAwareness, shape, maxDepth, shouldBreak)
+        val hits = Veinmining.veinmine(this, blockAwareness, strategy, maxDepth, shouldBreak)
         return hits.size
     }
 

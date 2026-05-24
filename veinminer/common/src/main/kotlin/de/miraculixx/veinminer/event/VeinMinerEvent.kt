@@ -10,9 +10,9 @@ import de.miraculixx.veinminer.extensions.mcCoroutineAsync
 import de.miraculixx.veinminer.extensions.mcCoroutineSync
 import de.miraculixx.veinminer.extensions.ticks
 import de.miraculixx.veinminer.network.NetworkRouter
-import de.miraculixx.veinminer.pattern.Shape
 import de.miraculixx.veinminer.pattern.Surface
 import de.miraculixx.veinminer.pattern.BlockAwareness
+import de.miraculixx.veinminer.pattern.NormalStrategy
 import de.miraculixx.veinminer.pattern.VeinmineAction
 import de.miraculixx.veinminer.pattern.Veinmining
 import de.miraculixx.veinminer.pattern.isMatureAgeTarget
@@ -161,7 +161,7 @@ object VeinMinerEvent {
         val world = iPlayer.level()
 
         if (iTool.isEmpty) return 0
-        val shape = NetworkRouter.activeShape(iPlayer.uuid) ?: Shape.NORMAL
+        val strategy = NetworkRouter.activeStrategy(iPlayer.uuid) ?: NormalStrategy
         val maxDepth = NetworkRouter.maxDepth(iPlayer.uuid)
 
         val blockAwareness = object : BlockAwareness {
@@ -182,7 +182,7 @@ object VeinMinerEvent {
             }
         }
 
-        val hits = Veinmining.veinmine(this, blockAwareness, shape, maxDepth, shouldBreak)
+        val hits = Veinmining.veinmine(this, blockAwareness, strategy, maxDepth, shouldBreak)
         return hits.size
     }
 

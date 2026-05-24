@@ -4,7 +4,6 @@ import de.miraculixx.veinminer.extensions.load
 import de.miraculixx.veinminer.pattern.DefaultPatterns
 import de.miraculixx.veinminer.pattern.PatternConfig
 import de.miraculixx.veinminer.pattern.PatternType
-import de.miraculixx.veinminer.pattern.Shape
 import de.miraculixx.veinminer.utils.json
 import kotlinx.serialization.Serializable
 import net.minecraft.client.Minecraft
@@ -81,18 +80,6 @@ object ClientPatternConfig {
         PatternType.FLAT -> "Flat"
         PatternType.TUNNEL -> "Tunnel ${pattern.width.coerceAtLeast(1)}x${pattern.height.coerceAtLeast(1)}"
         PatternType.STAIRS -> "Stairs ${if (pattern.stairsUp) "Up" else "Down"} ${pattern.width.coerceAtLeast(1)}x${pattern.height.coerceAtLeast(1)}"
-    }
-
-    fun legacyShape(pattern: PatternConfig): Shape? = when (pattern.type) {
-        PatternType.NORMAL -> Shape.NORMAL
-        PatternType.FLAT -> Shape.FLAT
-        PatternType.TUNNEL -> when (pattern.width.coerceAtLeast(1) to pattern.height.coerceAtLeast(1)) {
-            1 to 1 -> Shape.TUNNEL_1X1
-            2 to 2 -> Shape.TUNNEL_2X2
-            3 to 3 -> Shape.TUNNEL_3X3
-            else -> null
-        }
-        PatternType.STAIRS -> null
     }
 
     fun reset() {

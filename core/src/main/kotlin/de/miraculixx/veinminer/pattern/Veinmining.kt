@@ -17,14 +17,6 @@ object Veinmining {
     fun veinmine(
         action: VeinmineAction<*, *>,
         blockAwareness: BlockAwareness,
-        shape: Shape,
-        maxDepth: Int = Int.MAX_VALUE,
-        shouldBreak: Boolean = false,
-    ): List<Hit> = veinmine(action, blockAwareness, shape.strategy, maxDepth, shouldBreak)
-
-    fun veinmine(
-        action: VeinmineAction<*, *>,
-        blockAwareness: BlockAwareness,
         strategy: ShapeStrategy,
         maxDepth: Int = Int.MAX_VALUE,
         shouldBreak: Boolean = false,
