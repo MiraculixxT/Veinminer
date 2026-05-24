@@ -276,6 +276,8 @@ object VeinminerCommand {
                 addPreset("ConcretePowder", mutableSetOf("#minecraft:concrete_powder"), mutableSetOf("#minecraft:shovels"))
                 addPreset("Terracotta", mutableSetOf("#minecraft:terracotta"), mutableSetOf("#minecraft:pickaxes"))
                 addPreset("Grassy", mutableSetOf("#minecraft:edible_for_sheep", "minecraft:tall_grass", "minecraft:large_fern", "minecraft:bush", "minecraft:dead_bush"), mutableSetOf(), VeinminerSettingsOverride(searchRadius = 3, maxChain = 50))
+                addPreset("Stones", mutableSetOf("#minecraft:base_stone_overworld", "minecraft:cobblestone", "minecraft:cobbled_deepslate"), mutableSetOf("#minecraft:pickaxes"))
+                addPreset("NetherStones", mutableSetOf("#minecraft:base_stone_nether", "minecraft:smooth_basalt"), mutableSetOf("#minecraft:pickaxes"))
             }
         }
 
