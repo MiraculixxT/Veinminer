@@ -17,9 +17,13 @@ Works together with the [enchantment addon](https://modrinth.com/project/veinmin
 ![showcase](https://i.imgur.com/aJRZTBw.gif)
 
 ## ⚙ Settings
-Pattern settings can be configured by holding the hotkey and scrolling up/down.
-Additionally holding shift allows changing the mining depth/width.
-![settings ui preview](https://cdn.modrinth.com/data/dxa0Bm8m/images/51815a5329111963717ca8c3493719214db65258.webp)
+Pattern selection can be changed by holding the hotkey and **scrolling** up/down.<br>
+Additionally holding **shift** allows changing the mining depth/width.
+
+**Pattern Config Hotkey**: `P` (configure, add, remove patterns to your liking. Accessible via mod menu as well)
+![settings ui preview](https://cdn.modrinth.com/data/dxa0Bm8m/images/c5f3c7ff3562caf2ec7e50fd6bef11a4f1f9d838.png)
+
+---
 
 The server can configure client behavior with the following options. The client mod will automatically disable itself if the server does not have Veinminer installed.
 
