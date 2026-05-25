@@ -7,5 +7,6 @@ import java.util.UUID
  */
 interface ServerCallbacks {
     fun onJoinAccepted(playerId: UUID, packet: JoinInformation)
+    fun onPatterns(playerId: UUID, packet: ClientPatternSync)
     fun onKeyPress(playerId: UUID, packet: KeyPress)
 }

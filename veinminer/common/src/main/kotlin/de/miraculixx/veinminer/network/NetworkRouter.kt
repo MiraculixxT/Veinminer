@@ -39,6 +39,7 @@ object NetworkRouter {
             if (!registeredPlayers.containsKey(uuid)) return@registerC2S
             val packet = PacketCodecs.PATTERNS.decode(bytes)
             clientPatterns[uuid] = validatePatterns(packet.patterns)
+            callbacks.onPatterns(uuid, packet)
         }
         registerC2S(platform, NetworkManager.PACKET_KEY_PRESS_ID) { uuid, bytes ->
             val packet = PacketCodecs.KEY.decode(bytes)

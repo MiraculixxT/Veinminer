@@ -3,6 +3,7 @@ package de.miraculixx.veinminer.networking
 import de.miraculixx.kpaper.event.listen
 import de.miraculixx.veinminer.Veinminer
 import de.miraculixx.veinminer.config.PaperConfigManager
+import de.miraculixx.veinminer.network.ClientPatternSync
 import de.miraculixx.veinminer.network.JoinInformation
 import de.miraculixx.veinminer.network.KeyPress
 import de.miraculixx.veinminer.network.NetworkRouter
@@ -40,5 +41,9 @@ object PaperServerCallbacks : ServerCallbacks {
 
     override fun onKeyPress(playerId: UUID, packet: KeyPress) {
         if (PaperConfigManager.settings.debug) Veinminer.INSTANCE.logger.info("$playerId pressed hotkey (${packet.pressed})")
+    }
+
+    override fun onPatterns(playerId: UUID, packet: ClientPatternSync) {
+        if (PaperConfigManager.settings.debug) Veinminer.INSTANCE.logger.info("$playerId sent ${packet.patterns.size} pattern configs")
     }
 }
