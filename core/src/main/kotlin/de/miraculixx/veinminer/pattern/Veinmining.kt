@@ -46,7 +46,7 @@ object Veinmining {
                     if (eligible) out.add(Hit(cand, 0))
                     continue
                 }
-                if (!touchesAny(cand, prevLayer, searchRadius)) continue
+                if (strategy.requiresLayerConnectivity(layerDepth) && !touchesAny(cand, prevLayer, searchRadius)) continue
                 visited.add(cand)
                 matched.add(cand)
                 if (!eligible) continue

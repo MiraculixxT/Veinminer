@@ -10,6 +10,8 @@ import kotlin.math.abs
  */
 fun interface ShapeStrategy {
     fun layers(veinmineAction: VeinmineAction<*, *>, blockAwareness: BlockAwareness): Sequence<List<BlockPosition>>
+
+    fun requiresLayerConnectivity(layerDepth: Int): Boolean = true
 }
 
 fun VeinminerSettings.saveSearchRadius(): Int = searchRadius.coerceIn(1, 5)
@@ -110,6 +112,8 @@ abstract class TunnelLikeStrategy(
         require(width > 0) { "$strategyName width must be positive ($width)" }
         require(height > 0) { "$strategyName height must be positive ($height)" }
     }
+
+    override fun requiresLayerConnectivity(layerDepth: Int): Boolean = layerDepth > 0
 
     override fun layers(veinmineAction: VeinmineAction<*, *>, blockAwareness: BlockAwareness): Sequence<List<BlockPosition>> = sequence {
         val face = veinmineAction.face
