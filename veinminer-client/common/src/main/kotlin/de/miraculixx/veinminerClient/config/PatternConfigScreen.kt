@@ -7,34 +7,29 @@ import de.miraculixx.veinminer.pattern.PatternType
 import de.miraculixx.veinminerClient.ClientLifecycle
 import de.miraculixx.veinminerClient.network.NetworkManager
 import de.miraculixx.veinminerClient.render.ShapeRouletteOverlay
-import kotlin.math.floor
-import kotlin.math.max
-import kotlin.math.min
-import kotlin.math.roundToInt
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.GuiGraphicsExtractor
-import net.minecraft.client.gui.navigation.ScreenRectangle
-import net.minecraft.client.gui.render.TextureSetup
-import net.minecraft.client.gui.components.AbstractSliderButton
-import net.minecraft.client.gui.components.AbstractWidget
-import net.minecraft.client.gui.components.Button
-import net.minecraft.client.gui.components.ContainerObjectSelectionList
-import net.minecraft.client.gui.components.CycleButton
-import net.minecraft.client.gui.components.EditBox
+import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.components.*
 import net.minecraft.client.gui.components.events.GuiEventListener
 import net.minecraft.client.gui.narration.NarratableEntry
 import net.minecraft.client.gui.narration.NarrationElementOutput
-import net.minecraft.client.input.CharacterEvent
+import net.minecraft.client.gui.navigation.ScreenRectangle
+import net.minecraft.client.gui.render.TextureSetup
+import net.minecraft.client.gui.render.state.GuiElementRenderState
+import net.minecraft.client.gui.render.state.GuiRenderState
 import net.minecraft.client.gui.screens.Screen
+import net.minecraft.client.input.CharacterEvent
 import net.minecraft.client.input.KeyEvent
 import net.minecraft.client.input.MouseButtonEvent
 import net.minecraft.client.renderer.RenderPipelines
-import net.minecraft.client.renderer.state.gui.GuiElementRenderState
-import net.minecraft.client.renderer.state.gui.GuiRenderState
 import net.minecraft.network.chat.Component
 import net.minecraft.resources.Identifier
 import org.joml.Matrix3x2f
 import org.joml.Matrix3x2fc
+import kotlin.math.floor
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.math.roundToInt
 
 private const val ROW_HEIGHT = 48
 
@@ -85,12 +80,12 @@ class PatternConfigScreen(private val parent: Screen?) : Screen(Component.litera
         )
     }
 
-    override fun extractRenderState(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
+    override fun render(graphics: GuiGraphics, mouseX: Int, mouseY: Int, partialTick: Float) {
         val blockUnderlyingHover = colorPicker?.contains(mouseX.toDouble(), mouseY.toDouble()) == true
         val delegatedMouseX = if (blockUnderlyingHover) -1 else mouseX
         val delegatedMouseY = if (blockUnderlyingHover) -1 else mouseY
-        super.extractRenderState(graphics, delegatedMouseX, delegatedMouseY, partialTick)
-        graphics.centeredText(font, title, width / 2, 10, 0xFFFFFF)
+        super.render(graphics, delegatedMouseX, delegatedMouseY, partialTick)
+        graphics.drawCenteredString(font, title, width / 2, 10, 0xFFFFFF)
         colorPicker?.extractRenderState(graphics, mouseX, mouseY, partialTick)
     }
 
@@ -283,7 +278,7 @@ class PatternConfigScreen(private val parent: Screen?) : Screen(Component.litera
             downButton,
         )
 
-        override fun extractContent(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, hovered: Boolean, partialTick: Float) {
+        override fun renderContent(graphics: GuiGraphics, mouseX: Int, mouseY: Int, hovered: Boolean, partialTick: Float) {
             layoutWidgets()
             val x = contentX
             val y = contentY
@@ -291,8 +286,8 @@ class PatternConfigScreen(private val parent: Screen?) : Screen(Component.litera
             val accent = pattern.color and 0xFFFFFF
             graphics.fill(x - 4, y - 3, right + 4, y + ROW_HEIGHT - 5, if (hovered) 0x80909090.toInt() else 0x70909090)
             graphics.fill(x - 4, y - 3, x, y + ROW_HEIGHT - 5, 0xFF000000.toInt() or accent)
-            widgets.forEach { it.extractRenderState(graphics, mouseX, mouseY, partialTick) }
-            graphics.text(font, ClientPatternConfig.displayName(pattern), x + ROW_HEIGHT, y + 4, -1)
+            widgets.forEach { it.render(graphics, mouseX, mouseY, partialTick) }
+            graphics.drawString(font, ClientPatternConfig.displayName(pattern), x + ROW_HEIGHT, y + 4, -1)
         }
 
         override fun children(): List<GuiEventListener> = widgets
@@ -353,7 +348,7 @@ private class PatternIconButton(
     private val pattern: PatternConfig,
     private val onToggle: () -> Unit,
 ) : AbstractWidget(0, 0, ROW_HEIGHT, ROW_HEIGHT, Component.literal("Toggle pattern")) {
-    override fun extractWidgetRenderState(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
+    override fun renderWidget(graphics: GuiGraphics, mouseX: Int, mouseY: Int, partialTick: Float) {
         val bg = if (isHoveredOrFocused) 0xB0505050.toInt() else 0xB0404040.toInt()
         val tint = if (pattern.enabled) pattern.color and 0xFFFFFF else 0x7A7A7A
         graphics.fill(x, y, x + width, y + height, bg)
@@ -378,7 +373,7 @@ private class ColorButton(
     private val pattern: PatternConfig,
     private val onPress: () -> Unit,
 ) : AbstractWidget(0, 0, 34, 22, Component.literal("Color")) {
-    override fun extractWidgetRenderState(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
+    override fun renderWidget(graphics: GuiGraphics, mouseX: Int, mouseY: Int, partialTick: Float) {
         val border = if (isHoveredOrFocused) 0xFFFFFFFF.toInt() else 0xFF808080.toInt()
         graphics.fill(x, y, x + width, y + height, 0xFF303030.toInt())
         graphics.fill(x + 3, y + 3, x + width - 3, y + height - 3, 0xFF000000.toInt() or (pattern.color and 0xFFFFFF))
@@ -402,7 +397,7 @@ private class MoveSpriteButton(
     private val type: Int,
     private val onPress: () -> Unit,
 ) : AbstractWidget(0, 0, 14, 14, Component.literal("Navigation")) {
-    override fun extractWidgetRenderState(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
+    override fun renderWidget(graphics: GuiGraphics, mouseX: Int, mouseY: Int, partialTick: Float) {
         val highlight = isHoveredOrFocused && active
         val sprite = when (type) {
             1 -> if (highlight) MOVE_UP_HIGHLIGHTED_SPRITE else MOVE_UP_SPRITE
@@ -501,13 +496,13 @@ private class FloatingColorPicker(
         }
     }
 
-    fun extractRenderState(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
+    fun extractRenderState(graphics: GuiGraphics, mouseX: Int, mouseY: Int, partialTick: Float) {
         graphics.fill(x - 2, y - 2, x + width + 2, y + height + 2, 0xE0000000.toInt())
         graphics.fill(x, y, x + width, y + height, 0xFFE8E8E8.toInt())
         graphics.fill(x + 2, y + 2, x + width - 2, y + height - 2, 0xFF1E1E1E.toInt())
 
         graphics.fill(previewX, previewY, previewX + previewSize, previewY + previewSize, 0xFF000000.toInt() or (pattern.color and 0xFFFFFF))
-        graphics.outline(previewX, previewY, previewSize, previewSize, 0xFFB8B8B8.toInt())
+        graphics.renderOutline(previewX, previewY, previewSize, previewSize, 0xFFB8B8B8.toInt())
 
 
         graphics.gradientQuad(
@@ -530,10 +525,10 @@ private class FloatingColorPicker(
             0xFF000000.toInt(),
             0x00000000,
         )
-        graphics.outline(pickerX, pickerY, pickerW, pickerH, 0xFFB8B8B8.toInt())
+        graphics.renderOutline(pickerX, pickerY, pickerW, pickerH, 0xFFB8B8B8.toInt())
 
         graphics.hueGradient(hueX, hueY, hueW, hueH)
-        graphics.outline(hueX, hueY, hueW, hueH, 0xFFB8B8B8.toInt())
+        graphics.renderOutline(hueX, hueY, hueW, hueH, 0xFFB8B8B8.toInt())
 
         val selectorX = pickerX + (saturation * (pickerW - 1)).roundToInt()
         val selectorY = pickerY + ((1f - value) * (pickerH - 1)).roundToInt()
@@ -544,7 +539,7 @@ private class FloatingColorPicker(
         graphics.fill(hueSelectorX - 3, hueY - 3, hueSelectorX + 4, hueY + hueH + 3, 0xFF000000.toInt())
         graphics.fill(hueSelectorX - 2, hueY - 2, hueSelectorX + 3, hueY + hueH + 2, 0xFFFFFFFF.toInt())
 
-        hexBox.extractRenderState(graphics, mouseX, mouseY, partialTick)
+        hexBox.render(graphics, mouseX, mouseY, partialTick)
     }
 
     fun contains(mouseX: Double, mouseY: Double): Boolean =
@@ -636,7 +631,7 @@ private fun AbstractWidget.place(x: Int, y: Int, width: Int, height: Int) {
     setRectangle(width, height, x, y)
 }
 
-private fun GuiGraphicsExtractor.gradientQuad(
+private fun GuiGraphics.gradientQuad(
     x: Int,
     y: Int,
     width: Int,
@@ -664,7 +659,7 @@ private fun GuiGraphicsExtractor.gradientQuad(
     )
 }
 
-private fun GuiGraphicsExtractor.hueGradient(x: Int, y: Int, width: Int, height: Int) {
+private fun GuiGraphics.hueGradient(x: Int, y: Int, width: Int, height: Int) {
     addGuiElement(
         HueStripRenderState(
             RenderPipelines.GUI,
@@ -679,8 +674,8 @@ private fun GuiGraphicsExtractor.hueGradient(x: Int, y: Int, width: Int, height:
     )
 }
 
-private fun GuiGraphicsExtractor.addGuiElement(element: GuiElementRenderState) {
-    (GUI_RENDER_STATE_FIELD.get(this) as GuiRenderState).addGuiElement(element)
+private fun GuiGraphics.addGuiElement(element: GuiElementRenderState) {
+    (GUI_RENDER_STATE_FIELD.get(this) as GuiRenderState).submitGuiElement(element)
 }
 
 private class GradientQuadRenderState(
@@ -768,7 +763,7 @@ private fun bounds(x0: Int, y0: Int, x1: Int, y1: Int, pose: Matrix3x2fc, scisso
     return scissorArea?.intersection(bounds) ?: bounds
 }
 
-private val GUI_RENDER_STATE_FIELD = GuiGraphicsExtractor::class.java.getDeclaredField("guiRenderState").apply {
+private val GUI_RENDER_STATE_FIELD = GuiGraphics::class.java.getDeclaredField("guiRenderState").apply {
     isAccessible = true
 }
 
