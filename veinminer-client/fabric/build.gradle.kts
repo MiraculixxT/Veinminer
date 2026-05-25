@@ -7,15 +7,39 @@ plugins {
 dependencies {
     compileOnly(project(":core"))
     compileOnly(project(":veinminer:veinminer-common"))
-    implementation(project(":veinminer:veinminer-fabric"))
-    implementation(include(project(":veinminer-client:veinminer-client-common"))!!)
+    implementation(project(":veinminer:veinminer-fabric")) {
+        attributes {
+            attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, objects.named(LibraryElements.CLASSES))
+        }
+    }
+    implementation(project(":veinminer-client:veinminer-client-common")) {
+        attributes {
+            attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, objects.named(LibraryElements.CLASSES))
+        }
+    }
+    include(project(":veinminer-client:veinminer-client-common"))
 
     val modMenuVersion = outlet.latestModrinthModVersion("modmenu", outlet.mcVersions())
-    compileOnly("com.terraformersmc:modmenu:$modMenuVersion")
+    modCompileOnly("com.terraformersmc:modmenu:$modMenuVersion")
+}
+
+val coreSourceSets = project(":core").extensions.getByType<SourceSetContainer>()
+val commonSourceSets = project(":veinminer:veinminer-common").extensions.getByType<SourceSetContainer>()
+val fabricSourceSets = project(":veinminer:veinminer-fabric").extensions.getByType<SourceSetContainer>()
+
+dependencies {
+    runtimeOnly(fabricSourceSets["main"].output)
 }
 
 loom {
     accessWidenerPath = file("src/main/resources/veinminerClient.accesswidener")
+    mods {
+        create("veinminer") {
+            sourceSet(fabricSourceSets["main"])
+            sourceSet(coreSourceSets["main"])
+            sourceSet(commonSourceSets["main"])
+        }
+    }
 }
 
 sourceSets {
