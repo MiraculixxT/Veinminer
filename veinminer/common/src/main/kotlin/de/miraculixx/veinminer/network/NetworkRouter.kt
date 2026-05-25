@@ -1,7 +1,9 @@
 package de.miraculixx.veinminer.network
 
 import de.miraculixx.veinminer.command.ActiveHost
-import de.miraculixx.veinminer.pattern.Shape
+import de.miraculixx.veinminer.pattern.PatternConfig
+import de.miraculixx.veinminer.pattern.PatternType
+import de.miraculixx.veinminer.pattern.ShapeStrategy
 import de.miraculixx.veinminer.pattern.Surface
 import de.miraculixx.veinminer.utils.mcServer
 import org.slf4j.Logger
@@ -10,13 +12,15 @@ import java.util.concurrent.ConcurrentHashMap
 
 object NetworkRouter {
     val registeredPlayers: MutableMap<UUID, String> = ConcurrentHashMap()
-    val readyToVeinmine: MutableMap<UUID, Shape> = ConcurrentHashMap()
+    private val readyToVeinmine: MutableSet<UUID> = ConcurrentHashMap.newKeySet()
+    private val activeStrategies: MutableMap<UUID, ShapeStrategy> = ConcurrentHashMap()
+    private val clientPatterns: MutableMap<UUID, Map<String, PatternConfig>> = ConcurrentHashMap()
     val lastSurface: MutableMap<UUID, Surface> = ConcurrentHashMap()
     val activeDepth: MutableMap<UUID, Int> = ConcurrentHashMap()
 
-    fun activeShape(uuid: UUID): Shape? = readyToVeinmine[uuid]
+    fun activeStrategy(uuid: UUID): ShapeStrategy? = activeStrategies[uuid]
     fun maxDepth(uuid: UUID): Int = activeDepth[uuid] ?: Int.MAX_VALUE
-    fun isReady(uuid: UUID): Boolean = readyToVeinmine.containsKey(uuid)
+    fun isReady(uuid: UUID): Boolean = readyToVeinmine.contains(uuid)
 
     @Volatile
     private var platform: PlatformNetwork? = null
@@ -31,14 +35,25 @@ object NetworkRouter {
         registerC2S(platform, NetworkManager.PACKET_JOIN_ID) { uuid, bytes ->
             callbacks.onJoinAccepted(uuid, PacketCodecs.JOIN.decode(bytes))
         }
+        registerC2S(platform, NetworkManager.PACKET_PATTERNS_ID) { uuid, bytes ->
+            if (!registeredPlayers.containsKey(uuid)) return@registerC2S
+            val packet = PacketCodecs.PATTERNS.decode(bytes)
+            clientPatterns[uuid] = validatePatterns(packet.patterns)
+            callbacks.onPatterns(uuid, packet)
+        }
         registerC2S(platform, NetworkManager.PACKET_KEY_PRESS_ID) { uuid, bytes ->
             val packet = PacketCodecs.KEY.decode(bytes)
             if (packet.pressed) {
-                readyToVeinmine[uuid] = packet.shape
+                val strategy = resolveStrategy(uuid, packet)
+                if (strategy == null) {
+                    clearReadyState(uuid)
+                    return@registerC2S
+                }
+                readyToVeinmine.add(uuid)
+                activeStrategies[uuid] = strategy
                 activeDepth[uuid] = packet.maxDepth.coerceIn(2..Int.MAX_VALUE)
             } else {
-                readyToVeinmine.remove(uuid)
-                activeDepth.remove(uuid)
+                clearReadyState(uuid)
             }
             lastSurface[uuid] = packet.surface
             callbacks.onKeyPress(uuid, packet)
@@ -83,8 +98,53 @@ object NetworkRouter {
 
     fun onDisconnect(uuid: UUID) {
         registeredPlayers.remove(uuid)
-        readyToVeinmine.remove(uuid)
+        clearReadyState(uuid)
+        clientPatterns.remove(uuid)
         lastSurface.remove(uuid)
+    }
+
+    private fun clearReadyState(uuid: UUID) {
+        readyToVeinmine.remove(uuid)
+        activeStrategies.remove(uuid)
         activeDepth.remove(uuid)
     }
+
+    private fun resolveStrategy(uuid: UUID, packet: KeyPress): ShapeStrategy? {
+        val patternId = packet.patternId ?: return null
+        return clientPatterns[uuid]?.get(patternId)?.strategy()
+    }
+
+    private fun validatePatterns(patterns: List<PatternConfig>): Map<String, PatternConfig> {
+        if (patterns.isEmpty()) return emptyMap()
+        val valid = LinkedHashMap<String, PatternConfig>()
+        patterns.take(MAX_CLIENT_PATTERNS).forEach { raw ->
+            val id = raw.id.takeIf(::validPatternId) ?: return@forEach
+            if (valid.containsKey(id)) return@forEach
+            valid[id] = PatternConfig(
+                id = id,
+                enabled = raw.enabled,
+                type = raw.type,
+                color = raw.color and 0xFFFFFF,
+                width = sanitizeDimension(raw.type, raw.width),
+                height = sanitizeDimension(raw.type, raw.height),
+                stairsUp = raw.stairsUp,
+            )
+        }
+        return valid
+    }
+
+    private fun sanitizeDimension(type: PatternType, value: Int): Int = when (type) {
+        PatternType.NORMAL,
+        PatternType.FLAT -> 1
+        PatternType.TUNNEL,
+        PatternType.STAIRS -> value.coerceIn(MIN_PATTERN_SIZE, MAX_PATTERN_SIZE)
+    }
+
+    private fun validPatternId(id: String): Boolean =
+        id.isNotBlank() && id.length <= MAX_PATTERN_ID_LENGTH && id.all { it.isLetterOrDigit() || it == '_' || it == '-' || it == '.' || it == ':' }
+
+    private const val MAX_CLIENT_PATTERNS = 64
+    private const val MAX_PATTERN_ID_LENGTH = 64
+    private const val MIN_PATTERN_SIZE = 1
+    private const val MAX_PATTERN_SIZE = 10
 }

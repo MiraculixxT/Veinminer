@@ -35,6 +35,7 @@ object ClientNetworkRouter {
         this.localPlayerId = localPlayerId
 
         platform.registerC2S(NetworkManager.PACKET_JOIN_ID)
+        platform.registerC2S(NetworkManager.PACKET_PATTERNS_ID)
         platform.registerC2S(NetworkManager.PACKET_KEY_PRESS_ID)
 
         platform.registerS2C(NetworkManager.PACKET_CONFIGURATION_ID) { bytes ->
@@ -60,6 +61,10 @@ object ClientNetworkRouter {
 
     fun sendKeyPress(packet: KeyPress) {
         send(NetworkManager.PACKET_KEY_PRESS_ID, PacketCodecs.KEY, packet)
+    }
+
+    fun sendPatterns(packet: ClientPatternSync) {
+        send(NetworkManager.PACKET_PATTERNS_ID, PacketCodecs.PATTERNS, packet)
     }
 
     private fun <T> send(channel: String, codec: PacketCodec<T>, packet: T, markLoopback: Boolean = false) {

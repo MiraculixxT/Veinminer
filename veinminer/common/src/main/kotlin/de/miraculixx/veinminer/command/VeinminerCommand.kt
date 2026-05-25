@@ -48,6 +48,8 @@ object VeinminerCommand {
 
             literal("blocks") {
                 requiresPermission(permissionBlocks)
+                executesAsync { source.msg("Correct Syntax: /veinminer blocks <add/remove> <block>", cRed) }
+
                 literal("add") {
                     argument("block", BlockPredicateArgument.blockPredicate(ctx)) {
                         executesAsync {
@@ -89,6 +91,8 @@ object VeinminerCommand {
 
             literal("settings") {
                 requiresPermission(permissionSettings)
+                executesAsync { source.msg("Correct Syntax: /veinminer settings <setting> [<new-value>]", cRed) }
+
                 applySetting("mustSneak", { ActiveConfig.bridge.settings.mustSneak }) { x, _ -> ActiveConfig.bridge.settings.mustSneak = x }
                 applySetting("cooldown", { ActiveConfig.bridge.settings.cooldown }) { x, _ -> ActiveConfig.bridge.settings.cooldown = x }
                 applySetting("delay", { ActiveConfig.bridge.settings.delay }) { x, _ -> ActiveConfig.bridge.settings.delay = x }
@@ -276,6 +280,8 @@ object VeinminerCommand {
                 addPreset("ConcretePowder", mutableSetOf("#minecraft:concrete_powder"), mutableSetOf("#minecraft:shovels"))
                 addPreset("Terracotta", mutableSetOf("#minecraft:terracotta"), mutableSetOf("#minecraft:pickaxes"))
                 addPreset("Grassy", mutableSetOf("#minecraft:edible_for_sheep", "minecraft:tall_grass", "minecraft:large_fern", "minecraft:bush", "minecraft:dead_bush"), mutableSetOf(), VeinminerSettingsOverride(searchRadius = 3, maxChain = 50))
+                addPreset("Stones", mutableSetOf("#minecraft:base_stone_overworld", "minecraft:cobblestone", "minecraft:cobbled_deepslate"), mutableSetOf("#minecraft:pickaxes"))
+                addPreset("NetherStones", mutableSetOf("#minecraft:base_stone_nether", "minecraft:smooth_basalt"), mutableSetOf("#minecraft:pickaxes"))
             }
         }
 

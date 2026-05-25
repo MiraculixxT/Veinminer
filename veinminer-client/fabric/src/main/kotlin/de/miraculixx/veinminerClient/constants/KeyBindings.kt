@@ -12,6 +12,7 @@ object FabricKeyBindings {
     fun register() {
         KeyBindings.hold = registerKeyBinding("hold", InputConstants.KEY_Y)
         KeyBindings.toggle = registerKeyBinding("toggle", InputConstants.UNKNOWN.value)
+        KeyBindings.config = registerKeyBinding("config", InputConstants.KEY_P)
     }
 
     private fun registerKeyBinding(id: String, key: Int) = KeyBindingHelper.registerKeyBinding(

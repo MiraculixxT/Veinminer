@@ -39,4 +39,8 @@ object ServerCallbacksImpl : ServerCallbacks {
     override fun onKeyPress(playerId: UUID, packet: KeyPress) {
         if (ConfigManager.settings.debug) logger.info("$playerId pressed hotkey (${packet.pressed})")
     }
+
+    override fun onPatterns(playerId: UUID, packet: ClientPatternSync) {
+        if (ConfigManager.settings.debug) logger.info("$playerId sent ${packet.patterns.size} pattern configs")
+    }
 }

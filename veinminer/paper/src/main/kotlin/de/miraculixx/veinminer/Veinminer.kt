@@ -72,11 +72,15 @@ class Veinminer : KPaper() {
             }
         }
 
-        taskRunLater(1) {
-            PaperConfigManager.reload(true)
-            VeinMinerEvent.enabled = true // Combat pesky plugins calling events before server boot
-            LOGGER.info("All events enabled!")
-        }
+        if (VeinminerCompatibility.runsAsync)
+            server.globalRegionScheduler.runDelayed(this, { delayedBoot() }, 1)
+        else taskRunLater(1) { delayedBoot() }
+    }
+
+    private fun delayedBoot() {
+        PaperConfigManager.reload(true)
+        VeinMinerEvent.enabled = true // Combat pesky plugins calling events before server boot
+        LOGGER.info("All events enabled!")
     }
 
     override fun shutdown() {

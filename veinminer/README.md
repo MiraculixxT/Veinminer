@@ -25,13 +25,13 @@ Both comes with preconfigured for ores and pickaxes. Read below how to extend it
 ### Mod/Plugin Version (2.x)
 The advanced (V2) version is a more powerful version that is only usable with Fabric/Quilt, Paper/PurPur/Folia & NeoForge servers.
 
-|         Command         |      Permission      |                     Short Description                     |
-|:-----------------------:|:--------------------:|:---------------------------------------------------------:|
-|  /veinminer **blocks**  |  `veinminer.blocks`  |     Edit blocks that are veinmineable with every tool     |
-|  /veinminer **groups**  |  `veinminer.groups`  |          Edit blocks & tools with precise rules           |
-|  /veinminer **toggle**  |  `veinminer.toggle`  |              Toggle Veinminer (server wide)               |
-| /veinminer **settings** | `veinminer.settings` |     Change settings like cooldown, max chain and more     |
-|    *Using Veinminer*    |   `veinminer.use`    | If perm-restriction is active, this is needed to veinmine |
+|         Command         |      Permission      |                 Short Description                 |
+|:-----------------------:|:--------------------:|:-------------------------------------------------:|
+|  /veinminer **blocks**  |  `veinminer.blocks`  | Edit blocks that are veinmineable with every tool |
+|  /veinminer **groups**  |  `veinminer.groups`  |      Edit blocks & tools with precise rules       |
+|  /veinminer **toggle**  |  `veinminer.toggle`  |          Toggle Veinminer (server wide)           |
+| /veinminer **settings** | `veinminer.settings` | Change settings like cooldown, max chain and more |
+| /veinminer **presets**  |  `veinminer.groups`  |     Quick setup some useful groups & settings     |
 
 <details><summary>General Settings</summary>
 
