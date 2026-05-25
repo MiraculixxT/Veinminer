@@ -9,6 +9,9 @@ dependencies {
     compileOnly(project(":veinminer:veinminer-common"))
     implementation(project(":veinminer:veinminer-fabric"))
     implementation(include(project(":veinminer-client:veinminer-client-common"))!!)
+
+    val modMenuVersion = outlet.latestModrinthModVersion("modmenu", outlet.mcVersions())
+    compileOnly("com.terraformersmc:modmenu:$modMenuVersion")
 }
 
 loom {

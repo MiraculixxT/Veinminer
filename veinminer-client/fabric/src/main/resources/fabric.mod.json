@@ -18,6 +18,9 @@
   "entrypoints": {
     "client": [
       "de.miraculixx.veinminerClient.VeinminerClient"
+    ],
+    "modmenu": [
+      "de.miraculixx.veinminerClient.compat.ModMenuIntegration"
     ]
   },
   "mixins": [
@@ -40,5 +43,8 @@
     "fabric-api": "*",
     "fabric-language-kotlin": "*",
     "veinminer": ">=2.8.0"
+  },
+  "suggests": {
+    "modmenu": "*"
   }
 }
