@@ -15,10 +15,13 @@ import de.miraculixx.veinminer.utils.cGreen
 import de.miraculixx.veinminer.utils.cRed
 import de.miraculixx.veinminer.utils.mcServer
 import net.minecraft.DetectedVersion
+import net.minecraft.world.entity.ExperienceOrb
+import net.minecraft.world.item.enchantment.EnchantmentHelper
 import net.minecraft.network.chat.ClickEvent
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.Style
 import net.minecraft.server.level.ServerPlayer
+import net.minecraft.world.phys.Vec3
 import net.neoforged.bus.api.IEventBus
 import net.neoforged.fml.ModContainer
 import net.neoforged.fml.ModList
@@ -55,6 +58,14 @@ class Veinminer(modBus: IEventBus, container: ModContainer) {
         ActiveHost.host = NeoForgeHost
         EventState.configManager = ConfigManager
         EventState.checkPermission = { _, _ -> true } // NeoForge has no permissions API; op-level checks live in command layer
+        EventState.dropBlockExperience = { state, level, blockPos, blockEntity, breaker, tool, dropPos ->
+            state.spawnAfterBreak(level, dropPos, tool, false)
+            val experience = EnchantmentHelper.processBlockExperience(
+                level, tool,
+                state.getExpDrop(level, blockPos, blockEntity, breaker, tool)
+            )
+            if (experience > 0) ExperienceOrb.award(level, Vec3.atCenterOf(dropPos), experience)
+        }
 
         val gameBus = NeoForge.EVENT_BUS
 
