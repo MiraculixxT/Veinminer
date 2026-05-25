@@ -237,11 +237,11 @@ object VeinMinerEvent {
         initialSource: BlockPos
     ) {
         val serverLevel = world as? ServerLevel ?: return
+        val dropPos = if (EventState.configManager.settings.mergeItemDrops) initialSource else blockPos
         Block.getDrops(blockState, serverLevel, blockPos, blockEntity, breaker, tool).forEach { drop: ItemStack ->
-            val dropPos = if (EventState.configManager.settings.mergeItemDrops) initialSource else blockPos
             Block.popResource(world, dropPos, drop)
         }
-        blockState.spawnAfterBreak(serverLevel, blockPos, tool, true)
+        EventState.dropBlockExperience(blockState, serverLevel, blockPos, blockEntity, breaker, tool, dropPos)
     }
 
     private fun damageItem(item: ItemStack, player: Player) {
