@@ -7,7 +7,6 @@ import net.minecraft.client.DeltaTracker
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.Font
 import net.minecraft.client.gui.GuiGraphics
-import net.minecraft.client.renderer.RenderPipelines
 import net.minecraft.client.resources.sounds.SimpleSoundInstance
 import net.minecraft.network.chat.Component
 import net.minecraft.sounds.SoundEvents
@@ -126,12 +125,7 @@ object ShapeRouletteOverlay {
             val iconY = rowY + (ROW_HEIGHT - ICON_SIZE) / 2 - 1
             val rowAlpha = if (rel == 0) alpha else (alpha * 0.55).toInt().coerceAtLeast(0)
             val iconTint = if (rel == 0) mixAlpha(rowAlpha, 0xFF, accent) else mixAlpha(rowAlpha, 0xFF, 0xFFFFFF)
-            g.blit(
-                RenderPipelines.GUI_TEXTURED, pattern.icon(),
-                iconX, iconY, 0f, 0f,
-                ICON_SIZE, ICON_SIZE, ICON_TEX_SIZE, ICON_TEX_SIZE,
-                iconTint
-            )
+            g.blit(pattern.icon(), iconX, iconY, 0f, 0f, ICON_SIZE, ICON_SIZE, ICON_TEX_SIZE, ICON_TEX_SIZE)
             val textX = iconX + ICON_SIZE + 5
             val textY = rowY + (ROW_HEIGHT - 8) / 2
             val rgb = if (rel == 0) accent else 0xC8C8C8

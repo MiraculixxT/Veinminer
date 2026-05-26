@@ -5,7 +5,6 @@ import de.miraculixx.veinminer.config.ConfigManager
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.minecraft.commands.CommandSourceStack
 import me.lucko.fabric.api.permissions.v0.Permissions as FabricPermissions
-import net.minecraft.server.permissions.Permissions as VanillaPermissions
 
 object FabricVeinminerCommand {
     fun register() {
@@ -14,7 +13,7 @@ object FabricVeinminerCommand {
             val css = src as? CommandSourceStack ?: return@install false
             css.isSingleplayerOwner() ||
                 FabricPermissions.check(css, node, false) ||
-                css.permissions().hasPermission(VanillaPermissions.COMMANDS_GAMEMASTER)
+                css.hasPermission(2)
         }
         CommandRegistrationCallback.EVENT.register { dispatcher, registry, _ ->
             dispatcher.register(VeinminerCommand.build(registry))
@@ -24,6 +23,6 @@ object FabricVeinminerCommand {
     private fun CommandSourceStack.isSingleplayerOwner(): Boolean {
         val server = runCatching { server }.getOrNull() ?: return false
         val player = player ?: return false
-        return server.isSingleplayerOwner(player.nameAndId())
+        return server.isSingleplayerOwner(player.gameProfile)
     }
 }

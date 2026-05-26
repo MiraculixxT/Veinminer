@@ -34,7 +34,6 @@ import net.neoforged.neoforge.event.level.BlockEvent
 import net.neoforged.neoforge.event.server.ServerStartingEvent
 import net.neoforged.neoforge.event.server.ServerStoppedEvent
 import org.slf4j.Logger
-import java.net.URI
 
 @Mod(Veinminer.MOD_ID)
 class Veinminer(modBus: IEventBus, container: ModContainer) {
@@ -49,7 +48,7 @@ class Veinminer(modBus: IEventBus, container: ModContainer) {
     init {
         INSTANCE = container
         LOGGER.info("Veinminer Version: ${container.modInfo.version} (neoforge)")
-        val mcVersion = DetectedVersion.tryDetectVersion().name()
+        val mcVersion = DetectedVersion.tryDetectVersion().name
 
         // Check for Veinminer-Enchantment
         EventState.enchantmentActive = ModList.get().isLoaded("veinminer_enchantment")
@@ -119,11 +118,11 @@ class Veinminer(modBus: IEventBus, container: ModContainer) {
             val player = event.entity as? ServerPlayer ?: return@addListener
             val info = updateInfo ?: return@addListener
             val server = player.server
-            val isOp = server.playerList.isOp(player.nameAndId())
+            val isOp = server.playerList.isOp(player.gameProfile)
             if (isOp || !server.isDedicatedServer) {
                 player.sendSystemMessage(
                     Component.literal("${info.module.modID} is outdated! Click here to download the latest version")
-                        .setStyle(Style.EMPTY.withClickEvent(ClickEvent.OpenUrl(URI("https://modrinth.com/project/${info.module.modID}"))))
+                        .setStyle(Style.EMPTY.withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, "https://modrinth.com/project/${info.module.modID}")))
                         .append(" (Current: ").append(Component.literal(info.currentVersion).withColor(cRed))
                         .append(", Latest: ").append(Component.literal(info.latestVersion).withColor(cGreen)).append(")")
                 )

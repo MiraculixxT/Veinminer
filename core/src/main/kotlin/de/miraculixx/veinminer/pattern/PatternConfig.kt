@@ -1,7 +1,7 @@
 package de.miraculixx.veinminer.pattern
 
 import kotlinx.serialization.Serializable
-import net.minecraft.resources.Identifier
+import net.minecraft.resources.ResourceLocation
 
 @Serializable
 enum class PatternType {
@@ -28,14 +28,14 @@ data class PatternConfig(
         PatternType.STAIRS -> StairsStrategy(stairsUp, width.coerceAtLeast(1), height.coerceAtLeast(1))
     }
 
-    fun icon(): Identifier {
+    fun icon(): ResourceLocation {
         val icon = when (type) {
             PatternType.NORMAL -> "normal"
             PatternType.FLAT -> "flat"
             PatternType.TUNNEL -> "tunnel_${width.coerceIn(1, 3)}x${height.coerceIn(1, 3)}"
             PatternType.STAIRS -> "stairs_${if (stairsUp) "up" else "down"}"
         }
-        return Identifier.fromNamespaceAndPath("veinminer_client", "textures/gui/sprites/shape/$icon.png")
+        return ResourceLocation.fromNamespaceAndPath("veinminer_client", "textures/gui/sprites/shape/$icon.png")
     }
 }
 

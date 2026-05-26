@@ -24,8 +24,8 @@ public class MixinMouseHandler {
         if (!NetworkManager.INSTANCE.isVeinminerActive()) return;
         if (vertical == 0.0) return;
         Window w = Minecraft.getInstance().getWindow();
-        boolean shift = InputConstants.isKeyDown(w, InputConstants.KEY_LSHIFT)
-                || InputConstants.isKeyDown(w, InputConstants.KEY_RSHIFT);
+        boolean shift = InputConstants.isKeyDown(w.getWindow(), InputConstants.KEY_LSHIFT)
+                || InputConstants.isKeyDown(w.getWindow(), InputConstants.KEY_RSHIFT);
         KeyBindManager.INSTANCE.queueScroll(vertical > 0 ? 1 : -1, shift);
         ci.cancel();
     }

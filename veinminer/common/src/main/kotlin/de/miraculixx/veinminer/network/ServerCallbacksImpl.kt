@@ -29,7 +29,7 @@ object ServerCallbacksImpl : ServerCallbacks {
             groups = ConfigManager.networkGroups,
             veinBlocks = ConfigManager.networkVeinBlocks,
             enchantmentActive = EventState.enchantmentActive,
-            enchantmentKey = EventState.enchantmentKey.identifier().toString(),
+            enchantmentKey = EventState.enchantmentKey.location().toString(),
             hostActive = ActiveHost.host.active,
             hasUsePermission = EventState.checkPermission(player, permissionVeinmine),
         )

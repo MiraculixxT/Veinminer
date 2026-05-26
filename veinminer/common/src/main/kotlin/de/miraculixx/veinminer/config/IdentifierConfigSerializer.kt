@@ -4,16 +4,17 @@ import de.miraculixx.veinminer.command.ActiveHost
 import de.miraculixx.veinminer.utils.mcServer
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.core.registries.Registries
-import net.minecraft.resources.Identifier
+import net.minecraft.resources.ResourceKey
+import net.minecraft.resources.ResourceLocation
 import net.minecraft.tags.TagKey
 
 /**
  * Fabric & NeoForge exclusive - Paper carries its own impl
  */
-object IdentifierConfigSerializer : ConfigSerializer<Identifier> {
+object IdentifierConfigSerializer : ConfigSerializer<ResourceLocation> {
 
-    override fun parseList(rawList: Set<String>, type: MaterialType): ParsedData<Identifier> {
-        val parsed = mutableSetOf<Identifier>()
+    override fun parseList(rawList: Set<String>, type: MaterialType): ParsedData<ResourceLocation> {
+        val parsed = mutableSetOf<ResourceLocation>()
         val invalid = mutableSetOf<String>()
         val logger = ActiveHost.host.logger
 
@@ -31,31 +32,35 @@ object IdentifierConfigSerializer : ConfigSerializer<Identifier> {
         return ParsedData(parsed, invalid)
     }
 
-    private fun parseEntry(raw: String, type: MaterialType): Set<Identifier>? {
+    private fun parseEntry(raw: String, type: MaterialType): Set<ResourceLocation>? {
         val isTag = raw.startsWith("#")
         val name = if (isTag) raw.substring(1) else raw
 
-        val key = Identifier.tryParse(name) ?: return emptySet()
+        val key = ResourceLocation.tryParse(name) ?: return emptySet()
 
         return if (isTag) {
             when (type) {
                 MaterialType.ITEM -> {
                     val tag = TagKey.create(Registries.ITEM, key)
                     val reg = mcServer?.registryAccess()?.lookupOrThrow(Registries.ITEM) ?: return null
-                    reg.getTagOrEmpty(tag).map { BuiltInRegistries.ITEM.getKey(it.value().defaultInstance.item) }.toSet()
+                    reg.get(tag).orElse(null)?.map { BuiltInRegistries.ITEM.getKey(it.value()) }?.toSet() ?: emptySet()
                 }
 
                 MaterialType.BLOCK -> {
                     val tag = TagKey.create(Registries.BLOCK, key)
                     val reg = mcServer?.registryAccess()?.lookupOrThrow(Registries.BLOCK) ?: return null
-                    reg.getTagOrEmpty(tag).map { BuiltInRegistries.BLOCK.getKey(it.value()) }.toSet()
+                    reg.get(tag).orElse(null)?.map { BuiltInRegistries.BLOCK.getKey(it.value()) }?.toSet() ?: emptySet()
                 }
             }
 
         } else {
             val access = mcServer?.registryAccess() ?: return null
-            val reg = if (type == MaterialType.BLOCK) access.lookupOrThrow(Registries.BLOCK) else access.lookupOrThrow(Registries.ITEM)
-            if (reg.containsKey(key)) setOf(key) else emptySet()
+            val exists = if (type == MaterialType.BLOCK) {
+                access.lookupOrThrow(Registries.BLOCK).get(ResourceKey.create(Registries.BLOCK, key)).isPresent
+            } else {
+                access.lookupOrThrow(Registries.ITEM).get(ResourceKey.create(Registries.ITEM, key)).isPresent
+            }
+            if (exists) setOf(key) else emptySet()
         }
     }
 }

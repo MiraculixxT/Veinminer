@@ -7,16 +7,17 @@ import de.miraculixx.veinminerClient.config.ClientPatternConfig
 import de.miraculixx.veinminerClient.constants.FabricKeyBindings
 import de.miraculixx.veinminerClient.network.FabricClientPlatformNetwork
 import de.miraculixx.veinminerClient.network.NetworkManager
+import de.miraculixx.veinminerClient.render.BlockHighlightingRenderer
 import de.miraculixx.veinminerClient.render.FabricHUDRenderer
 import de.miraculixx.veinminerClient.render.FabricShapeRouletteRenderer
 import de.miraculixx.veinminerClient.render.HUDProvider
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
-import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.Minecraft
-import net.minecraft.resources.Identifier
 import kotlin.jvm.optionals.getOrNull
 
 class VeinminerClient : ClientModInitializer {
@@ -47,8 +48,21 @@ class VeinminerClient : ClientModInitializer {
             KeyBindManager.tick()
         }
 
-        HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(MOD_ID, "target-info"), FabricHUDRenderer)
-        HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(MOD_ID, "shape-roulette"), FabricShapeRouletteRenderer)
+        HudRenderCallback.EVENT.register { graphics, deltaTracker ->
+            FabricHUDRenderer.render(graphics, deltaTracker)
+            FabricShapeRouletteRenderer.render(graphics, deltaTracker)
+        }
+
+        WorldRenderEvents.AFTER_ENTITIES.register { context ->
+            val stack = context.matrixStack() ?: return@register
+            val source = Minecraft.getInstance().renderBuffers().bufferSource()
+            BlockHighlightingRenderer.render(stack, source, context.camera().position, false)
+        }
+        WorldRenderEvents.AFTER_TRANSLUCENT.register { context ->
+            val stack = context.matrixStack() ?: return@register
+            val source = Minecraft.getInstance().renderBuffers().bufferSource()
+            BlockHighlightingRenderer.render(stack, source, context.camera().position, true)
+        }
 
         mcCoroutineAsync(1.ticks) {
             ClientLifecycle.checkForUpdates(

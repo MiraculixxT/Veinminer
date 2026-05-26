@@ -3,7 +3,6 @@
   "package": "de.miraculixx.veinminerClient.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "MixinLevelRenderer",
     "MixinMouseHandler"
   ],
   "injectors": {

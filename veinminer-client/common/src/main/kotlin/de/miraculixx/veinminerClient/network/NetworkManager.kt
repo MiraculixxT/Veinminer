@@ -17,7 +17,7 @@ import de.miraculixx.veinminerClient.config.ClientPatternConfig
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.toasts.SystemToast
 import net.minecraft.network.chat.Component
-import net.minecraft.resources.Identifier
+import net.minecraft.resources.ResourceLocation
 
 object NetworkManager : ClientCallbacks {
     var isVeinminerActive = false
@@ -27,13 +27,13 @@ object NetworkManager : ClientCallbacks {
 
     var settings: VeinminerSettings = VeinminerSettings()
         private set
-    var groups: List<BlockGroup<Identifier>> = emptyList()
+    var groups: List<BlockGroup<ResourceLocation>> = emptyList()
         private set
-    var veinBlocks: Set<Identifier> = emptySet()
+    var veinBlocks: Set<ResourceLocation> = emptySet()
         private set
     var enchantmentActive: Boolean = false
         private set
-    var enchantmentKey: Identifier? = null
+    var enchantmentKey: ResourceLocation? = null
         private set
     var hostActive: Boolean = true
         private set
@@ -57,7 +57,7 @@ object NetworkManager : ClientCallbacks {
         ClientLifecycle.LOGGER.info("Server configuration received (${packet.groups.size} groups, ${packet.veinBlocks.size} blocks)")
         if (packet.settings.debug) ClientLifecycle.LOGGER.info("Configuration packet: $packet")
         if (packet.outdated) {
-            Minecraft.getInstance().toastManager.addToast(
+            Minecraft.getInstance().toasts.addToast(
                 SystemToast(SystemToast.SystemToastId.PERIODIC_NOTIFICATION, Component.literal("Veinminer Outdated"), Component.literal("Please update Veinminer"))
             )
         }
@@ -78,8 +78,8 @@ object NetworkManager : ClientCallbacks {
         hasUsePermission = packet.hasUsePermission
     }
 
-    private fun parseId(raw: String): Identifier? = try {
-        Identifier.parse(raw)
+    private fun parseId(raw: String): ResourceLocation? = try {
+        ResourceLocation.parse(raw)
     } catch (_: Exception) {
         null
     }

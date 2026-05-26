@@ -13,7 +13,7 @@ import de.miraculixx.veinminerClient.network.NetworkManager
 import net.minecraft.client.player.LocalPlayer
 import net.minecraft.core.BlockPos
 import net.minecraft.core.registries.BuiltInRegistries
-import net.minecraft.resources.Identifier
+import net.minecraft.resources.ResourceLocation
 import net.minecraft.tags.BlockTags
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.GameType
@@ -39,7 +39,7 @@ object ClientVeinSelector {
     ): Result? {
         if (!NetworkManager.isVeinminerActive) return null
         if (!NetworkManager.hostActive) return null
-        if (player.gameMode() == GameType.CREATIVE) return null
+        if (player.isCreative) return null
 
         val state = level.getBlockState(origin)
         val material = state.key().takeIf { !state.isAir } ?: return null
@@ -69,7 +69,7 @@ object ClientVeinSelector {
         val targets = if (isGroupBlock) blockGroup.blocks else setOf(material)
         val originPos = BlockPosition(origin.x, origin.y, origin.z)
         val blockAwareness = object : BlockAwareness {
-            override fun getBlockType(pos: BlockPosition): Identifier {
+            override fun getBlockType(pos: BlockPosition): ResourceLocation {
                 return level.getBlockState(BlockPos(pos.x, pos.y, pos.z)).key()
             }
 
@@ -95,9 +95,9 @@ object ClientVeinSelector {
         return Result(hits.map { it.pos }, preferredToolIcon(state))
     }
 
-    private fun groupedBlocks(material: Identifier): FixedBlockGroup<Identifier> {
-        val blocks = mutableSetOf<Identifier>()
-        val tools = mutableSetOf<Identifier>()
+    private fun groupedBlocks(material: ResourceLocation): FixedBlockGroup<ResourceLocation> {
+        val blocks = mutableSetOf<ResourceLocation>()
+        val tools = mutableSetOf<ResourceLocation>()
         var override: VeinminerSettingsOverride? = null
         NetworkManager.groups.forEach { g ->
             if (g.blocks.contains(material)) {
@@ -116,8 +116,8 @@ object ClientVeinSelector {
         else -> "pickaxe"
     }
 
-    private fun BlockState.key(): Identifier = BuiltInRegistries.BLOCK.getKey(block)
-    private fun ItemStack.key(): Identifier = BuiltInRegistries.ITEM.getKey(item)
+    private fun BlockState.key(): ResourceLocation = BuiltInRegistries.BLOCK.getKey(block)
+    private fun ItemStack.key(): ResourceLocation = BuiltInRegistries.ITEM.getKey(item)
     private fun ItemStack.remainingDurability(): Int {
         if (isEmpty) return 0
         if (maxDamage <= 0) return Int.MAX_VALUE

@@ -48,7 +48,7 @@ object KeyBindManager {
                 if (!notifiedOnce) {
                     notifiedOnce = true
                     val mc = Minecraft.getInstance()
-                    mc.toastManager.addToast(
+                    mc.toasts.addToast(
                         SystemToast.multiline(
                             mc, SystemToast.SystemToastId.PERIODIC_NOTIFICATION,
                             Component.translatable("veinminer.disabled.title"),
@@ -74,7 +74,7 @@ object KeyBindManager {
         val level = instance.level ?: return
         val target = instance.hitResult as? BlockHitResult ?: return
         val pos = target.blockPos
-        val holding = player.inventory.selectedItem
+        val holding = player.inventory.getSelected()
         if (holding.item == Items.AIR) return resetTarget(true)
 
         if (target.type != HitResult.Type.BLOCK) {

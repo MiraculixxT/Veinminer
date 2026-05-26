@@ -16,7 +16,8 @@ import de.miraculixx.veinminerClient.render.NeoShapeRouletteRenderer
 import net.neoforged.neoforge.client.event.InputEvent
 import net.minecraft.DetectedVersion
 import net.minecraft.client.Minecraft
-import net.minecraft.resources.Identifier
+import net.minecraft.client.gui.LayeredDraw
+import net.minecraft.resources.ResourceLocation
 import net.neoforged.api.distmarker.Dist
 import net.neoforged.bus.api.IEventBus
 import net.neoforged.fml.ModContainer
@@ -52,8 +53,8 @@ class VeinminerClient(modBus: IEventBus, container: ModContainer) {
             NeoForgeKeyBindings.register(event)
         }
         modBus.addListener<RegisterGuiLayersEvent> { event ->
-            event.registerAboveAll(Identifier.fromNamespaceAndPath(MOD_ID, "target-info"), NeoHUDRenderer)
-            event.registerAboveAll(Identifier.fromNamespaceAndPath(MOD_ID, "shape-roulette"), NeoShapeRouletteRenderer)
+            event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(MOD_ID, "target-info"), LayeredDraw.Layer(NeoHUDRenderer::render))
+            event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(MOD_ID, "shape-roulette"), LayeredDraw.Layer(NeoShapeRouletteRenderer::render))
         }
 
         val gameBus = NeoForge.EVENT_BUS
@@ -68,8 +69,8 @@ class VeinminerClient(modBus: IEventBus, container: ModContainer) {
             val v = event.scrollDeltaY
             if (v == 0.0) return@addListener
             val w = Minecraft.getInstance().window
-            val shift = InputConstants.isKeyDown(w, InputConstants.KEY_LSHIFT)
-                || InputConstants.isKeyDown(w, InputConstants.KEY_RSHIFT)
+            val shift = InputConstants.isKeyDown(w.window, InputConstants.KEY_LSHIFT)
+                || InputConstants.isKeyDown(w.window, InputConstants.KEY_RSHIFT)
             KeyBindManager.queueScroll(if (v > 0) 1 else -1, shift)
             event.isCanceled = true
         }
@@ -82,19 +83,21 @@ class VeinminerClient(modBus: IEventBus, container: ModContainer) {
             ClientLifecycle.onDisconnect()
         }
 
-        gameBus.addListener<RenderLevelStageEvent.AfterOpaqueBlocks> { event ->
+        gameBus.addListener<RenderLevelStageEvent> { event ->
+            if (event.stage != RenderLevelStageEvent.Stage.AFTER_BLOCK_ENTITIES) return@addListener
             val source = Minecraft.getInstance().renderBuffers().bufferSource()
-            BlockHighlightingRenderer.render(event.poseStack, source, event.levelRenderState.cameraRenderState.pos, false)
+            BlockHighlightingRenderer.render(event.poseStack, source, event.camera.position, false)
         }
-        gameBus.addListener<RenderLevelStageEvent.AfterTranslucentBlocks> { event ->
+        gameBus.addListener<RenderLevelStageEvent> { event ->
+            if (event.stage != RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) return@addListener
             val source = Minecraft.getInstance().renderBuffers().bufferSource()
-            BlockHighlightingRenderer.render(event.poseStack, source, event.levelRenderState.cameraRenderState.pos, true)
+            BlockHighlightingRenderer.render(event.poseStack, source, event.camera.position, true)
         }
 
         mcCoroutineAsync(1.ticks) {
             ClientLifecycle.checkForUpdates(
                 "neoforge",
-                DetectedVersion.tryDetectVersion().name(),
+                DetectedVersion.tryDetectVersion().name,
                 ModList.get().getModContainerById("veinminer_client").orElse(null)?.modInfo?.version?.toString()
             )
         }

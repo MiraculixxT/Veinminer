@@ -22,7 +22,7 @@ import de.miraculixx.veinminer.utils.toNMS
 import de.miraculixx.veinminer.utils.toVeinminer
 import net.minecraft.core.BlockPos
 import net.minecraft.core.registries.BuiltInRegistries
-import net.minecraft.resources.Identifier
+import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.stats.Stats
 import net.minecraft.world.entity.Entity
@@ -31,7 +31,6 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier
 import net.minecraft.world.entity.ai.attributes.Attributes
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
-import net.minecraft.world.level.GameType
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.BaseFireBlock
 import net.minecraft.world.level.block.Block
@@ -48,11 +47,11 @@ import java.util.UUID
  */
 object VeinMinerEvent {
     private val cooldown = mutableSetOf<UUID>()
-    private val speedModifierId: Identifier = Identifier.fromNamespaceAndPath("veinminer", "veinmine_speed")
+    private val speedModifierId: ResourceLocation = ResourceLocation.fromNamespaceAndPath("veinminer", "veinmine_speed")
 
-    private fun Identifier.groupedBlocks(): FixedBlockGroup<Identifier> {
-        val blocks = mutableSetOf<Identifier>()
-        val tools = mutableSetOf<Identifier>()
+    private fun ResourceLocation.groupedBlocks(): FixedBlockGroup<ResourceLocation> {
+        val blocks = mutableSetOf<ResourceLocation>()
+        val tools = mutableSetOf<ResourceLocation>()
         var override: VeinminerSettingsOverride? = null
 
         EventState.configManager.groups.forEach {
@@ -65,9 +64,9 @@ object VeinMinerEvent {
         return FixedBlockGroup(blocks.toSet(), tools.toSet(), override)
     }
 
-    fun BlockState.key(): Identifier = block.key()
-    fun Block.key(): Identifier = BuiltInRegistries.BLOCK.getKey(this)
-    fun ItemStack.key(): Identifier = BuiltInRegistries.ITEM.getKey(item)
+    fun BlockState.key(): ResourceLocation = block.key()
+    fun Block.key(): ResourceLocation = BuiltInRegistries.BLOCK.getKey(this)
+    fun ItemStack.key(): ResourceLocation = BuiltInRegistries.ITEM.getKey(item)
 
     /**
      * Apply the per-block-break attribute speed modifier when a vein chain is
@@ -116,7 +115,7 @@ object VeinMinerEvent {
     fun allowedToVeinmine(world: Level, player: Player, pos: BlockPos, state: BlockState): VeinmineAction<ItemStack, Player>? {
         if (!ActiveHost.host.active) return null
 
-        if (player.gameMode() == GameType.CREATIVE) return null
+        if (player.isCreative) return null
 
         val uuid = player.uuid
         val hasClient = NetworkRouter.registeredPlayers.contains(uuid)
@@ -165,7 +164,7 @@ object VeinMinerEvent {
         val maxDepth = NetworkRouter.maxDepth(iPlayer.uuid)
 
         val blockAwareness = object : BlockAwareness {
-            override fun getBlockType(pos: BlockPosition): Identifier {
+            override fun getBlockType(pos: BlockPosition): ResourceLocation {
                 return world.getBlockState(BlockPos(pos.x, pos.y, pos.z)).key()
             }
 

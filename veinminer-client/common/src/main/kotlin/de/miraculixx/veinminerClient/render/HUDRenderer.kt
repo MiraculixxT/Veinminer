@@ -4,8 +4,7 @@ import de.miraculixx.veinminerClient.ClientLifecycle
 import net.minecraft.client.DeltaTracker
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
-import net.minecraft.client.renderer.RenderPipelines
-import net.minecraft.resources.Identifier
+import net.minecraft.resources.ResourceLocation
 
 abstract class HUDRenderer {
     private val AXE_ICON = icon("axe")
@@ -13,7 +12,7 @@ abstract class HUDRenderer {
     private val SHOVEL_ICON = icon("shovel")
     private val HOE_ICON = icon("hoe")
     private val FORBIDDEN_ICON = icon("forbidden")
-    private var target: Identifier? = null
+    private var target: ResourceLocation? = null
 
     fun renderCrosshair(graphics: GuiGraphics, deltaTracker: DeltaTracker) {
         if (target == null) return
@@ -21,7 +20,7 @@ abstract class HUDRenderer {
         val client = Minecraft.getInstance()
         val window = client.window
 
-        graphics.blit(RenderPipelines.CROSSHAIR, target!!, (window.guiScaledWidth / 2) + 2, (window.guiScaledHeight / 2) - 10, 0f, 0f, 8, 8, 8, 8)
+        graphics.blit(target!!, (window.guiScaledWidth / 2) + 2, (window.guiScaledHeight / 2) - 10, 0f, 0f, 8, 8, 8, 8)
     }
 
     fun updateTarget(target: String?) {
@@ -35,5 +34,5 @@ abstract class HUDRenderer {
         }
     }
 
-    private fun icon(tool: String) = Identifier.fromNamespaceAndPath(ClientLifecycle.MOD_ID, "textures/gui/sprites/tooltip/${tool}.png")
+    private fun icon(tool: String) = ResourceLocation.fromNamespaceAndPath(ClientLifecycle.MOD_ID, "textures/gui/sprites/tooltip/${tool}.png")
 }

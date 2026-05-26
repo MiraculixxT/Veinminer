@@ -20,7 +20,7 @@ object ClientLifecycle {
         if (isSinglePlayer && !veinminerAvailable) {
             LOGGER.info("Veinminer not available!")
             KeyBindManager.notifiedOnce = true
-            mc.toastManager.addToast(
+            mc.toasts.addToast(
                 SystemToast.multiline(
                     mc, SystemToast.SystemToastId.PERIODIC_NOTIFICATION,
                     Component.translatable("veinminer.notavailable.title"),

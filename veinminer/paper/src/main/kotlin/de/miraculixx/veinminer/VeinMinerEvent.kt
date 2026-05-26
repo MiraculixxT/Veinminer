@@ -21,12 +21,11 @@ import de.miraculixx.veinminer.pattern.VeinmineAction
 import de.miraculixx.veinminer.pattern.Veinmining
 import de.miraculixx.veinminer.pattern.isMatureAgeTarget
 import de.miraculixx.veinminer.utils.toVeinminer
-import io.papermc.paper.datacomponent.DataComponentTypes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import net.minecraft.resources.Identifier
+import net.minecraft.resources.ResourceLocation
 import org.bukkit.*
 import org.bukkit.attribute.Attribute
 import org.bukkit.attribute.AttributeModifier
@@ -43,6 +42,7 @@ import org.bukkit.event.block.BlockDamageAbortEvent
 import org.bukkit.event.block.BlockDamageEvent
 import org.bukkit.event.block.BlockExpEvent
 import org.bukkit.inventory.ItemStack
+import org.bukkit.inventory.meta.Damageable
 import java.util.*
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -94,7 +94,7 @@ object VeinMinerEvent {
 
         val speed = veinmineInfo.settings.calculateBreakSpeedModifier(amount, multiplicator).coerceAtLeast(0.0)
         val modifier = AttributeModifier(attributeNamespace, speed, AttributeModifier.Operation.MULTIPLY_SCALAR_1)
-        val attribute = player.getAttribute(Attribute.BLOCK_BREAK_SPEED) ?: return@listen
+        val attribute = player.getAttribute(Attribute.PLAYER_BLOCK_BREAK_SPEED) ?: return@listen
         attribute.removeModifier(attributeNamespace)
         attribute.addTransientModifier(modifier)
         if (debug) player.sendMessage(cmp("Modifier: ${"%.3f".format(speed + 1.0)}x for $amount blocks"))
@@ -225,7 +225,7 @@ object VeinMinerEvent {
         val maxDepth = NetworkRouter.maxDepth(iPlayer.uniqueId)
 
         val blockAwareness = object : BlockAwareness {
-            override fun getBlockType(pos: BlockPosition): Identifier {
+            override fun getBlockType(pos: BlockPosition): ResourceLocation {
                 return world.getBlockAt(pos.x, pos.y, pos.z).type.key.toVeinminer()
             }
 
@@ -289,7 +289,7 @@ object VeinMinerEvent {
         if (isEmpty) return 0
         val maxDurability = type.maxDurability.toInt()
         if (maxDurability <= 0) return Int.MAX_VALUE
-        return maxDurability - (getData(DataComponentTypes.DAMAGE) ?: 0)
+        return maxDurability - ((itemMeta as? Damageable)?.damage ?: 0)
     }
 
     private fun Block.destroy() {
@@ -314,7 +314,7 @@ object VeinMinerEvent {
     }
 
     private fun Player.removeAttribute() {
-        getAttribute(Attribute.BLOCK_BREAK_SPEED)?.removeModifier(attributeNamespace)
+        getAttribute(Attribute.PLAYER_BLOCK_BREAK_SPEED)?.removeModifier(attributeNamespace)
     }
 
     /**

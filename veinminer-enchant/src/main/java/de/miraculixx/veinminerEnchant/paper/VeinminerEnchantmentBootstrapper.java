@@ -37,7 +37,7 @@ public class VeinminerEnchantmentBootstrapper implements PluginBootstrap {
         if (config.pickaxeOnly()) itemTag = ItemTypeTagKeys.PICKAXES;
         else itemTag = ItemTypeTagKeys.ENCHANTABLE_MINING;
 
-        manager.registerEventHandler(RegistryEvents.ENCHANTMENT.compose().newHandler(event -> event.registry().register(
+        manager.registerEventHandler(RegistryEvents.ENCHANTMENT.freeze().newHandler(event -> event.registry().register(
             VEINMINE,
             builder -> builder.description(Component.translatable("enchantment.veinminer_enchantment.veinminer", "Veinmine"))
                 .supportedItems(event.getOrCreateTag(itemTag))

@@ -7,7 +7,7 @@ import org.slf4j.Logger
 
 object FabricHost : VeinminerHost {
     override val versionVeinminer: String = Veinminer.INSTANCE.metadata.version.friendlyString
-    override val versionMinecraft: String = DetectedVersion.tryDetectVersion().name()
+    override val versionMinecraft: String = DetectedVersion.tryDetectVersion().name
     override val platform: String = "Fabric"
     override val logger: Logger = Veinminer.LOGGER
 

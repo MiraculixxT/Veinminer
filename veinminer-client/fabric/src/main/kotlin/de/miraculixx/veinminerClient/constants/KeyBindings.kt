@@ -4,10 +4,9 @@ import com.mojang.blaze3d.platform.InputConstants
 import de.miraculixx.veinminerClient.ClientLifecycle.MOD_ID
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
 import net.minecraft.client.KeyMapping
-import net.minecraft.resources.Identifier
 
 object FabricKeyBindings {
-    private val category = KeyMapping.Category.register(Identifier.fromNamespaceAndPath(MOD_ID, "keybinds"))
+    private const val CATEGORY = "key.category.$MOD_ID.keybinds"
 
     fun register() {
         KeyBindings.hold = registerKeyBinding("hold", InputConstants.KEY_Y)
@@ -20,7 +19,7 @@ object FabricKeyBindings {
             "key.$MOD_ID.$id",
             InputConstants.Type.KEYSYM,
             key,
-            category
+            CATEGORY
         )
     )
 }

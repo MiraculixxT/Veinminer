@@ -7,17 +7,17 @@ import de.miraculixx.veinminer.network.ServerConfiguration
 import de.miraculixx.veinminer.utils.mcServer
 import de.miraculixx.veinminer.utils.permissionVeinmine
 import kotlinx.serialization.modules.SerializersModule
-import net.minecraft.resources.Identifier
+import net.minecraft.resources.ResourceLocation
 import kotlin.io.path.Path
 
 /**
  * Fabric & NeoForge exclusive - Paper carries its own impl
  */
-object ConfigManager : BaseConfigManager<Identifier>(
+object ConfigManager : BaseConfigManager<ResourceLocation>(
     configDir = Path("config/Veinminer"),
     serializer = IdentifierConfigSerializer,
     jsonModule = SerializersModule {
-        contextual(Identifier::class, ResourceLocationSerializer)
+        contextual(ResourceLocation::class, ResourceLocationSerializer)
     }
 ) {
     @Suppress("USELESS_ELVIS")
@@ -32,7 +32,7 @@ object ConfigManager : BaseConfigManager<Identifier>(
                 groups = networkGroups,
                 veinBlocks = networkVeinBlocks,
                 enchantmentActive = EventState.enchantmentActive,
-                enchantmentKey = EventState.enchantmentKey.identifier().toString(),
+                enchantmentKey = EventState.enchantmentKey.location().toString(),
                 hostActive = ActiveHost.host.active,
                 hasUsePermission = EventState.checkPermission(player, permissionVeinmine),
             )

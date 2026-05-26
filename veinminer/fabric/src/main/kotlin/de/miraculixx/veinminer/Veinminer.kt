@@ -31,7 +31,6 @@ import net.minecraft.network.chat.Style
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.entity.player.Player
 import org.slf4j.Logger
-import java.net.URI
 import kotlin.jvm.optionals.getOrNull
 
 
@@ -91,11 +90,11 @@ class Veinminer : ModInitializer {
         ServerPlayConnectionEvents.JOIN.register { packet, _, _ ->
             val player = packet.player
             val info = updateInfo
-            val permission = player.server.getProfilePermissions(player.nameAndId())
-            if (info != null && (permission.level().id() > 1 || !player.server.isDedicatedServer)) {
+            val permission = player.server.getProfilePermissions(player.gameProfile)
+            if (info != null && (permission > 1 || !player.server.isDedicatedServer)) {
                 player.sendSystemMessage(
                     Component.literal("${info.module.modID} is outdated! Click here to download the latest version")
-                        .setStyle(Style.EMPTY.withClickEvent(ClickEvent.OpenUrl(URI("https://modrinth.com/project/${info.module.modID}"))))
+                        .setStyle(Style.EMPTY.withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, "https://modrinth.com/project/${info.module.modID}")))
                         .append(" (Current: ").append(Component.literal(info.currentVersion).withColor(cRed))
                         .append(", Latest: ").append(Component.literal(info.latestVersion).withColor(cGreen)).append(")")
                 )

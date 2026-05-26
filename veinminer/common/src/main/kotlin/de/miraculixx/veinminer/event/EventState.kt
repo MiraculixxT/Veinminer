@@ -3,7 +3,7 @@ package de.miraculixx.veinminer.event
 import de.miraculixx.veinminer.config.BaseConfigManager
 import net.minecraft.core.BlockPos
 import net.minecraft.core.registries.Registries
-import net.minecraft.resources.Identifier
+import net.minecraft.resources.ResourceLocation
 import net.minecraft.resources.ResourceKey
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.entity.Entity
@@ -22,9 +22,9 @@ object EventState {
     var enchantmentActive: Boolean = false
 
     val enchantmentKey: ResourceKey<Enchantment> =
-        ResourceKey.create(Registries.ENCHANTMENT, Identifier.fromNamespaceAndPath("veinminer_enchantment", "veinminer"))
+        ResourceKey.create(Registries.ENCHANTMENT, ResourceLocation.fromNamespaceAndPath("veinminer_enchantment", "veinminer"))
 
-    lateinit var configManager: BaseConfigManager<Identifier>
+    lateinit var configManager: BaseConfigManager<ResourceLocation>
 
     /** Loader plugs in its native permissions API. Defaults to "always allowed". */
     @Volatile

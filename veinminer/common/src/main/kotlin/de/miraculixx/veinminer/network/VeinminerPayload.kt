@@ -3,7 +3,7 @@ package de.miraculixx.veinminer.network
 import net.minecraft.network.RegistryFriendlyByteBuf
 import net.minecraft.network.codec.StreamCodec
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload
-import net.minecraft.resources.Identifier
+import net.minecraft.resources.ResourceLocation
 
 /**
  * Generic Veinminer custom payload carrying raw JSON-encoded bytes.
@@ -42,4 +42,4 @@ fun rawBytesCodec(type: CustomPacketPayload.Type<VeinminerPayload>): StreamCodec
     }
 
 fun payloadType(channel: String): CustomPacketPayload.Type<VeinminerPayload> =
-    CustomPacketPayload.Type(Identifier.fromNamespaceAndPath(NetworkManager.PACKET_IDENTIFIER, channel))
+    CustomPacketPayload.Type(ResourceLocation.fromNamespaceAndPath(NetworkManager.PACKET_IDENTIFIER, channel))
