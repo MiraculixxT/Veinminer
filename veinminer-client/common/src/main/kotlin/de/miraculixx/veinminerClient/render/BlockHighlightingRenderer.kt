@@ -20,8 +20,8 @@ import java.util.*
 object BlockHighlightingRenderer {
     private var highlightingShape: VoxelShape = Shapes.empty()
 
-    private val renderHighlighting: RenderType by lazy { RenderType.lines() }
-    private val renderHighlightingTranslucent: RenderType by lazy {
+    private val renderHighlighting: RenderType by lazy<RenderType> { RenderType.lines() }
+    private val renderHighlightingTranslucent: RenderType by lazy<RenderType> {
         RenderType.create(
             "${ClientLifecycle.MOD_ID}:highlight_translucent",
             DefaultVertexFormat.POSITION_COLOR_NORMAL,
@@ -36,7 +36,7 @@ object BlockHighlightingRenderer {
                 .setWriteMaskState(RenderStateShard.COLOR_WRITE)
                 .setLineState(RenderStateShard.DEFAULT_LINE)
                 .createCompositeState(false)
-        )
+        ) as RenderType
     }
 
 

@@ -86,11 +86,8 @@ class VeinminerClient(modBus: IEventBus, container: ModContainer) {
         gameBus.addListener<RenderLevelStageEvent> { event ->
             if (event.stage != RenderLevelStageEvent.Stage.AFTER_BLOCK_ENTITIES) return@addListener
             val source = Minecraft.getInstance().renderBuffers().bufferSource()
-            BlockHighlightingRenderer.render(event.poseStack, source, event.camera.position, false)
-        }
-        gameBus.addListener<RenderLevelStageEvent> { event ->
-            if (event.stage != RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) return@addListener
-            val source = Minecraft.getInstance().renderBuffers().bufferSource()
+            val cameraPosition = event.camera.position
+            BlockHighlightingRenderer.render(event.poseStack, source, cameraPosition, false)
             BlockHighlightingRenderer.render(event.poseStack, source, event.camera.position, true)
         }
 
