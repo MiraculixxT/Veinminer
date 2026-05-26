@@ -25,6 +25,7 @@ import kotlin.math.min
 import kotlin.math.roundToInt
 
 private const val ROW_HEIGHT = 48
+private var colorPicker: FloatingColorPicker? = null
 
 /**
  * Best case scenario, never need to touch that again.
@@ -34,7 +35,6 @@ private const val ROW_HEIGHT = 48
 class PatternConfigScreen(private val parent: Screen?) : Screen(Component.literal("Veinminer Patterns")) {
     private var addType = PatternType.TUNNEL
     private lateinit var patternList: PatternList
-    private var colorPicker: FloatingColorPicker? = null
     private var patternListScrollAmount = 0.0
 
     override fun init() {
@@ -77,7 +77,10 @@ class PatternConfigScreen(private val parent: Screen?) : Screen(Component.litera
         val delegatedMouseY = if (blockUnderlyingHover) -1 else mouseY
         super.render(graphics, delegatedMouseX, delegatedMouseY, partialTick)
         graphics.drawCenteredString(font, title, width / 2, 10, 0xFFFFFF)
-        colorPicker?.render(graphics, mouseX, mouseY, partialTick)
+        colorPicker?.let {
+            graphics.flush()
+            it.render(graphics, mouseX, mouseY, partialTick)
+        }
     }
 
     override fun onClose() {
@@ -139,6 +142,7 @@ class PatternConfigScreen(private val parent: Screen?) : Screen(Component.litera
             ClientPatternConfig.save()
             syncSelection()
         }
+        rebuildPatternWidgets()
         clearFocus()
     }
 
@@ -146,6 +150,7 @@ class PatternConfigScreen(private val parent: Screen?) : Screen(Component.litera
         colorPicker?.close()
         colorPicker = null
         ClientPatternConfig.save()
+        rebuildPatternWidgets()
         syncSelection()
     }
 
@@ -198,11 +203,11 @@ class PatternConfigScreen(private val parent: Screen?) : Screen(Component.litera
             }
         }
 
-        private val typeButton = CycleButton.builder<PatternType> { Component.literal(it.name.lowercase().replaceFirstChar(Char::uppercase)) }
+        private val typeButton = CycleButton.builder<PatternType> { getText("● ${it.name.lowercase().replaceFirstChar(Char::uppercase)}") }
             .withValues(PatternType.entries)
             .withInitialValue(pattern.type)
             .displayOnlyValue()
-            .create(0, 0, 74, 20, Component.literal("Type")) { _, value ->
+            .create(0, 0, 74, 20, Component.literal("● Type")) { _, value ->
                 pattern.type = value
                 pattern.color = ClientPatternConfig.defaultFor(value).color
                 persist(rebuild = true)
@@ -222,7 +227,7 @@ class PatternConfigScreen(private val parent: Screen?) : Screen(Component.litera
             persist()
         }
 
-        private val stairsDirectionButton = CycleButton.booleanBuilder(Component.literal("UP"), Component.literal("DOWN"))
+        private val stairsDirectionButton = CycleButton.booleanBuilder(getText("UP"), getText("DOWN"))
             .withInitialValue(pattern.stairsUp)
             .displayOnlyValue()
             .create(0, 0, 64, 20, Component.literal("Direction")) { _, value ->
@@ -279,7 +284,7 @@ class PatternConfigScreen(private val parent: Screen?) : Screen(Component.litera
             val accent = pattern.color and 0xFFFFFF
             graphics.fill(left - 4, top - 2, left + rowWidth + 4, top + ROW_HEIGHT - 4, if (hovered) 0x80505050.toInt() else 0x70383838)
             graphics.fill(left - 4, top - 2, left, top + ROW_HEIGHT - 4, 0xFF000000.toInt() or accent)
-            graphics.drawString(Minecraft.getInstance().font, ClientPatternConfig.displayName(pattern), left + ROW_HEIGHT, top + 4, -1)
+            if (colorPicker == null) graphics.drawString(Minecraft.getInstance().font, ClientPatternConfig.displayName(pattern), left + ROW_HEIGHT, top + 4, -1)
             widgets.forEach { if (it.visible) it.render(graphics, mouseX, mouseY, partialTick) }
         }
 
@@ -416,7 +421,7 @@ private class IntSlider(
     }
 
     override fun updateMessage() {
-        message = Component.literal("${currentValue()} ├──────┤ $suffix")
+        message = getText("${currentValue()} ├──────┤ $suffix")
     }
 
     override fun applyValue() {
@@ -649,3 +654,6 @@ private fun String.parseHexColor(): Int? {
     if (clean.length != 6) return null
     return clean.toIntOrNull(16)?.and(0xFFFFFF)
 }
+
+private fun getText(text: String): Component
+    = if (colorPicker == null) Component.literal(text) else Component.empty()

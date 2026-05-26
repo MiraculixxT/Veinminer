@@ -1,5 +1,6 @@
 package de.miraculixx.veinminerClient
 
+import com.mojang.blaze3d.vertex.PoseStack
 import de.miraculixx.veinminer.extensions.mcCoroutineAsync
 import de.miraculixx.veinminer.extensions.ticks
 import de.miraculixx.veinminerClient.ClientLifecycle.MOD_ID
@@ -15,9 +16,11 @@ import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.Minecraft
+import net.minecraft.client.renderer.MultiBufferSource
 import kotlin.jvm.optionals.getOrNull
 
 class VeinminerClient : ClientModInitializer {
@@ -54,14 +57,7 @@ class VeinminerClient : ClientModInitializer {
         }
 
         WorldRenderEvents.AFTER_ENTITIES.register { context ->
-            val stack = context.matrixStack() ?: return@register
-            val source = Minecraft.getInstance().renderBuffers().bufferSource()
-            BlockHighlightingRenderer.render(stack, source, context.camera().position, false)
-        }
-        WorldRenderEvents.AFTER_TRANSLUCENT.register { context ->
-            val stack = context.matrixStack() ?: return@register
-            val source = Minecraft.getInstance().renderBuffers().bufferSource()
-            BlockHighlightingRenderer.render(stack, source, context.camera().position, true)
+            renderBlockHighlights(context)
         }
 
         mcCoroutineAsync(1.ticks) {
@@ -71,5 +67,13 @@ class VeinminerClient : ClientModInitializer {
                 fabricLoader.getModContainer("veinminer_client").getOrNull()?.metadata?.version?.friendlyString
             )
         }
+    }
+
+    private fun renderBlockHighlights(context: WorldRenderContext) {
+        val stack = context.matrixStack() ?: PoseStack().also { it.last().pose().set(context.positionMatrix()) }
+        val source = context.consumers() as? MultiBufferSource.BufferSource ?: Minecraft.getInstance().renderBuffers().bufferSource()
+        val cameraPosition = context.camera().position
+        BlockHighlightingRenderer.render(stack, source, cameraPosition, false)
+        BlockHighlightingRenderer.render(stack, source, cameraPosition, true)
     }
 }
