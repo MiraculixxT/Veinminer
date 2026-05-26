@@ -1,5 +1,6 @@
 package de.miraculixx.veinminerClient.render
 
+import com.mojang.blaze3d.systems.RenderSystem
 import de.miraculixx.veinminer.network.KeyPress
 import de.miraculixx.veinminer.pattern.PatternConfig
 import de.miraculixx.veinminerClient.config.ClientPatternConfig
@@ -125,11 +126,17 @@ object ShapeRouletteOverlay {
             val iconY = rowY + (ROW_HEIGHT - ICON_SIZE) / 2 - 1
             val rowAlpha = if (rel == 0) alpha else (alpha * 0.55).toInt().coerceAtLeast(0)
             val iconTint = if (rel == 0) mixAlpha(rowAlpha, 0xFF, accent) else mixAlpha(rowAlpha, 0xFF, 0xFFFFFF)
-            g.blit(pattern.icon(), iconX, iconY, 0f, 0f, ICON_SIZE, ICON_SIZE, ICON_TEX_SIZE, ICON_TEX_SIZE)
-            val textX = iconX + ICON_SIZE + 5
-            val textY = rowY + (ROW_HEIGHT - 8) / 2
-            val rgb = if (rel == 0) accent else 0xC8C8C8
-            g.drawString(font, Component.literal(ClientPatternConfig.displayName(pattern)), textX, textY, mixAlpha(rowAlpha, 0xFF, rgb))
+            if (rowAlpha > 3) {
+                RenderSystem.enableBlend()
+                RenderSystem.defaultBlendFunc()
+                g.setArgbColor(iconTint)
+                g.blit(pattern.icon(), iconX, iconY, 0f, 0f, ICON_SIZE, ICON_SIZE, ICON_TEX_SIZE, ICON_TEX_SIZE)
+                g.setColor(1f, 1f, 1f, 1f)
+                val textX = iconX + ICON_SIZE + 5
+                val textY = rowY + (ROW_HEIGHT - 8) / 2
+                val rgb = if (rel == 0) accent else 0xC8C8C8
+                g.drawString(font, Component.literal(ClientPatternConfig.displayName(pattern)), textX, textY, mixAlpha(rowAlpha, 0xFF, rgb))
+            }
         }
     }
 
@@ -146,8 +153,10 @@ object ShapeRouletteOverlay {
         }
         val labelX = barX + DEPTH_VALUES.size * (BAR_CELL_W + BAR_GAP) + 4
         val labelY = barY - 2
-        val label = if (depthIndex == DEPTH_VALUES.lastIndex) "∞" else currentDepth.toString()
-        g.drawString(font, Component.literal(label), labelX, labelY, mixAlpha(alpha, 0xFF, 0xFFFFFF))
+        if (alpha > 3) {
+            val label = if (depthIndex == DEPTH_VALUES.lastIndex) "∞" else currentDepth.toString()
+            g.drawString(font, Component.literal(label), labelX, labelY, mixAlpha(alpha, 0xFF, 0xFFFFFF))
+        }
     }
 
     private fun colorFor(pattern: PatternConfig): Int = pattern.color and 0xFFFFFF
@@ -155,6 +164,14 @@ object ShapeRouletteOverlay {
     private fun mixAlpha(alpha: Int, alphaFrac: Int, rgb: Int): Int {
         val a = (alpha * alphaFrac / 255).coerceIn(0, 255)
         return (a shl 24) or (rgb and 0xFFFFFF)
+    }
+
+    private fun GuiGraphics.setArgbColor(argb: Int) {
+        val a = ((argb ushr 24) and 0xFF) / 255f
+        val r = ((argb ushr 16) and 0xFF) / 255f
+        val g = ((argb ushr 8) and 0xFF) / 255f
+        val b = (argb and 0xFF) / 255f
+        setColor(r, g, b, a)
     }
 
     private fun advance(deltaTicks: Float) {
@@ -166,9 +183,11 @@ object ShapeRouletteOverlay {
         animated += diff * (ANIM_SPEED * deltaTicks).coerceAtMost(1f)
     }
 
-    private fun computeAlpha(elapsed: Long): Int =
-        if (elapsed <= FADE_DELAY_MS) 255
+    private fun computeAlpha(elapsed: Long): Int {
+        val alpha = if (elapsed <= FADE_DELAY_MS) 255
         else (255 * max(0f, 1f - (elapsed - FADE_DELAY_MS).toFloat() / FADE_DURATION_MS.toFloat())).toInt()
+        return if (alpha <= 3) 0 else alpha
+    }
 
     private fun bumpInteraction() {
         lastInteractionMs = System.currentTimeMillis()

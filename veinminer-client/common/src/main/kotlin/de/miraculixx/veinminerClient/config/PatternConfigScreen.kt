@@ -1,7 +1,5 @@
 package de.miraculixx.veinminerClient.config
 
-import com.mojang.blaze3d.pipeline.RenderPipeline
-import com.mojang.blaze3d.vertex.VertexConsumer
 import de.miraculixx.veinminer.pattern.PatternConfig
 import de.miraculixx.veinminer.pattern.PatternType
 import de.miraculixx.veinminerClient.ClientLifecycle
@@ -9,22 +7,18 @@ import de.miraculixx.veinminerClient.network.NetworkManager
 import de.miraculixx.veinminerClient.render.ShapeRouletteOverlay
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
-import net.minecraft.client.gui.components.*
+import net.minecraft.client.gui.components.AbstractSliderButton
+import net.minecraft.client.gui.components.AbstractWidget
+import net.minecraft.client.gui.components.Button
+import net.minecraft.client.gui.components.ContainerObjectSelectionList
+import net.minecraft.client.gui.components.CycleButton
+import net.minecraft.client.gui.components.EditBox
 import net.minecraft.client.gui.components.events.GuiEventListener
 import net.minecraft.client.gui.narration.NarratableEntry
 import net.minecraft.client.gui.narration.NarrationElementOutput
-import net.minecraft.client.gui.navigation.ScreenRectangle
-import net.minecraft.client.gui.render.TextureSetup
-import net.minecraft.client.gui.render.state.GuiElementRenderState
 import net.minecraft.client.gui.screens.Screen
-import net.minecraft.client.input.CharacterEvent
-import net.minecraft.client.input.KeyEvent
-import net.minecraft.client.input.MouseButtonEvent
-import net.minecraft.client.renderer.RenderPipelines
 import net.minecraft.network.chat.Component
-import net.minecraft.resources.Identifier
-import org.joml.Matrix3x2f
-import org.joml.Matrix3x2fc
+import net.minecraft.resources.ResourceLocation
 import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
@@ -46,7 +40,8 @@ class PatternConfigScreen(private val parent: Screen?) : Screen(Component.litera
     override fun init() {
         val center = width / 2
         addRenderableWidget(
-            CycleButton.booleanBuilder(Component.literal("Inverted"), Component.literal("Normal"), ClientPatternConfig.settings.invertedScroll)
+            CycleButton.booleanBuilder(Component.literal("Inverted"), Component.literal("Normal"))
+                .withInitialValue(ClientPatternConfig.settings.invertedScroll)
                 .create(16, 24, 100, 20, Component.literal("Scroll")) { _, value ->
                     ClientPatternConfig.settings.invertedScroll = value
                     ClientPatternConfig.save()
@@ -57,19 +52,16 @@ class PatternConfigScreen(private val parent: Screen?) : Screen(Component.litera
                 ClientPatternConfig.add(addType)
                 syncSelection()
                 rebuildPatternWidgets()
-            }.bounds(width - 80, 24, 64, 20).build()
+            }.bounds(width - 84, 24, 68, 20).build()
         )
 
-        patternList = PatternList(minecraft, panelWidth(), viewportHeight(), panelTop(), ROW_HEIGHT)
-        patternList.updateSizeAndPosition(panelWidth(), viewportHeight(), panelLeft(), panelTop())
+        patternList = PatternList(minecraft!!, panelWidth(), viewportHeight(), panelTop(), ROW_HEIGHT)
+        patternList.updateSizeAndPosition(panelWidth(), viewportHeight(), panelTop())
+        patternList.setX(panelLeft())
         patternList.setScrollAmount(patternListScrollAmount)
         addRenderableWidget(patternList)
 
-        addRenderableWidget(
-            Button.builder(Component.literal("Done")) {
-                saveAndClose()
-            }.bounds(center - 102, height - 28, 100, 20).build()
-        )
+        addRenderableWidget(Button.builder(Component.literal("Done")) { saveAndClose() }.bounds(center - 102, height - 28, 100, 20).build())
         addRenderableWidget(
             Button.builder(Component.literal("Reset")) {
                 ClientPatternConfig.reset()
@@ -85,61 +77,61 @@ class PatternConfigScreen(private val parent: Screen?) : Screen(Component.litera
         val delegatedMouseY = if (blockUnderlyingHover) -1 else mouseY
         super.render(graphics, delegatedMouseX, delegatedMouseY, partialTick)
         graphics.drawCenteredString(font, title, width / 2, 10, 0xFFFFFF)
-        colorPicker?.extractRenderState(graphics, mouseX, mouseY, partialTick)
+        colorPicker?.render(graphics, mouseX, mouseY, partialTick)
     }
 
     override fun onClose() {
         saveAndClose()
     }
 
-    override fun mouseClicked(event: MouseButtonEvent, doubleClick: Boolean): Boolean {
+    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
         colorPicker?.let { picker ->
-            if (picker.mouseClicked(event, doubleClick)) return true
-            if (!picker.contains(event.x(), event.y())) {
+            if (picker.mouseClicked(mouseX, mouseY, button)) return true
+            if (!picker.contains(mouseX, mouseY)) {
                 closeColorPicker()
                 return true
             }
         }
-        return super.mouseClicked(event, doubleClick)
+        return super.mouseClicked(mouseX, mouseY, button)
     }
 
-    override fun mouseReleased(event: MouseButtonEvent): Boolean {
+    override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
         colorPicker?.let { picker ->
-            if (picker.mouseReleased(event)) return true
+            if (picker.mouseReleased(mouseX, mouseY, button)) return true
         }
-        return super.mouseReleased(event)
+        return super.mouseReleased(mouseX, mouseY, button)
     }
 
-    override fun mouseDragged(event: MouseButtonEvent, dx: Double, dy: Double): Boolean {
+    override fun mouseDragged(mouseX: Double, mouseY: Double, button: Int, dragX: Double, dragY: Double): Boolean {
         colorPicker?.let { picker ->
-            if (picker.mouseDragged(event, dx, dy)) return true
+            if (picker.mouseDragged(mouseX, mouseY, button, dragX, dragY)) return true
         }
-        return super.mouseDragged(event, dx, dy)
+        return super.mouseDragged(mouseX, mouseY, button, dragX, dragY)
     }
 
-    override fun keyPressed(event: KeyEvent): Boolean {
-        if (event.isEscape && colorPicker != null) {
+    override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
+        if (keyCode == 256 && colorPicker != null) {
             closeColorPicker()
             return true
         }
         colorPicker?.let { picker ->
-            if (picker.keyPressed(event)) return true
+            if (picker.keyPressed(keyCode, scanCode, modifiers)) return true
         }
-        return super.keyPressed(event)
+        return super.keyPressed(keyCode, scanCode, modifiers)
     }
 
-    override fun charTyped(event: CharacterEvent): Boolean {
+    override fun charTyped(codePoint: Char, modifiers: Int): Boolean {
         colorPicker?.let { picker ->
-            if (picker.charTyped(event)) return true
+            if (picker.charTyped(codePoint, modifiers)) return true
         }
-        return super.charTyped(event)
+        return super.charTyped(codePoint, modifiers)
     }
 
     private fun saveAndClose() {
         ClientPatternConfig.save()
         syncSelection()
         NetworkManager.sendPatternConfig()
-        minecraft.setScreen(parent)
+        minecraft?.setScreen(parent)
     }
 
     private fun openColorPicker(pattern: PatternConfig) {
@@ -158,9 +150,7 @@ class PatternConfigScreen(private val parent: Screen?) : Screen(Component.litera
     }
 
     private fun rebuildPatternWidgets() {
-        if (::patternList.isInitialized) {
-            patternListScrollAmount = patternList.scrollAmount()
-        }
+        if (::patternList.isInitialized) patternListScrollAmount = patternList.getScrollAmount()
         rebuildWidgets()
     }
 
@@ -195,29 +185,27 @@ class PatternConfigScreen(private val parent: Screen?) : Screen(Component.litera
 
         override fun getRowWidth(): Int = (width - 18).coerceAtLeast(340)
 
-        override fun scrollBarX(): Int = x + getWidth() - 10
+        override fun getScrollbarPosition(): Int = x + width - 10
     }
 
-    private inner class PatternEntry(val pattern: PatternConfig) : ContainerObjectSelectionList.Entry<PatternEntry>() {
+    private inner class PatternEntry(private val pattern: PatternConfig) : ContainerObjectSelectionList.Entry<PatternEntry>() {
         private val iconButton = PatternIconButton(pattern) {
             if (!pattern.enabled || ClientPatternConfig.canDisable(pattern)) {
                 pattern.enabled = !pattern.enabled
-                ClientPatternConfig.save()
-                syncSelection()
+                persist()
             } else {
                 rebuildPatternWidgets()
             }
         }
 
-        private val typeButton = CycleButton.builder({ Component.literal("● Type") }, pattern.type)
+        private val typeButton = CycleButton.builder<PatternType> { Component.literal(it.name.lowercase().replaceFirstChar(Char::uppercase)) }
             .withValues(PatternType.entries)
+            .withInitialValue(pattern.type)
             .displayOnlyValue()
-            .create(0, 0, 88, 22, Component.literal("Type")) { _, value ->
+            .create(0, 0, 74, 20, Component.literal("Type")) { _, value ->
                 pattern.type = value
                 pattern.color = ClientPatternConfig.defaultFor(value).color
-                ClientPatternConfig.save()
-                syncSelection()
-                rebuildPatternWidgets()
+                persist(rebuild = true)
             }
 
         private val colorButton = ColorButton(pattern) {
@@ -226,39 +214,37 @@ class PatternConfigScreen(private val parent: Screen?) : Screen(Component.litera
 
         private val widthSlider = IntSlider("X", 1, 10, { pattern.width }) {
             pattern.width = it
-            ClientPatternConfig.save()
-            syncSelection()
+            persist()
         }
 
         private val heightSlider = IntSlider("Y", 1, 10, { pattern.height }) {
             pattern.height = it
-            ClientPatternConfig.save()
-            syncSelection()
+            persist()
         }
 
-        private val stairsDirectionButton = CycleButton.booleanBuilder(Component.literal("UP"), Component.literal("DOWN"), pattern.stairsUp)
+        private val stairsDirectionButton = CycleButton.booleanBuilder(Component.literal("UP"), Component.literal("DOWN"))
+            .withInitialValue(pattern.stairsUp)
             .displayOnlyValue()
-            .create(0, 0, 92, 22, Component.literal("Direction")) { _, value ->
+            .create(0, 0, 64, 20, Component.literal("Direction")) { _, value ->
                 pattern.stairsUp = value
-                ClientPatternConfig.save()
-                syncSelection()
+                persist()
             }
 
-        private val upButton = MoveSpriteButton(1) {
+        private val upButton = MoveSpriteButton(MoveSpriteButton.Type.UP) {
             if (ClientPatternConfig.move(pattern, -1)) {
                 syncSelection()
                 rebuildPatternWidgets()
             }
         }
 
-        private val downButton = MoveSpriteButton(2) {
+        private val downButton = MoveSpriteButton(MoveSpriteButton.Type.DOWN) {
             if (ClientPatternConfig.move(pattern, 1)) {
                 syncSelection()
                 rebuildPatternWidgets()
             }
         }
 
-        private val removeButton = MoveSpriteButton(3) {
+        private val removeButton = MoveSpriteButton(MoveSpriteButton.Type.REMOVE) {
             if (ClientPatternConfig.remove(pattern)) {
                 syncSelection()
                 rebuildPatternWidgets()
@@ -273,105 +259,98 @@ class PatternConfigScreen(private val parent: Screen?) : Screen(Component.litera
             heightSlider,
             stairsDirectionButton,
             upButton,
-            removeButton,
             downButton,
+            removeButton,
         )
 
-        override fun renderContent(graphics: GuiGraphics, mouseX: Int, mouseY: Int, hovered: Boolean, partialTick: Float) {
-            layoutWidgets()
-            val x = contentX
-            val y = contentY
-            val right = contentRight
+        override fun render(
+            graphics: GuiGraphics,
+            index: Int,
+            top: Int,
+            left: Int,
+            rowWidth: Int,
+            rowHeight: Int,
+            mouseX: Int,
+            mouseY: Int,
+            hovered: Boolean,
+            partialTick: Float,
+        ) {
+            layoutWidgets(left, top, rowWidth)
             val accent = pattern.color and 0xFFFFFF
-            graphics.fill(x - 4, y - 3, right + 4, y + ROW_HEIGHT - 5, if (hovered) 0x80909090.toInt() else 0x70909090)
-            graphics.fill(x - 4, y - 3, x, y + ROW_HEIGHT - 5, 0xFF000000.toInt() or accent)
-            widgets.forEach { it.render(graphics, mouseX, mouseY, partialTick) }
-            graphics.drawString(font, ClientPatternConfig.displayName(pattern), x + ROW_HEIGHT, y + 4, -1)
+            graphics.fill(left - 4, top - 2, left + rowWidth + 4, top + ROW_HEIGHT - 4, if (hovered) 0x80505050.toInt() else 0x70383838)
+            graphics.fill(left - 4, top - 2, left, top + ROW_HEIGHT - 4, 0xFF000000.toInt() or accent)
+            graphics.drawString(Minecraft.getInstance().font, ClientPatternConfig.displayName(pattern), left + ROW_HEIGHT, top + 4, -1)
+            widgets.forEach { if (it.visible) it.render(graphics, mouseX, mouseY, partialTick) }
         }
 
         override fun children(): List<GuiEventListener> = widgets
 
         override fun narratables(): List<NarratableEntry> = widgets
 
-        override fun mouseClicked(event: MouseButtonEvent, doubleClick: Boolean): Boolean =
-            super.mouseClicked(event, doubleClick)
+        private fun layoutWidgets(left: Int, top: Int, rowWidth: Int) {
+            val right = left + rowWidth
+            val moveX = right - 22
+            val controlsX = left + ROW_HEIGHT
+            val sliderX = controlsX + 118
+            val directionW = 68
+            val sliderW = (moveX - sliderX - directionW - 8).coerceAtLeast(70)
 
-        override fun mouseReleased(event: MouseButtonEvent): Boolean =
-            super.mouseReleased(event)
-
-        override fun mouseDragged(event: MouseButtonEvent, dx: Double, dy: Double): Boolean =
-            super.mouseDragged(event, dx, dy)
-
-        override fun keyPressed(event: KeyEvent): Boolean =
-            super.keyPressed(event)
-
-        override fun charTyped(event: CharacterEvent): Boolean =
-            super.charTyped(event)
-
-        private fun layoutWidgets() {
-            val x = contentX
-            val y = contentY
-            val right = contentRight
-            val moveX = right - 24
-            val controlsX = x + ROW_HEIGHT
-            val sliderX = controlsX + 108
-            val directionW = 68 //if (pattern.type == PatternType.STAIRS) 68 else 0
-            val sliderRight = moveX - 18 - directionW
-            val sliderW = sliderRight - sliderX
-            val buttonHeight = 20
-
-            iconButton.place(x + 4, y, ROW_HEIGHT - 8, ROW_HEIGHT - 8)
-            typeButton.place(controlsX, y + buttonHeight, 64, buttonHeight)
-            colorButton.place(controlsX + 68, y + buttonHeight, buttonHeight, buttonHeight)
-            widthSlider.place(sliderX, y, sliderW, buttonHeight - 1)
-            heightSlider.place(sliderX, y + buttonHeight + 1, sliderW, buttonHeight - 1)
-            stairsDirectionButton.place(sliderX + sliderW + 4, y + buttonHeight, 64, buttonHeight)
-            upButton.place(moveX, y - 4, 14, 14)
-            removeButton.place(moveX, y + 12, 14, 14)
-            downButton.place(moveX, y + 28, 14, 14)
+            iconButton.place(left + 4, top, ROW_HEIGHT - 8, ROW_HEIGHT - 8)
+            typeButton.place(controlsX, top + 20, 64, 20)
+            colorButton.place(controlsX + 68, top + 20, 20, 20)
+            widthSlider.place(sliderX, top, sliderW, 19)
+            heightSlider.place(sliderX, top + 21, sliderW, 19)
+            stairsDirectionButton.place(sliderX + sliderW + 4, top + 23, 64, 20)
+            upButton.place(moveX, top - 4, 14, 14)
+            removeButton.place(moveX, top + 12, 14, 14)
+            downButton.place(moveX, top + 28, 14, 14)
 
             iconButton.active = !pattern.enabled || ClientPatternConfig.canDisable(pattern)
             removeButton.active = ClientPatternConfig.canRemove(pattern)
             upButton.active = ClientPatternConfig.settings.patterns.indexOf(pattern) > 0
             downButton.active = ClientPatternConfig.settings.patterns.indexOf(pattern) < ClientPatternConfig.settings.patterns.lastIndex
-
-            widgets.forEach { it.visible = true }
             widthSlider.visible = pattern.hasSize()
             heightSlider.visible = pattern.hasSize()
             stairsDirectionButton.visible = pattern.type == PatternType.STAIRS
+        }
+
+        private fun persist(rebuild: Boolean = false) {
+            ClientPatternConfig.save()
+            syncSelection()
+            if (rebuild) rebuildPatternWidgets()
         }
     }
 }
 
 private class PatternIconButton(
     private val pattern: PatternConfig,
-    private val onToggle: () -> Unit,
+    private val onPress: () -> Unit,
 ) : AbstractWidget(0, 0, ROW_HEIGHT, ROW_HEIGHT, Component.literal("Toggle pattern")) {
     override fun renderWidget(graphics: GuiGraphics, mouseX: Int, mouseY: Int, partialTick: Float) {
         val bg = if (isHoveredOrFocused) 0xB0505050.toInt() else 0xB0404040.toInt()
         val tint = if (pattern.enabled) pattern.color and 0xFFFFFF else 0x7A7A7A
+        val r = ((tint shr 16) and 0xFF) / 255f
+        val g = ((tint shr 8) and 0xFF) / 255f
+        val b = (tint and 0xFF) / 255f
         graphics.fill(x, y, x + width, y + height, bg)
         graphics.fill(x, y, x + width, y + 1, 0xFFB8B8B8.toInt())
         graphics.fill(x, y + height - 1, x + width, y + height, 0xFF222222.toInt())
         graphics.fill(x, y, x + 1, y + height, 0xFFB8B8B8.toInt())
         graphics.fill(x + width - 1, y, x + width, y + height, 0xFF222222.toInt())
-        graphics.blit(RenderPipelines.GUI_TEXTURED, pattern.icon(), x + 2, y + 2, 0f, 0f, ROW_HEIGHT - 12, ROW_HEIGHT - 12, 16, 16, 16, 16, 0xFF000000.toInt() or tint)
-        handleCursor(graphics)
+        graphics.setColor(r, g, b, 1f)
+        graphics.blit(pattern.icon(), x + 2, y + 2, width - 4, height - 4, 0f, 0f, 16, 16, 16, 16)
+        graphics.setColor(1f, 1f, 1f, 1f)
     }
 
-    override fun onClick(event: MouseButtonEvent, doubleClick: Boolean) {
-        onToggle()
-    }
+    override fun onClick(mouseX: Double, mouseY: Double) = onPress()
 
-    override fun updateWidgetNarration(output: NarrationElementOutput) {
-        defaultButtonNarrationText(output)
-    }
+    override fun updateWidgetNarration(output: NarrationElementOutput) = defaultButtonNarrationText(output)
 }
 
 private class ColorButton(
     private val pattern: PatternConfig,
     private val onPress: () -> Unit,
-) : AbstractWidget(0, 0, 34, 22, Component.literal("Color")) {
+) : AbstractWidget(0, 0, 34, 20, Component.literal("Color")) {
     override fun renderWidget(graphics: GuiGraphics, mouseX: Int, mouseY: Int, partialTick: Float) {
         val border = if (isHoveredOrFocused) 0xFFFFFFFF.toInt() else 0xFF808080.toInt()
         graphics.fill(x, y, x + width, y + height, 0xFF303030.toInt())
@@ -380,66 +359,64 @@ private class ColorButton(
         graphics.fill(x, y + height - 1, x + width, y + height, border)
         graphics.fill(x, y, x + 1, y + height, border)
         graphics.fill(x + width - 1, y, x + width, y + height, border)
-        handleCursor(graphics)
     }
 
-    override fun onClick(event: MouseButtonEvent, doubleClick: Boolean) {
-        onPress()
-    }
+    override fun onClick(mouseX: Double, mouseY: Double) = onPress()
 
-    override fun updateWidgetNarration(output: NarrationElementOutput) {
-        defaultButtonNarrationText(output)
-    }
+    override fun updateWidgetNarration(output: NarrationElementOutput) = defaultButtonNarrationText(output)
 }
 
 private class MoveSpriteButton(
-    private val type: Int,
+    private val type: Type,
     private val onPress: () -> Unit,
 ) : AbstractWidget(0, 0, 14, 14, Component.literal("Navigation")) {
     override fun renderWidget(graphics: GuiGraphics, mouseX: Int, mouseY: Int, partialTick: Float) {
-        val highlight = isHoveredOrFocused && active
+        val highlighted = isHoveredOrFocused && active
         val sprite = when (type) {
-            1 -> if (highlight) MOVE_UP_HIGHLIGHTED_SPRITE else MOVE_UP_SPRITE
-            2 -> if (highlight) MOVE_DOWN_HIGHLIGHTED_SPRITE else MOVE_DOWN_SPRITE
-            else -> if (highlight) X_HIGHLIGHTED_SPRITE else X_SPRITE
+            Type.UP -> if (highlighted) MOVE_UP_HIGHLIGHTED_SPRITE else MOVE_UP_SPRITE
+            Type.DOWN -> if (highlighted) MOVE_DOWN_HIGHLIGHTED_SPRITE else MOVE_DOWN_SPRITE
+            Type.REMOVE -> if (highlighted) DELETE_HIGHLIGHTED_SPRITE else DELETE_SPRITE
         }
         val color = if (active) 0xFFFFFFFF.toInt() else 0x80777777.toInt()
-        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, x, y, 16, 16, color)
-        handleCursor(graphics)
+        graphics.blitSprite(sprite, x, y, 16, 16, color)
     }
 
-    override fun onClick(event: MouseButtonEvent, doubleClick: Boolean) {
-        onPress()
+    override fun onClick(mouseX: Double, mouseY: Double) {
+        if (active) onPress()
     }
 
-    override fun updateWidgetNarration(output: NarrationElementOutput) {
-        defaultButtonNarrationText(output)
+    override fun updateWidgetNarration(output: NarrationElementOutput) = defaultButtonNarrationText(output)
+
+    enum class Type {
+        UP,
+        DOWN,
+        REMOVE,
     }
 
     private companion object {
-        val MOVE_UP_SPRITE: Identifier = Identifier.fromNamespaceAndPath(ClientLifecycle.MOD_ID, "menu/move_up")
-        val MOVE_UP_HIGHLIGHTED_SPRITE: Identifier = Identifier.fromNamespaceAndPath(ClientLifecycle.MOD_ID, "menu/move_up_highlighted")
-        val MOVE_DOWN_SPRITE: Identifier = Identifier.fromNamespaceAndPath(ClientLifecycle.MOD_ID, "menu/move_down")
-        val MOVE_DOWN_HIGHLIGHTED_SPRITE: Identifier = Identifier.fromNamespaceAndPath(ClientLifecycle.MOD_ID, "menu/move_down_highlighted")
-        val X_SPRITE: Identifier = Identifier.fromNamespaceAndPath(ClientLifecycle.MOD_ID, "menu/delete")
-        val X_HIGHLIGHTED_SPRITE: Identifier = Identifier.fromNamespaceAndPath(ClientLifecycle.MOD_ID, "menu/delete_highlighted")
+        val MOVE_UP_SPRITE: ResourceLocation = ResourceLocation.fromNamespaceAndPath(ClientLifecycle.MOD_ID, "menu/move_up")
+        val MOVE_UP_HIGHLIGHTED_SPRITE: ResourceLocation = ResourceLocation.fromNamespaceAndPath(ClientLifecycle.MOD_ID, "menu/move_up_highlighted")
+        val MOVE_DOWN_SPRITE: ResourceLocation = ResourceLocation.fromNamespaceAndPath(ClientLifecycle.MOD_ID, "menu/move_down")
+        val MOVE_DOWN_HIGHLIGHTED_SPRITE: ResourceLocation = ResourceLocation.fromNamespaceAndPath(ClientLifecycle.MOD_ID, "menu/move_down_highlighted")
+        val DELETE_SPRITE: ResourceLocation = ResourceLocation.fromNamespaceAndPath(ClientLifecycle.MOD_ID, "menu/delete")
+        val DELETE_HIGHLIGHTED_SPRITE: ResourceLocation = ResourceLocation.fromNamespaceAndPath(ClientLifecycle.MOD_ID, "menu/delete_highlighted")
     }
 }
 
-private open class IntSlider(
+private class IntSlider(
     private val suffix: String,
     private val min: Int,
     private val max: Int,
     getter: () -> Int,
     private val setter: (Int) -> Unit,
-) : AbstractSliderButton(0, 0, 160, 22, Component.empty(), 0.0) {
+) : AbstractSliderButton(0, 0, 160, 20, Component.empty(), 0.0) {
     init {
         value = normalize(getter())
         updateMessage()
     }
 
     override fun updateMessage() {
-        setMessage(Component.literal("${currentValue()} ├──────┤ $suffix"))
+        message = Component.literal("${currentValue()} ├──────┤ $suffix")
     }
 
     override fun applyValue() {
@@ -495,7 +472,7 @@ private class FloatingColorPicker(
         }
     }
 
-    fun extractRenderState(graphics: GuiGraphics, mouseX: Int, mouseY: Int, partialTick: Float) {
+    fun render(graphics: GuiGraphics, mouseX: Int, mouseY: Int, partialTick: Float) {
         graphics.fill(x - 2, y - 2, x + width + 2, y + height + 2, 0xE0000000.toInt())
         graphics.fill(x, y, x + width, y + height, 0xFFE8E8E8.toInt())
         graphics.fill(x + 2, y + 2, x + width - 2, y + height - 2, 0xFF1E1E1E.toInt())
@@ -503,29 +480,8 @@ private class FloatingColorPicker(
         graphics.fill(previewX, previewY, previewX + previewSize, previewY + previewSize, 0xFF000000.toInt() or (pattern.color and 0xFFFFFF))
         graphics.renderOutline(previewX, previewY, previewSize, previewSize, 0xFFB8B8B8.toInt())
 
-
-        graphics.gradientQuad(
-            pickerX,
-            pickerY,
-            pickerW,
-            pickerH,
-            0xFFFFFFFF.toInt(),
-            0xFFFFFFFF.toInt(),
-            0xFF000000.toInt() or hsvToRgb(hue, 1f, 1f),
-            0xFF000000.toInt() or hsvToRgb(hue, 1f, 1f),
-        )
-        graphics.gradientQuad(
-            pickerX,
-            pickerY,
-            pickerW,
-            pickerH,
-            0x00000000,
-            0xFF000000.toInt(),
-            0xFF000000.toInt(),
-            0x00000000,
-        )
+        graphics.saturationValueGradient(pickerX, pickerY, pickerW, pickerH, hue)
         graphics.renderOutline(pickerX, pickerY, pickerW, pickerH, 0xFFB8B8B8.toInt())
-
         graphics.hueGradient(hueX, hueY, hueW, hueH)
         graphics.renderOutline(hueX, hueY, hueW, hueH, 0xFFB8B8B8.toInt())
 
@@ -544,41 +500,41 @@ private class FloatingColorPicker(
     fun contains(mouseX: Double, mouseY: Double): Boolean =
         mouseX >= x && mouseY >= y && mouseX < x + width && mouseY < y + height
 
-    fun mouseClicked(event: MouseButtonEvent, doubleClick: Boolean): Boolean {
-        if (event.button() != 0 || !contains(event.x(), event.y())) return false
-        if (hexBox.isMouseOver(event.x(), event.y())) {
+    fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        if (button != 0 || !contains(mouseX, mouseY)) return false
+        if (hexBox.isMouseOver(mouseX, mouseY)) {
             hexBox.isFocused = true
-            hexBox.mouseClicked(event, doubleClick)
+            hexBox.mouseClicked(mouseX, mouseY, button)
             dragging = null
             return true
         }
         hexBox.isFocused = false
         dragging = when {
-            inBounds(event.x(), event.y(), pickerX, pickerY, pickerW, pickerH) -> DragTarget.PICKER
-            inBounds(event.x(), event.y(), hueX, hueY, hueW, hueH) -> DragTarget.HUE
+            inBounds(mouseX, mouseY, pickerX, pickerY, pickerW, pickerH) -> DragTarget.PICKER
+            inBounds(mouseX, mouseY, hueX, hueY, hueW, hueH) -> DragTarget.HUE
             else -> null
         }
-        updateFromMouse(event.x(), event.y())
+        updateFromMouse(mouseX, mouseY)
         return true
     }
 
-    fun mouseDragged(event: MouseButtonEvent, dx: Double, dy: Double): Boolean {
-        if (hexBox.isFocused && hexBox.mouseDragged(event, dx, dy)) return true
-        if (event.button() != 0 || dragging == null) return false
-        updateFromMouse(event.x(), event.y())
+    fun mouseDragged(mouseX: Double, mouseY: Double, button: Int, dragX: Double, dragY: Double): Boolean {
+        if (hexBox.isFocused && hexBox.mouseDragged(mouseX, mouseY, button, dragX, dragY)) return true
+        if (button != 0 || dragging == null) return false
+        updateFromMouse(mouseX, mouseY)
         return true
     }
 
-    fun mouseReleased(event: MouseButtonEvent): Boolean {
-        if (hexBox.isFocused && hexBox.mouseReleased(event)) return true
-        if (event.button() != 0 || dragging == null) return false
+    fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        if (hexBox.isFocused && hexBox.mouseReleased(mouseX, mouseY, button)) return true
+        if (button != 0 || dragging == null) return false
         dragging = null
         return true
     }
 
-    fun keyPressed(event: KeyEvent): Boolean = hexBox.keyPressed(event)
+    fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean = hexBox.keyPressed(keyCode, scanCode, modifiers)
 
-    fun charTyped(event: CharacterEvent): Boolean = hexBox.charTyped(event)
+    fun charTyped(codePoint: Char, modifiers: Int): Boolean = hexBox.charTyped(codePoint, modifiers)
 
     fun close() {
         if (hexBox.value.parseHexColor() == null) {
@@ -592,9 +548,7 @@ private class FloatingColorPicker(
                 saturation = ((mouseX - pickerX) / (pickerW - 1)).toFloat().coerceIn(0f, 1f)
                 value = (1f - ((mouseY - pickerY) / (pickerH - 1)).toFloat()).coerceIn(0f, 1f)
             }
-            DragTarget.HUE -> {
-                hue = ((mouseX - hueX) / (hueW - 1)).toFloat().coerceIn(0f, 1f)
-            }
+            DragTarget.HUE -> hue = ((mouseX - hueX) / (hueW - 1)).toFloat().coerceIn(0f, 1f)
             null -> return
         }
         applyColor(hsvToRgb(hue, saturation, value), updateHex = true)
@@ -630,139 +584,21 @@ private fun AbstractWidget.place(x: Int, y: Int, width: Int, height: Int) {
     setRectangle(width, height, x, y)
 }
 
-private fun GuiGraphics.gradientQuad(
-    x: Int,
-    y: Int,
-    width: Int,
-    height: Int,
-    topLeft: Int,
-    bottomLeft: Int,
-    bottomRight: Int,
-    topRight: Int,
-) {
-    addGuiElement(
-        GradientQuadRenderState(
-            RenderPipelines.GUI,
-            TextureSetup.noTexture(),
-            Matrix3x2f(pose()),
-            x,
-            y,
-            x + width,
-            y + height,
-            topLeft,
-            bottomLeft,
-            bottomRight,
-            topRight,
-            null,
-        )
-    )
+private fun PatternConfig.hasSize(): Boolean = type == PatternType.TUNNEL || type == PatternType.STAIRS
+
+private fun GuiGraphics.saturationValueGradient(x: Int, y: Int, width: Int, height: Int, hue: Float) {
+    for (i in 0 until width) {
+        val saturation = i.toFloat() / (width - 1).coerceAtLeast(1)
+        fillGradient(x + i, y, x + i + 1, y + height, 0xFF000000.toInt() or hsvToRgb(hue, saturation, 1f), 0xFF000000.toInt())
+    }
 }
 
 private fun GuiGraphics.hueGradient(x: Int, y: Int, width: Int, height: Int) {
-    addGuiElement(
-        HueStripRenderState(
-            RenderPipelines.GUI,
-            TextureSetup.noTexture(),
-            Matrix3x2f(pose()),
-            x,
-            y,
-            x + width,
-            y + height,
-            null,
-        )
-    )
-}
-
-private fun GuiGraphics.addGuiElement(element: GuiElementRenderState) {
-    guiRenderState.submitGuiElement(element)
-}
-
-private class GradientQuadRenderState(
-    private val pipeline: RenderPipeline,
-    private val textureSetup: TextureSetup,
-    private val pose: Matrix3x2fc,
-    private val x0: Int,
-    private val y0: Int,
-    private val x1: Int,
-    private val y1: Int,
-    private val topLeft: Int,
-    private val bottomLeft: Int,
-    private val bottomRight: Int,
-    private val topRight: Int,
-    private val scissorArea: ScreenRectangle?,
-) : GuiElementRenderState {
-    private val bounds = bounds(x0, y0, x1, y1, pose, scissorArea)
-
-    override fun buildVertices(vertexConsumer: VertexConsumer) {
-        vertexConsumer.addVertexWith2DPose(pose, x0.toFloat(), y0.toFloat()).setColor(topLeft)
-        vertexConsumer.addVertexWith2DPose(pose, x0.toFloat(), y1.toFloat()).setColor(bottomLeft)
-        vertexConsumer.addVertexWith2DPose(pose, x1.toFloat(), y1.toFloat()).setColor(bottomRight)
-        vertexConsumer.addVertexWith2DPose(pose, x1.toFloat(), y0.toFloat()).setColor(topRight)
-    }
-
-    override fun pipeline(): RenderPipeline = pipeline
-
-    override fun textureSetup(): TextureSetup = textureSetup
-
-    override fun scissorArea(): ScreenRectangle? = scissorArea
-
-    override fun bounds(): ScreenRectangle = bounds
-}
-
-private class HueStripRenderState(
-    private val pipeline: RenderPipeline,
-    private val textureSetup: TextureSetup,
-    private val pose: Matrix3x2fc,
-    private val x0: Int,
-    private val y0: Int,
-    private val x1: Int,
-    private val y1: Int,
-    private val scissorArea: ScreenRectangle?,
-) : GuiElementRenderState {
-    private val bounds = bounds(x0, y0, x1, y1, pose, scissorArea)
-
-    override fun buildVertices(vertexConsumer: VertexConsumer) {
-        val segments = HUE_COLORS.lastIndex
-        val totalWidth = (x1 - x0).coerceAtLeast(1)
-        for (i in 0 until segments) {
-            val left = x0 + totalWidth * i / segments
-            val right = x0 + totalWidth * (i + 1) / segments
-            val leftColor = HUE_COLORS[i]
-            val rightColor = HUE_COLORS[i + 1]
-            vertexConsumer.addVertexWith2DPose(pose, left.toFloat(), y0.toFloat()).setColor(leftColor)
-            vertexConsumer.addVertexWith2DPose(pose, left.toFloat(), y1.toFloat()).setColor(leftColor)
-            vertexConsumer.addVertexWith2DPose(pose, right.toFloat(), y1.toFloat()).setColor(rightColor)
-            vertexConsumer.addVertexWith2DPose(pose, right.toFloat(), y0.toFloat()).setColor(rightColor)
-        }
-    }
-
-    override fun pipeline(): RenderPipeline = pipeline
-
-    override fun textureSetup(): TextureSetup = textureSetup
-
-    override fun scissorArea(): ScreenRectangle? = scissorArea
-
-    override fun bounds(): ScreenRectangle = bounds
-
-    private companion object {
-        val HUE_COLORS = intArrayOf(
-            0xFFFF0000.toInt(),
-            0xFFFFFF00.toInt(),
-            0xFF00FF00.toInt(),
-            0xFF00FFFF.toInt(),
-            0xFF0000FF.toInt(),
-            0xFFFF00FF.toInt(),
-            0xFFFF0000.toInt(),
-        )
+    for (i in 0 until width) {
+        val hue = i.toFloat() / (width - 1).coerceAtLeast(1)
+        fill(x + i, y, x + i + 1, y + height, 0xFF000000.toInt() or hsvToRgb(hue, 1f, 1f))
     }
 }
-
-private fun bounds(x0: Int, y0: Int, x1: Int, y1: Int, pose: Matrix3x2fc, scissorArea: ScreenRectangle?): ScreenRectangle {
-    val bounds = ScreenRectangle(x0, y0, x1 - x0, y1 - y0).transformMaxBounds(pose)
-    return scissorArea?.intersection(bounds) ?: bounds
-}
-
-private fun PatternConfig.hasSize(): Boolean = type == PatternType.TUNNEL || type == PatternType.STAIRS
 
 private fun inBounds(mouseX: Double, mouseY: Double, x: Int, y: Int, width: Int, height: Int): Boolean =
     mouseX >= x && mouseY >= y && mouseX < x + width && mouseY < y + height
