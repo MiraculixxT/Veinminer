@@ -16,7 +16,6 @@ import net.minecraft.client.gui.narration.NarrationElementOutput
 import net.minecraft.client.gui.navigation.ScreenRectangle
 import net.minecraft.client.gui.render.TextureSetup
 import net.minecraft.client.gui.render.state.GuiElementRenderState
-import net.minecraft.client.gui.render.state.GuiRenderState
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.input.CharacterEvent
 import net.minecraft.client.input.KeyEvent
@@ -675,7 +674,7 @@ private fun GuiGraphics.hueGradient(x: Int, y: Int, width: Int, height: Int) {
 }
 
 private fun GuiGraphics.addGuiElement(element: GuiElementRenderState) {
-    (GUI_RENDER_STATE_FIELD.get(this) as GuiRenderState).submitGuiElement(element)
+    guiRenderState.submitGuiElement(element)
 }
 
 private class GradientQuadRenderState(
@@ -761,10 +760,6 @@ private class HueStripRenderState(
 private fun bounds(x0: Int, y0: Int, x1: Int, y1: Int, pose: Matrix3x2fc, scissorArea: ScreenRectangle?): ScreenRectangle {
     val bounds = ScreenRectangle(x0, y0, x1 - x0, y1 - y0).transformMaxBounds(pose)
     return scissorArea?.intersection(bounds) ?: bounds
-}
-
-private val GUI_RENDER_STATE_FIELD = GuiGraphics::class.java.getDeclaredField("guiRenderState").apply {
-    isAccessible = true
 }
 
 private fun PatternConfig.hasSize(): Boolean = type == PatternType.TUNNEL || type == PatternType.STAIRS
