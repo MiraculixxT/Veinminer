@@ -14,8 +14,8 @@ scoreboard players operation config.count veinminer.settings = c veinminer.setti
 
 # Output
 $tellraw @s [{"text":"\n\n>> ","color":"dark_gray"}, {"text":"Veinminable blocks in category ","color":"white"}, {"text":"$(category) - ", "color":"green"}, {"score":{"name":"c","objective":"veinminer.settings"}, "color":"white"},\
-            {"text":"\n    [+] ","color":"green","click_event":{"action":"suggest_command","command":"/function veinminer:block_add {category:\"$(category)\", namespace:\"\", id:\"\"}"},\
-                                                  "hover_event":{"action":"show_text","value":{"text":"Add a new block\nnamespace -> Mod ID (e.g. minecraft)\nid -> Block ID (e.g. coal_ore)"}}\
+            {"text":"\n    [+] ","color":"green","clickEvent":{"action":"suggest_command","value":"/function veinminer:block_add {category:\"$(category)\", namespace:\"\", id:\"\"}"},\
+                                                  "hoverEvent":{"action":"show_text","contents":{"text":"Add a new block\nnamespace -> Mod ID (e.g. minecraft)\nid -> Block ID (e.g. coal_ore)"}}\
             },\
             {"text":"Add Block","color":"gray"}\
            ]

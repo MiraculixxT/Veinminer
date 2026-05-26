@@ -14,8 +14,8 @@ scoreboard players operation config.count veinminer.settings = c veinminer.setti
 
 # Output
 $tellraw @s [{"text":"\n\n>> ","color":"dark_gray"}, {"text":"Veinminer tools in category ","color":"white"}, {"text":"$(category) - ", "color":"green"}, {"score":{"name":"c","objective":"veinminer.settings"}, "color":"white"},\
-            {"text":"\n    [+] ","color":"green","click_event":{"action":"suggest_command","command":"/function veinminer:tool_add {category:\"$(category)\", namespace:\"\", id:\"\"}"},\
-                                                  "hover_event":{"action":"show_text","value":{"text":"Add a new tool\nnamespace -> Mod ID (e.g. minecraft)\nid -> Item ID (e.g. iron_pickaxe)"}}\
+            {"text":"\n    [+] ","color":"green","clickEvent":{"action":"suggest_command","value":"/function veinminer:tool_add {category:\"$(category)\", namespace:\"\", id:\"\"}"},\
+                                                  "hoverEvent":{"action":"show_text","contents":{"text":"Add a new tool\nnamespace -> Mod ID (e.g. minecraft)\nid -> Item ID (e.g. iron_pickaxe)"}}\
             },\
             {"text":"Add Tool","color":"gray"}\
            ]

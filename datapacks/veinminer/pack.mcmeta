@@ -1,9 +1,7 @@
-   {
-       "pack": {
-           "pack_format": 102,
-           "description": "§6§lVeinminer §7| §61.21.5+\n§eBy Miraculixx",
-           "supported_formats": [71,102],
-           "min_format": 71,
-           "max_format": 102
-       }
-   }
+{
+    "pack": {
+        "pack_format": 48,
+        "description": "§6§lVeinminer §7| §61.21-1.21.4\n§eBy Miraculixx",
+        "supported_formats": [48, 61]
+    }
+}

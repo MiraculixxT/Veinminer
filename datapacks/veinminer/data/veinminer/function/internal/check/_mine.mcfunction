@@ -9,7 +9,7 @@
 $scoreboard players reset @s veinminer.t.$(namespace).$(id)
 
 # Check if enchantment addon is installed and active
-execute if score init veinminer.enchantment matches 1 unless entity @s[nbt={SelectedItem:{components:{"minecraft:enchantments":{"veinminer-enchantment:veinminer": 1}}}}] run return fail
+execute if score init veinminer.enchantment matches 1 unless entity @s[nbt={SelectedItem:{components:{"minecraft:enchantments":{levels:{"veinminer-enchantment:veinminer": 1}}}}}] run return fail
 scoreboard players set @s veinminer.enchantment 0
 
 # Check sneaking
@@ -20,10 +20,10 @@ execute if entity @s[scores={veinminer.cooldown=1..}] run return fail
 
 # Get tool enchantment
 scoreboard players set @s veinminer.silk 0
-execute if entity @s[nbt={SelectedItem:{components:{"minecraft:enchantments":{"minecraft:fortune": 1}}}}] run scoreboard players set @s veinminer.silk 1
-execute if entity @s[nbt={SelectedItem:{components:{"minecraft:enchantments":{"minecraft:fortune": 2}}}}] run scoreboard players set @s veinminer.silk 2
-execute if entity @s[nbt={SelectedItem:{components:{"minecraft:enchantments":{"minecraft:fortune": 3}}}}] run scoreboard players set @s veinminer.silk 3
-execute if entity @s[nbt={SelectedItem:{components:{"minecraft:enchantments":{"minecraft:silk_touch": 1}}}}] run scoreboard players set @s veinminer.silk 10
+execute if entity @s[nbt={SelectedItem:{components:{"minecraft:enchantments":{levels:{"minecraft:fortune": 1}}}}}] run scoreboard players set @s veinminer.silk 1
+execute if entity @s[nbt={SelectedItem:{components:{"minecraft:enchantments":{levels:{"minecraft:fortune": 2}}}}}] run scoreboard players set @s veinminer.silk 2
+execute if entity @s[nbt={SelectedItem:{components:{"minecraft:enchantments":{levels:{"minecraft:fortune": 3}}}}}] run scoreboard players set @s veinminer.silk 3
+execute if entity @s[nbt={SelectedItem:{components:{"minecraft:enchantments":{levels:{"minecraft:silk_touch": 1}}}}}] run scoreboard players set @s veinminer.silk 10
 
 # Loop for mined ore
 #tellraw @a " - HIT VALID"
