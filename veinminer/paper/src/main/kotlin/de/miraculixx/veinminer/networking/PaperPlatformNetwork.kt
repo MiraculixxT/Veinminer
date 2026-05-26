@@ -3,7 +3,12 @@ package de.miraculixx.veinminer.networking
 import de.miraculixx.veinminer.Veinminer
 import de.miraculixx.veinminer.network.PlatformNetwork
 import de.miraculixx.veinminer.utils.IDENTIFIER
+import io.netty.buffer.Unpooled
+import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket
+import net.minecraft.network.protocol.common.custom.DiscardedPayload
+import net.minecraft.resources.ResourceLocation
 import org.bukkit.Bukkit
+import org.bukkit.craftbukkit.entity.CraftPlayer
 import java.util.UUID
 
 object PaperPlatformNetwork : PlatformNetwork {
@@ -27,6 +32,10 @@ object PaperPlatformNetwork : PlatformNetwork {
 
     override fun sendS2C(playerId: UUID, channel: String, payload: ByteArray) {
         val player = Bukkit.getPlayer(playerId) ?: return
-        player.sendPluginMessage(Veinminer.INSTANCE, channelOf(channel), payload)
+        // Skip Bukkits channel registration check
+        val packet = ClientboundCustomPayloadPacket(
+            DiscardedPayload(ResourceLocation.parse(channelOf(channel)), Unpooled.wrappedBuffer(payload))
+        )
+        (player as CraftPlayer).handle.connection.send(packet)
     }
 }
