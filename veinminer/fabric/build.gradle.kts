@@ -1,3 +1,5 @@
+import de.miraculixx.gradle.curseForgePublish
+
 plugins {
     `kotlin-script`
     `fabric-script`
@@ -34,4 +36,14 @@ modrinth {
         required.project("fabric-language-kotlin")
         optional.project("veinminer-client")
     }
+}
+
+curseForgePublish {
+    projectId.set(properties["curseforgeId"] as String)
+    versionName.set("Veinminer Fabric - $version")
+    changelog.set(properties["changelog"] as String)
+    gameVersions.addAll(outlet.mcVersions())
+    loaders.add("Fabric")
+    requiredDependencies.addAll(listOf("fabric-api", "fabric-language-kotlin"))
+    optionalDependencies.add("veinminer-hotkey")
 }

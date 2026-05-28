@@ -13,12 +13,13 @@ Kotlin/Gradle multi-project. Java 25 toolchain, Kotlin 2.3, Gradle wrapper (`./g
 - `./gradlew :veinminer:veinminer-neoforge:runServer` / `:veinminer-client:veinminer-client-neoforge:runClient` - start NeoForge dev runs via moddev.
 - `./gradlew :datapacks:zipAll` - zip the V1 datapacks (`zipVeinminer`, `zipEnchantment` for single packs).
 - `./gradlew :veinminer:veinminer-paper:modrinth` and the other module `modrinth` tasks publish through Minotaur. Set `modrinthToken` in `gradle.properties` or pass `-PmodrinthToken=...`.
+- `./gradlew :veinminer:veinminer-fabric:curseforge :veinminer:veinminer-neoforge:curseforge` and the matching client/enchantment tasks publish Fabric/NeoForge artifacts to CurseForge. Set `curseforgeToken` plus the relevant numeric `curseforgeId`, `curseforgeClientId`, and `curseforgeEnchantmentId`; blank IDs skip that module. Set `curseforgeSlug` / `curseforgeClientSlug` when CurseForge dependency relations should point between the base and client projects.
 
 The doubled project path segments (`:veinminer:veinminer-fabric`, `:veinminer-client:veinminer-client-common`, etc.) are intentional. `settings.gradle.kts` gives leaf projects unique names so Gradle does not confuse `:veinminer:fabric` with `:veinminer-client:fabric`, or the two `common`/`neoforge` modules.
 
 No test source set exists at the moment, so do not document or rely on test tasks that are not present.
 
-Version and publishing knobs live in `gradle.properties`: `version`, `gameVersion`, `paperVersion`, `fabricSupportedVersions`, `neoforgeVersion`, `paperSupportedVersions`, `neoforgeSupportedVersions`, `enchantmentVersions`, `adventureVersion`, and the Modrinth changelog/project IDs. Bump Minecraft support there rather than in individual module build files.
+Version and publishing knobs live in `gradle.properties`: `version`, `gameVersion`, `paperVersion`, `fabricSupportedVersions`, `neoforgeVersion`, `paperSupportedVersions`, `neoforgeSupportedVersions`, `enchantmentVersions`, `adventureVersion`, and the Modrinth/CurseForge changelog/project IDs. Bump Minecraft support there rather than in individual module build files.
 
 ## Architecture
 
@@ -84,7 +85,7 @@ Paper uses `paperweight` with `MOJANG_PRODUCTION` reobf and `shadowJar` as the p
 - `fabric-script` - fabric-loom, Outlet version resolution, Fabric API, Fabric Language Kotlin, fabric-permissions-api, and resource token expansion.
 - `neoforge-script` - moddev, NeoForge runs, KotlinLangForge, and `neoforge.mods.toml` token expansion.
 - `paper-script` - paperweight, run-paper, generated plugin metadata, Kotlin libraries, and kpaper.
-- `publish-script` - Modrinth Minotaur and Outlet release metadata.
+- `publish-script` - Modrinth Minotaur, CurseForgeGradle upload tasks, and Outlet release metadata.
 - `shadow-script` - Paper dependency shadowing for project-local dependencies.
 
 Make cross-cutting dependency, toolchain, metadata, and resource-token changes in these convention plugins unless a leaf module truly needs special behavior.
