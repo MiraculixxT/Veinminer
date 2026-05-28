@@ -25,6 +25,7 @@ object KeyBindManager {
         private set
     private var lastItem: ItemStack? = null
     private var lastFace: Surface = Surface.UP
+    private var lastCrouching: Boolean? = null
     var isPressed = false
         private set(value) {
             NetworkManager.sendKeyPress(value, lastFace)
@@ -83,13 +84,16 @@ object KeyBindManager {
         }
 
         val face = target.direction.toVeinminer()
+        val crouching = player.isCrouching
         val itemChanged = holding != lastItem
         val faceChanged = face != lastFace
         val targetChanged = pos != lastTarget
-        if (!itemChanged && !faceChanged && !targetChanged) return
+        val crouchingChanged = crouching != lastCrouching
+        if (!itemChanged && !faceChanged && !targetChanged && !crouchingChanged) return
 
         lastTarget = pos
         lastItem = holding
+        lastCrouching = crouching
         if (faceChanged) {
             lastFace = face
             NetworkManager.resendKeyPress(face)
@@ -147,6 +151,7 @@ object KeyBindManager {
         notifiedOnce = false
         isPressed = false
         lastTarget = null
+        lastCrouching = null
         isToggled = false
     }
 }
