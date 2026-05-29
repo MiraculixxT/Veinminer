@@ -46,7 +46,7 @@ sourceSets {
 }
 
 modrinth {
-    uploadFile.set(tasks.jar)
+    uploadFile.set(tasks.remapJar)
     projectId = properties["modrinthId"] as String
     versionName = "Veinminer Fabric - $version"
     outlet.mcVersionRange = properties["fabricSupportedVersions"] as String
@@ -64,6 +64,7 @@ modrinth {
 
 curseForgePublish {
     projectId.set(properties["curseforgeId"] as String)
+    artifactTaskName.set("remapJar")
     versionName.set("Veinminer Fabric - $version")
     changelog.set(properties["changelog"] as String)
     gameVersions.addAll(outlet.mcVersions())
