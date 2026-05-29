@@ -1,3 +1,4 @@
+import org.gradle.api.tasks.bundling.AbstractArchiveTask
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -22,6 +23,10 @@ java {
 }
 
 tasks {
+    withType<AbstractArchiveTask>().configureEach {
+        archiveVersion.set("${project.version}+${properties["gameVersion"]}")
+    }
+
     compileJava {
         options.encoding = "UTF-8"
         options.release.set(21)
