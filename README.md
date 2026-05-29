@@ -38,4 +38,8 @@ Task shortcuts for easier testing.
 ./gradlew :veinminer:veinminer-paper:modrinth :veinminer:veinminer-fabric:modrinth :veinminer:veinminer-neoforge:modrinth
 ./gradlew :veinminer-client:veinminer-client-fabric:modrinth :veinminer-client:veinminer-client-neoforge:modrinth
 ./gradlew :veinminer-enchant:modrinth
+
+./gradlew :veinminer:veinminer-fabric:curseforge :veinminer:veinminer-neoforge:curseforge
+./gradlew :veinminer-client:veinminer-client-fabric:curseforge :veinminer-client:veinminer-client-neoforge:curseforge
+./gradlew :veinminer-enchant:curseforge
 ```

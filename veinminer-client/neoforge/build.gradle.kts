@@ -1,3 +1,5 @@
+import de.miraculixx.gradle.curseForgePublish
+
 plugins {
     `kotlin-script`
     `neoforge-script`
@@ -46,4 +48,14 @@ modrinth {
         required.project("kotlin-lang-forge")
         required.project("veinminer")
     }
+}
+
+curseForgePublish {
+    projectId.set(properties["curseforgeClientId"] as String)
+    versionName.set("Veinminer Hotkey NeoForge - $version")
+    changelog.set(properties["changelogClient"] as String)
+    gameVersions.add(properties["gameVersion"] as String)
+    loaders.add("NeoForge")
+    environments.set(listOf("Client"))
+    requiredDependencies.addAll("kotlinlangforge", "veinminer-mod")
 }

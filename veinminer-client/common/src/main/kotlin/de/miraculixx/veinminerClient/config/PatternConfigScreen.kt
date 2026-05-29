@@ -84,7 +84,7 @@ class PatternConfigScreen(private val parent: Screen?) : Screen(Component.litera
         val delegatedMouseX = if (blockUnderlyingHover) -1 else mouseX
         val delegatedMouseY = if (blockUnderlyingHover) -1 else mouseY
         super.render(graphics, delegatedMouseX, delegatedMouseY, partialTick)
-        graphics.drawCenteredString(font, title, width / 2, 10, 0xFFFFFF)
+        graphics.drawCenteredString(font, title, width / 2, 10, -1)
         colorPicker?.extractRenderState(graphics, mouseX, mouseY, partialTick)
     }
 
