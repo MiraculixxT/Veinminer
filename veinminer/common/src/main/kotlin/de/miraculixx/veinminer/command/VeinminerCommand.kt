@@ -30,7 +30,6 @@ import net.minecraft.network.chat.ClickEvent
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.HoverEvent
 import net.minecraft.network.chat.MutableComponent
-import java.net.URI
 import kotlin.reflect.typeOf
 
 object VeinminerCommand {
@@ -418,7 +417,7 @@ object VeinminerCommand {
     private fun cmp(text: String, color: Int = cBase, bold: Boolean = false, italic: Boolean = false) =
         Component.literal(text).withColor(color).withStyle { it.withBold(bold).withItalic(italic) }
     private operator fun MutableComponent.plus(other: Component) = this.append(other)
-    private fun MutableComponent.suggest(command: String) = this.withStyle { it.withClickEvent(ClickEvent.SuggestCommand(command)) }
-    private fun MutableComponent.link(url: String) = this.withStyle { it.withClickEvent(ClickEvent.OpenUrl(URI(url))) }
-    private fun MutableComponent.hover(cmp: Component) = this.withStyle { it.withHoverEvent(HoverEvent.ShowText(cmp)) }
+    private fun MutableComponent.suggest(command: String) = this.withStyle { it.withClickEvent(ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, command)) }
+    private fun MutableComponent.link(url: String) = this.withStyle { it.withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, url)) }
+    private fun MutableComponent.hover(cmp: Component) = this.withStyle { it.withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, cmp)) }
 }
