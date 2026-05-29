@@ -20,7 +20,7 @@ Works together with the [enchantment addon](https://modrinth.com/project/veinmin
 Pattern selection can be changed by holding the hotkey and **scrolling** up/down.<br>
 Additionally holding **shift** allows changing the mining depth/width.
 
-**Pattern Config Hotkey**: `P` (configure, add, remove patterns to your liking. Accessible via mod menu as well)
+**Pattern Config Hotkey**: `O` (configure, add, remove patterns to your liking. Accessible via mod menu as well)
 ![settings ui preview](https://cdn.modrinth.com/data/dxa0Bm8m/images/c5f3c7ff3562caf2ec7e50fd6bef11a4f1f9d838.png)
 
 ---
