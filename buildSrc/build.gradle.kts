@@ -36,5 +36,6 @@ dependencies {
     // Project configuration
     implementation(pluginDep("com.gradleup.shadow", "9.0.0"))
     implementation(pluginDep("com.modrinth.minotaur", "2.+"))
+    implementation(pluginDep("net.darkhax.curseforgegradle", "1.3.32"))
     implementation(pluginDep("io.github.dexman545.outlet", "1.8.+"))
 }

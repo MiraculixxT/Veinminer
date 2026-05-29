@@ -5,6 +5,7 @@ package de.miraculixx.veinminer
 import com.mojang.logging.LogUtils
 import de.miraculixx.veinminer.command.ActiveHost
 import de.miraculixx.veinminer.command.FabricVeinminerCommand
+import de.miraculixx.veinminer.command.VeinminerCommand
 import de.miraculixx.veinminer.config.ConfigManager
 import de.miraculixx.veinminer.event.EventState
 import de.miraculixx.veinminer.event.VeinMinerEvent
@@ -25,9 +26,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.api.ModContainer
 import net.fabricmc.loader.impl.FabricLoaderImpl
-import net.minecraft.network.chat.ClickEvent
 import net.minecraft.network.chat.Component
-import net.minecraft.network.chat.Style
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.entity.player.Player
 import org.slf4j.Logger
@@ -93,10 +92,11 @@ class Veinminer : ModInitializer {
             val permission = player.server.getProfilePermissions(player.gameProfile)
             if (info != null && (permission > 1 || !player.server.isDedicatedServer)) {
                 player.sendSystemMessage(
-                    Component.literal("${info.module.modID} is outdated! Click here to download the latest version")
-                        .setStyle(Style.EMPTY.withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, "https://modrinth.com/project/${info.module.modID}")))
+                    Component.literal("${info.module.modID} is outdated! ")
                         .append(" (Current: ").append(Component.literal(info.currentVersion).withColor(cRed))
                         .append(", Latest: ").append(Component.literal(info.latestVersion).withColor(cGreen)).append(")")
+                        .append("\nDownload: ").append(VeinminerCommand.link("Modrinth", "https://modrinth.com/mod/${info.module.modID}"))
+                        .append(" | ").append(VeinminerCommand.link("CurseForge", "https://www.curseforge.com/minecraft/mc-mods/${info.module.cfID}"))
                 )
             }
         }

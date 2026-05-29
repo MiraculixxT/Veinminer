@@ -1,3 +1,4 @@
+import de.miraculixx.gradle.curseForgePublish
 import net.minecrell.pluginyml.bukkit.BukkitPluginDescription
 import net.minecrell.pluginyml.paper.PaperPluginDescription
 
@@ -79,4 +80,14 @@ modrinth {
     }
 
     syncBodyFrom = rootProject.file("veinminer-enchant/README.md").readText()
+}
+
+curseForgePublish {
+    projectId.set(properties["curseforgeEnchantmentId"] as String)
+    versionName.set("Veinminer Enchantment - $version")
+    changelog.set(properties["changelogEnchantment"] as String)
+    gameVersions.addAll(outlet.mcVersions())
+    loaders.addAll(listOf("Fabric", "NeoForge"))
+    environments.set(listOf("Server", "Client"))
+    requiredDependencies.add("veinminer-mod")
 }

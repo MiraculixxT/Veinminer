@@ -72,10 +72,10 @@ object UpdateManager {
         }
     }
 
-    enum class Module(val id: String, val modID: String) {
-        VEINMINER("OhduvhIc", "veinminer"),
-        VEINMINER_ENCHANTMENT("4sP0LXxp", "veinminer-enchantment"),
-        VEINMINER_CLIENT("dxa0Bm8m", "veinminer-client"),
+    enum class Module(val id: String, val modID: String, val cfID: String) {
+        VEINMINER("OhduvhIc", "veinminer", "veinminer-mod"),
+        VEINMINER_ENCHANTMENT("4sP0LXxp", "veinminer-enchantment", "veinminer-enchant"),
+        VEINMINER_CLIENT("dxa0Bm8m", "veinminer-client", "veinminer-hotkey"),
     }
 
     data class VersionInfo(

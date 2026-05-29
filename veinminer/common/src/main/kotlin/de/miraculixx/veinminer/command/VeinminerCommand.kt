@@ -13,7 +13,9 @@ import de.miraculixx.veinminer.data.BlockGroup
 import de.miraculixx.veinminer.data.VeinminerSettingsOverride
 import de.miraculixx.veinminer.utils.cBase
 import de.miraculixx.veinminer.utils.cGreen
+import de.miraculixx.veinminer.utils.cHighlight
 import de.miraculixx.veinminer.utils.cRed
+import de.miraculixx.veinminer.utils.cWhite
 import de.miraculixx.veinminer.utils.debug
 import de.miraculixx.veinminer.utils.permissionBlocks
 import de.miraculixx.veinminer.utils.permissionGroups
@@ -24,7 +26,11 @@ import net.minecraft.commands.CommandBuildContext
 import net.minecraft.commands.CommandSourceStack
 import net.minecraft.commands.arguments.blocks.BlockPredicateArgument
 import net.minecraft.commands.arguments.item.ItemPredicateArgument
+import net.minecraft.network.chat.ClickEvent
 import net.minecraft.network.chat.Component
+import net.minecraft.network.chat.HoverEvent
+import net.minecraft.network.chat.MutableComponent
+import java.net.URI
 import kotlin.reflect.typeOf
 
 object VeinminerCommand {
@@ -33,8 +39,11 @@ object VeinminerCommand {
         veinminerCommand("veinminer") {
             executesAsync {
                 val host = ActiveHost.host
-                source.msg("Veinminer Version: ${host.versionVeinminer} (${host.platform})\n" +
-                        "Minecraft Version: ${host.versionMinecraft}", cBase
+                source.sendSystemMessage(
+                    header("Veinminer") + cmp("\nVersion: ") + value(host.versionVeinminer) +
+                        cmp(" (") + value(host.platform) + cmp(" - ") + value(host.versionMinecraft) + cmp(")") +
+                        cmp("\nDownload: ") + link("Modrinth", "https://modrinth.com/project/veinminer") +
+                        cmp(" | ") + link("CurseForge", "https://www.curseforge.com/minecraft/mc-mods/veinminer-mod")
                 )
             }
 
@@ -42,23 +51,23 @@ object VeinminerCommand {
                 requiresPermission(permissionReload)
                 executesAsync {
                     ActiveConfig.bridge.reload(true)
-                    source.msg("Veinminer config reloaded!", cGreen)
+                    source.sendSystemMessage(success("Veinminer config reloaded"))
                 }
             }
 
             literal("blocks") {
                 requiresPermission(permissionBlocks)
-                executesAsync { source.msg("Correct Syntax: /veinminer blocks <add/remove> <block>", cRed) }
+                executesAsync { source.sendSystemMessage(usage("/veinminer blocks <add/remove> <block>")) }
 
                 literal("add") {
                     argument("block", BlockPredicateArgument.blockPredicate(ctx)) {
                         executesAsync {
-                            val id = getRaw(3) ?: return@executesAsync source.msg("Block can not be null", cRed)
+                            val id = getRaw(3) ?: return@executesAsync source.sendSystemMessage(error("Block can not be null"))
                             if (ActiveConfig.bridge.veinBlocksRaw.add(id)) {
                                 ActiveConfig.bridge.save()
-                                source.msg("Added $id to veinminer blocks", cGreen)
+                                source.sendSystemMessage(success("Added ") + value(id) + success(" to veinminer blocks"))
                             } else {
-                                source.msg("$id is already a veinminer block", cRed)
+                                source.sendSystemMessage(value(id) + error(" is already a veinminer block"))
                             }
                         }
                     }
@@ -68,12 +77,12 @@ object VeinminerCommand {
                     argument("block", BlockPredicateArgument.blockPredicate(ctx)) {
                         suggestStrings { c -> c.suggestFilteredList(ActiveConfig.bridge.veinBlocksRaw) }
                         executesAsync {
-                            val id = getRaw(3) ?: return@executesAsync source.msg("Block can not be null", cRed)
+                            val id = getRaw(3) ?: return@executesAsync source.sendSystemMessage(error("Block can not be null"))
                             if (ActiveConfig.bridge.veinBlocksRaw.remove(id)) {
                                 ActiveConfig.bridge.save()
-                                source.msg("Removed $id from veinminer blocks", cGreen)
+                                source.sendSystemMessage(success("Removed ") + value(id) + success(" from veinminer blocks"))
                             } else {
-                                source.msg("$id is not a veinminer block", cRed)
+                                source.sendSystemMessage(value(id) + error(" is not a veinminer block"))
                             }
                         }
                     }
@@ -83,15 +92,15 @@ object VeinminerCommand {
             literal("toggle") {
                 requiresPermission(permissionToggle)
                 executesAsync {
-                    if (ActiveHost.host.active) source.msg("Veinminer functions disabled", cRed)
-                    else source.msg("Veinminer functions enabled", cGreen)
+                    if (ActiveHost.host.active) source.sendSystemMessage(error("Veinminer functions disabled"))
+                    else source.sendSystemMessage(success("Veinminer functions enabled"))
                     ActiveHost.host.active = !ActiveHost.host.active
                 }
             }
 
             literal("settings") {
                 requiresPermission(permissionSettings)
-                executesAsync { source.msg("Correct Syntax: /veinminer settings <setting> [<new-value>]", cRed) }
+                executesAsync { source.sendSystemMessage(usage("/veinminer settings <setting> [<new-value>]")) }
 
                 applySetting("mustSneak", { ActiveConfig.bridge.settings.mustSneak }) { x, _ -> ActiveConfig.bridge.settings.mustSneak = x }
                 applySetting("cooldown", { ActiveConfig.bridge.settings.cooldown }) { x, _ -> ActiveConfig.bridge.settings.cooldown = x }
@@ -122,55 +131,65 @@ object VeinminerCommand {
 
                 fun CommandSourceStack.createGroup(name: String, content: MutableSet<String>) {
                     if (groupExists(name) != null) {
-                        msg("Group '$name' already exists", cRed)
+                        sendSystemMessage(error("Group ") + value(name) + error(" already exists"))
                         return
                     }
                     ActiveConfig.bridge.groupsRaw.add(BlockGroup(name, content))
-                    msg("Created group '$name'\nAdd blocks with '/veinminer groups edit $name add ...'", cGreen)
+                    sendSystemMessage(
+                        success("Created group ") + value(name) +
+                            cmp("\nAdd blocks with ", cBase) +
+                            command("/veinminer groups edit $name add-block <block>")
+                    )
                     ActiveConfig.bridge.save()
                 }
 
                 fun CommandSourceStack.editContent(groupName: String, rawKey: String?, isBlock: Boolean, isAdd: Boolean) {
-                    val group = groupExists(groupName) ?: return msg("Group '$groupName' does not exist", cRed)
+                    val group = groupExists(groupName) ?: return sendSystemMessage(error("Group ") + value(groupName) + error(" does not exist"))
                     val set = if (isBlock) group.blocks else group.tools
-                    if (rawKey == null) return msg("Invalid material", cRed)
+                    if (rawKey == null) return sendSystemMessage(error("Invalid material"))
+                    val label = if (isBlock) "block" else "tool"
                     if (isAdd) {
-                        if (set.add(rawKey)) msg("Added $rawKey to group '$groupName'", cGreen)
-                        else return msg("$rawKey is already in group '$groupName'", cRed)
+                        if (set.add(rawKey)) sendSystemMessage(success("Added $label ") + value(rawKey) + success(" to group ") + value(groupName))
+                        else return sendSystemMessage(value(rawKey) + error(" is already in group ") + value(groupName))
                     } else {
-                        if (set.remove(rawKey)) msg("Removed $rawKey from group '$groupName'", cGreen)
-                        else return msg("$rawKey is not in group '$groupName'", cRed)
+                        if (set.remove(rawKey)) sendSystemMessage(success("Removed $label ") + value(rawKey) + success(" from group ") + value(groupName))
+                        else return sendSystemMessage(value(rawKey) + error(" is not in group ") + value(groupName))
                     }
                     ActiveConfig.bridge.save()
                 }
 
                 executesAsync {
-                    source.msg(
-                        "Groups can chain together multiple block types.\n" +
-                                "E.g. creating a group 'oak' with oak_log & oak_leaves will veinmine the whole tree when breaking on part of it." +
-                                "Groups can be limited to certain tools.", cBase
+                    source.sendSystemMessage(
+                        header("Groups") +
+                            cmp("\nChain multiple block types into one veinmine target.", cBase) +
+                            cmp("\nExample: ", cBase) + value("Ores") + cmp(" with ", cBase) + value("iron_ore") +
+                            cmp(" and ", cBase) + value("deepslate_iron_ore") +
+                            cmp("\nGroups can be limited to certain tools.", cBase)
                     )
                 }
 
                 literal("list") {
                     fun BlockGroup<String>.print(source: CommandSourceStack) {
-                        source.msg("Group '${name}'", cBase)
-                        source.msg(" -> Blocks: [${blocks.joinToString(", ")}]\n", cBase)
-                        if (tools.isEmpty()) source.msg(" -> Tools: [all]\n", cBase)
-                        else source.msg(" -> Tools: [${tools.joinToString(", ")}]\n", cBase)
+                        source.sendSystemMessage(
+                            header("Group ") + value(name) +
+                                cmp("\nBlocks: ", cBase) + list(blocks) +
+                                cmp("\nTools: ", cBase) + list(tools, "all")
+                        )
                     }
 
                     stringArg("group") {
                         suggestStrings { ActiveConfig.bridge.groupsRaw.map { it.name } }
                         executesAsync {
                             val name = StringArgumentType.getString(this, "group")
-                            val group = groupExists(name) ?: return@executesAsync source.msg("Group '$name' does not exist", cRed)
+                            val group = groupExists(name) ?: return@executesAsync source.sendSystemMessage(error("Group ") + value(name) + error(" does not exist"))
                             group.print(source)
                         }
                     }
 
                     executesAsync {
-                        ActiveConfig.bridge.groupsRaw.forEach { group -> group.print(source) }
+                        val groups = ActiveConfig.bridge.groupsRaw
+                        if (groups.isEmpty()) source.sendSystemMessage(cmp("No groups configured"))
+                        else groups.forEach { group -> group.print(source) }
                     }
                 }
 
@@ -200,9 +219,9 @@ object VeinminerCommand {
                         suggestStrings { ActiveConfig.bridge.groupsRaw.map { it.name } }
                         executesAsync {
                             val name = StringArgumentType.getString(this, "group").lowercase()
-                            val group = groupExists(name) ?: return@executesAsync source.msg("The group '$name' does not exist", cRed)
+                            val group = groupExists(name) ?: return@executesAsync source.sendSystemMessage(error("Group ") + value(name) + error(" does not exist"))
                             ActiveConfig.bridge.groupsRaw.remove(group)
-                            source.msg("Removed group '$name'", cGreen)
+                            source.sendSystemMessage(success("Removed group ") + value(name))
                             ActiveConfig.bridge.save()
                         }
                     }
@@ -260,15 +279,19 @@ object VeinminerCommand {
 
             literal("presets") {
                 requiresPermission(permissionGroups)
-                executesAsync { source.msg("Quick add preconfigured groups & settings", cBase) }
+                executesAsync { source.sendSystemMessage(cmp("Quick add preconfigured groups and settings")) }
                 fun CommandNodeBuilder<CommandSourceStack>.addPreset(name: String, blocks: Set<String>, tools: Set<String>, override: VeinminerSettingsOverride = VeinminerSettingsOverride()) {
                     literal(name) {
                         executesAsync {
                             if (ActiveConfig.bridge.groupsRaw.any { it.name.equals(name, ignoreCase = true) }) {
-                                return@executesAsync source.msg("Group '$name' already exists", cRed)
+                                return@executesAsync source.sendSystemMessage(error("Group ") + value(name) + error(" already exists"))
                             }
                             ActiveConfig.bridge.groupsRaw.add(BlockGroup(name, blocks.toMutableSet(), tools.toMutableSet(), override))
-                            source.msg("Added preset group '$name'\n - Blocks: $blocks\n - Tools: $tools", cGreen)
+                            source.sendSystemMessage(
+                                success("Added preset group ") + value(name) +
+                                    cmp("\nBlocks: ", cBase) + list(blocks) +
+                                    cmp("\nTools: ", cBase) + list(tools, "all")
+                            )
                             ActiveConfig.bridge.save()
                         }
                     }
@@ -293,7 +316,7 @@ object VeinminerCommand {
         literal(name) {
             executesAsync {
                 val currentString = currentConsumer.invoke(this)?.toString() ?: "unset"
-                source.msg("$name is currently set to $currentString", cBase)
+                source.sendSystemMessage(setting(name, currentString))
             }
 
             when (typeOf<T>()) {
@@ -302,7 +325,7 @@ object VeinminerCommand {
                         val value = BoolArgumentType.getBool(this, "$name-new") as T
                         consumer.invoke(value, this)
                         ActiveConfig.bridge.save()
-                        source.msg("$name set to $value", cGreen)
+                        source.sendSystemMessage(settingChanged(name, value))
                     }
                 }
 
@@ -311,7 +334,7 @@ object VeinminerCommand {
                         val value = IntegerArgumentType.getInteger(this, "$name-new") as T
                         consumer.invoke(value, this)
                         ActiveConfig.bridge.save()
-                        source.msg("$name set to $value", cGreen)
+                        source.sendSystemMessage(settingChanged(name, value))
                     }
                 }
 
@@ -320,21 +343,9 @@ object VeinminerCommand {
                         val value = DoubleArgumentType.getDouble(this, "$name-new") as T
                         consumer.invoke(value, this)
                         ActiveConfig.bridge.save()
-                        source.msg("$name set to $value", cGreen)
+                        source.sendSystemMessage(settingChanged(name, value))
                     }
                 }
-            }
-        }
-    }
-
-    private fun CommandSourceStack.msg(message: String, color: Int) {
-        try {
-            sendSystemMessage(Component.literal(message).withColor(color))
-        } catch (_: Exception) {
-            try {
-                sendSystemMessage(Component.literal(message))
-            } catch (_: Exception) {
-                ActiveHost.host.logger.warn("Messages cannot be sent in this version")
             }
         }
     }
@@ -364,10 +375,10 @@ object VeinminerCommand {
                 executesAsync {
                     val key = StringArgumentType.getString(this, "key")
                     if (resolve().unset(key)) {
-                        source.msg("Unset override '$key'", cGreen)
+                        source.sendSystemMessage(success("Unset override ") + value(key))
                         ActiveConfig.bridge.save()
                     } else {
-                        source.msg("Override '$key' is not set", cRed)
+                        source.sendSystemMessage(error("Override ") + value(key) + error(" is not set"))
                     }
                 }
             }
@@ -383,4 +394,31 @@ object VeinminerCommand {
         applySetting("decreaseDurability", { args -> args.resolve().decreaseDurability }) { x, args -> args.resolve().decreaseDurability = x }
         applySetting("miningSpeedModifier", { args -> args.resolve().miningSpeedModifier }) { x, args -> args.resolve().miningSpeedModifier = x }
     }
+
+    private fun header(text: String) = cmp(text, cGreen, bold = true)
+    private fun success(text: String) = cmp(text, cGreen)
+    private fun error(text: String) = cmp(text, cRed)
+    private fun value(value: Any?) = cmp(value.toString(), cGreen)
+    private fun command(text: String) = cmp(text, cGreen).suggest(text).hover(cmp("Click to suggest command", cWhite))
+            fun link(name: String, url: String) = cmp(name, cHighlight, true).link(url).hover(cmp("Click to open URL", cWhite))
+    private fun usage(syntax: String) = error("Correct Syntax: ") + command(syntax).withColor(cBase)
+    private fun setting(name: String, current: String) = cmp(name) + cmp(" is currently set to ", cBase) + value(current)
+    private fun settingChanged(name: String, newValue: Any?) = success(name) + success(" set to ") + value(newValue)
+
+    private fun list(values: Collection<String>, empty: String = "none"): MutableComponent {
+        if (values.isEmpty()) return value(empty)
+        val component = cmp("[", cBase)
+        values.forEachIndexed { index, item ->
+            if (index > 0) component.append(cmp(", ", cBase))
+            component.append(value(item))
+        }
+        return component.append(cmp("]", cBase))
+    }
+
+    private fun cmp(text: String, color: Int = cBase, bold: Boolean = false, italic: Boolean = false) =
+        Component.literal(text).withColor(color).withStyle { it.withBold(bold).withItalic(italic) }
+    private operator fun MutableComponent.plus(other: Component) = this.append(other)
+    private fun MutableComponent.suggest(command: String) = this.withStyle { it.withClickEvent(ClickEvent.SuggestCommand(command)) }
+    private fun MutableComponent.link(url: String) = this.withStyle { it.withClickEvent(ClickEvent.OpenUrl(URI(url))) }
+    private fun MutableComponent.hover(cmp: Component) = this.withStyle { it.withHoverEvent(HoverEvent.ShowText(cmp)) }
 }

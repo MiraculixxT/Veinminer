@@ -3,6 +3,7 @@ package de.miraculixx.veinminer
 import com.mojang.logging.LogUtils
 import de.miraculixx.veinminer.command.ActiveHost
 import de.miraculixx.veinminer.command.NeoForgeVeinminerCommand
+import de.miraculixx.veinminer.command.VeinminerCommand
 import de.miraculixx.veinminer.config.ConfigManager
 import de.miraculixx.veinminer.event.EventState
 import de.miraculixx.veinminer.event.VeinMinerEvent
@@ -15,12 +16,10 @@ import de.miraculixx.veinminer.utils.cGreen
 import de.miraculixx.veinminer.utils.cRed
 import de.miraculixx.veinminer.utils.mcServer
 import net.minecraft.DetectedVersion
+import net.minecraft.network.chat.Component
+import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.entity.ExperienceOrb
 import net.minecraft.world.item.enchantment.EnchantmentHelper
-import net.minecraft.network.chat.ClickEvent
-import net.minecraft.network.chat.Component
-import net.minecraft.network.chat.Style
-import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.phys.Vec3
 import net.neoforged.bus.api.IEventBus
 import net.neoforged.fml.ModContainer
@@ -121,10 +120,11 @@ class Veinminer(modBus: IEventBus, container: ModContainer) {
             val isOp = server.playerList.isOp(player.gameProfile)
             if (isOp || !server.isDedicatedServer) {
                 player.sendSystemMessage(
-                    Component.literal("${info.module.modID} is outdated! Click here to download the latest version")
-                        .setStyle(Style.EMPTY.withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, "https://modrinth.com/project/${info.module.modID}")))
+                    Component.literal("${info.module.modID} is outdated! ")
                         .append(" (Current: ").append(Component.literal(info.currentVersion).withColor(cRed))
                         .append(", Latest: ").append(Component.literal(info.latestVersion).withColor(cGreen)).append(")")
+                        .append("\nDownload: ").append(VeinminerCommand.link("Modrinth", "https://modrinth.com/mod/${info.module.modID}"))
+                        .append(" | ").append(VeinminerCommand.link("CurseForge", "https://www.curseforge.com/minecraft/mc-mods/${info.module.cfID}"))
                 )
             }
         }
