@@ -43,7 +43,7 @@ curseForgePublish {
     versionName.set("Veinminer Fabric - $version")
     changelog.set(properties["changelog"] as String)
     gameVersions.addAll(outlet.mcVersions())
-    loaders.add("Fabric")
+    loaders.addAll("Fabric", "Quilt")
     requiredDependencies.addAll(listOf("fabric-api", "fabric-language-kotlin"))
     optionalDependencies.add("veinminer-hotkey")
 }

@@ -54,7 +54,7 @@ curseForgePublish {
     projectId.set(properties["curseforgeClientId"] as String)
     versionName.set("Veinminer Hotkey NeoForge - $version")
     changelog.set(properties["changelogClient"] as String)
-    gameVersions.add(properties["gameVersion"] as String)
+    gameVersions.addAll(outlet.mcVersions())
     loaders.add("NeoForge")
     environments.set(listOf("Client"))
     requiredDependencies.addAll("kotlinlangforge", "veinminer-mod")
