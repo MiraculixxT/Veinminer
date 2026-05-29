@@ -87,7 +87,7 @@ curseForgePublish {
     versionName.set("Veinminer Enchantment - $version")
     changelog.set(properties["changelogEnchantment"] as String)
     gameVersions.addAll(outlet.mcVersions())
-    loaders.addAll(listOf("Fabric", "NeoForge"))
+    loaders.addAll("Fabric", "Quilt", "NeoForge")
     environments.set(listOf("Server", "Client"))
     requiredDependencies.add("veinminer-mod")
 }
