@@ -400,7 +400,7 @@ object VeinminerCommand {
     private fun error(text: String) = cmp(text, cRed)
     private fun value(value: Any?) = cmp(value.toString(), cGreen)
     private fun command(text: String) = cmp(text, cGreen).suggest(text).hover(cmp("Click to suggest command", cWhite))
-    private fun link(name: String, url: String) = cmp(name, cHighlight, true).link(url).hover(cmp("Click to open URL", cWhite))
+            fun link(name: String, url: String) = cmp(name, cHighlight, true).link(url).hover(cmp("Click to open URL", cWhite))
     private fun usage(syntax: String) = error("Correct Syntax: ") + command(syntax).withColor(cBase)
     private fun setting(name: String, current: String) = cmp(name) + cmp(" is currently set to ", cBase) + value(current)
     private fun settingChanged(name: String, newValue: Any?) = success(name) + success(" set to ") + value(newValue)
