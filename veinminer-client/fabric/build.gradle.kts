@@ -51,7 +51,7 @@ sourceSets {
 }
 
 modrinth {
-    uploadFile.set(tasks.jar)
+    uploadFile.set(tasks.remapJar)
     projectId = properties["modrinthClientId"] as String
     versionName = "Veinminer Hotkey Fabric - $version"
     outlet.mcVersionRange = properties["fabricSupportedVersions"] as String
@@ -70,6 +70,7 @@ modrinth {
 
 curseForgePublish {
     projectId.set(properties["curseforgeClientId"] as String)
+    artifactTaskName.set("remapJar")
     versionName.set("Veinminer Hotkey Fabric - $version")
     changelog.set(properties["changelogClient"] as String)
     gameVersions.addAll(outlet.mcVersions())
