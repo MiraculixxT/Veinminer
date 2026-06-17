@@ -145,7 +145,7 @@ class PatternConfigScreen(private val parent: Screen?) : Screen(Component.litera
         ClientPatternConfig.save()
         syncSelection()
         NetworkManager.sendPatternConfig()
-        minecraft.setScreen(parent)
+        minecraft.gui.setScreen(parent)
     }
 
     private fun openColorPicker(pattern: PatternConfig) {

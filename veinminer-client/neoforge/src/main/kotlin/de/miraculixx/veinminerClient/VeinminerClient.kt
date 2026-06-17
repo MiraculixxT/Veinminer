@@ -28,7 +28,7 @@ import net.neoforged.neoforge.client.gui.IConfigScreenFactory
 import net.neoforged.neoforge.client.event.ClientTickEvent
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent
-import net.neoforged.neoforge.client.event.RenderLevelStageEvent
+import net.neoforged.neoforge.client.event.SubmitCustomGeometryEvent
 import net.neoforged.neoforge.common.NeoForge
 
 @Mod(value = MOD_ID, dist = [Dist.CLIENT])
@@ -82,13 +82,8 @@ class VeinminerClient(modBus: IEventBus, container: ModContainer) {
             ClientLifecycle.onDisconnect()
         }
 
-        gameBus.addListener<RenderLevelStageEvent.AfterOpaqueBlocks> { event ->
-            val source = Minecraft.getInstance().renderBuffers().bufferSource()
-            BlockHighlightingRenderer.render(event.poseStack, source, event.levelRenderState.cameraRenderState.pos, false)
-        }
-        gameBus.addListener<RenderLevelStageEvent.AfterTranslucentBlocks> { event ->
-            val source = Minecraft.getInstance().renderBuffers().bufferSource()
-            BlockHighlightingRenderer.render(event.poseStack, source, event.levelRenderState.cameraRenderState.pos, true)
+        gameBus.addListener<SubmitCustomGeometryEvent> { event ->
+            BlockHighlightingRenderer.render(event.poseStack, event.submitNodeCollector, event.levelRenderState.cameraRenderState.pos)
         }
 
         mcCoroutineAsync(1.ticks) {

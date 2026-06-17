@@ -1,106 +1,35 @@
 package de.miraculixx.veinminerClient.render
 
-import com.mojang.blaze3d.pipeline.BlendFunction
-import com.mojang.blaze3d.pipeline.ColorTargetState
-import com.mojang.blaze3d.pipeline.DepthStencilState
-import com.mojang.blaze3d.pipeline.RenderPipeline
-import com.mojang.blaze3d.platform.CompareOp
 import com.mojang.blaze3d.vertex.PoseStack
 import de.miraculixx.veinminer.data.BlockPosition
-import de.miraculixx.veinminerClient.ClientLifecycle
 import de.miraculixx.veinminerClient.KeyBindManager
 import de.miraculixx.veinminerClient.network.NetworkManager
-import net.minecraft.client.renderer.MultiBufferSource
-import net.minecraft.client.renderer.RenderPipelines
-import net.minecraft.client.renderer.rendertype.RenderSetup
-import net.minecraft.client.renderer.rendertype.RenderType
+import net.minecraft.client.renderer.OrderedSubmitNodeCollector
 import net.minecraft.client.renderer.rendertype.RenderTypes
-import net.minecraft.resources.Identifier
+import net.minecraft.util.ARGB
 import net.minecraft.world.phys.Vec3
 import net.minecraft.world.phys.shapes.Shapes
 import net.minecraft.world.phys.shapes.VoxelShape
-import org.joml.Matrix4f
-import java.util.*
 
 
 object BlockHighlightingRenderer {
     private var highlightingShape: VoxelShape = Shapes.empty()
 
-    private val renderHighlighting: RenderType by lazy { RenderTypes.lines() }
-
-    // Custom renderer, unavailable under Iris
-    private val renderHighlightingTranslucent: RenderType by lazy {
-        RenderType.create(
-            "${ClientLifecycle.MOD_ID}:highlight_translucent",
-            RenderSetup.builder(
-                RenderPipelines.register(
-                    RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
-                        .withLocation(Identifier.fromNamespaceAndPath("veinminer-client", "pipeline/highlight_translucent"))
-                        .withDepthStencilState(DepthStencilState(CompareOp.ALWAYS_PASS, false))
-                        .withCull(false)
-                        .withColorTargetState(ColorTargetState(BlendFunction.TRANSLUCENT))
-                        .build()
-                )
-            ).bufferSize(1536)
-                .createRenderSetup()
-        )
-    }
-
-
-    // OrderedSubmitNodeCollector
-    fun render(stack: PoseStack,
-               source: MultiBufferSource.BufferSource,
-               camPos: Vec3,
-               isTranslucentPass: Boolean) {
+    fun render(stack: PoseStack, collector: OrderedSubmitNodeCollector, camPos: Vec3) {
         val targetBlock = KeyBindManager.lastTarget
         if (highlightingShape.isEmpty || targetBlock == null) return
 
         stack.pushPose()
-        stack.translate(targetBlock.x - camPos.x, targetBlock.y - camPos.y, targetBlock.z - camPos.z)
+        try {
+            stack.translate(targetBlock.x - camPos.x, targetBlock.y - camPos.y, targetBlock.z - camPos.z)
 
-        val matrix = stack.last().pose()
-
-        val drawTranslucent = NetworkManager.settings.client.translucentBlockHighlight
-
-        if (!isTranslucentPass) {
-            renderBlocks(source, renderHighlighting, matrix, highlightingShape, 255)
-        } else if (drawTranslucent) {
-            renderBlocks(source, renderHighlightingTranslucent, matrix, highlightingShape, 50)
+            collector.submitShapeOutline(stack, highlightingShape, RenderTypes.lines(), ARGB.white(255), 1.0f, false)
+            if (NetworkManager.settings.client.translucentBlockHighlight) {
+                collector.submitShapeOutline(stack, highlightingShape, RenderTypes.linesTranslucent(), ARGB.white(50), 1.0f, true)
+            }
+        } finally {
+            stack.popPose()
         }
-
-        if (!isTranslucentPass) {
-            source.endBatch(renderHighlighting)
-        } else if (drawTranslucent) {
-            source.endBatch(renderHighlightingTranslucent)
-        }
-
-        stack.popPose()
-    }
-
-    private fun renderBlocks(source: MultiBufferSource.BufferSource, renderer: RenderType, matrix: Matrix4f, shape: VoxelShape, transparency: Int) {
-        val buffer = source.getBuffer(renderer)
-        shape.forAllEdges { x, y, z, dx, dy, dz ->
-            val x = x.toFloat()
-            val y = y.toFloat()
-            val z = z.toFloat()
-            val dx = dx.toFloat()
-            val dy = dy.toFloat()
-            val dz = dz.toFloat()
-            val relX = dx - x
-            val relY = dy - y
-            val relZ = dz - z
-
-            // Outline
-            buffer.addVertex(matrix, x, y, z)
-                .setColor(255, 255, 255, transparency)
-                .setNormal(relX, relY, relZ)
-                .setLineWidth(1.0f)
-            buffer.addVertex(matrix, dx, dy, dz)
-                .setColor(255, 255, 255, transparency)
-                .setNormal(relX, relY, relZ)
-                .setLineWidth(1.0f)
-        }
-        source.endLastBatch()
     }
 
     fun setShape(positions: List<BlockPosition>) {
