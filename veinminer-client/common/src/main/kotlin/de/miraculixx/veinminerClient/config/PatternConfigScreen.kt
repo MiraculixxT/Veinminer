@@ -32,7 +32,9 @@ import net.minecraft.client.renderer.RenderPipelines
 import net.minecraft.client.renderer.state.gui.GuiElementRenderState
 import net.minecraft.client.renderer.state.gui.GuiRenderState
 import net.minecraft.network.chat.Component
+import net.minecraft.network.chat.TextColor
 import net.minecraft.resources.Identifier
+import net.minecraft.util.Util
 import org.joml.Matrix3x2f
 import org.joml.Matrix3x2fc
 
@@ -74,14 +76,19 @@ class PatternConfigScreen(private val parent: Screen?) : Screen(Component.litera
         addRenderableWidget(
             Button.builder(Component.literal("Done")) {
                 saveAndClose()
-            }.bounds(center - 102, height - 28, 100, 20).build()
+            }.bounds(center - 127, height - 28, 100, 20).build()
+        )
+        addRenderableWidget(
+            Button.builder(Component.literal("HELP").withColor(TextColor.GOLD)) {
+                Util.getPlatform().openUri("https://modrinth.com/mod/veinminer-client")
+            }.bounds(center - 25, height - 28, 50, 20).build()
         )
         addRenderableWidget(
             Button.builder(Component.literal("Reset")) {
                 ClientPatternConfig.reset()
                 syncSelection()
                 rebuildPatternWidgets()
-            }.bounds(center + 2, height - 28, 100, 20).build()
+            }.bounds(center + 27, height - 28, 100, 20).build()
         )
     }
 

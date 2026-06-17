@@ -20,6 +20,7 @@ import de.miraculixx.veinminer.network.NetworkRouter
 import de.miraculixx.veinminer.networking.PaperPlatformNetwork
 import de.miraculixx.veinminer.networking.PaperServerCallbacks
 import de.miraculixx.veinminer.utils.PaperHost
+import de.miraculixx.veinminer.utils.cHighlight
 import org.bukkit.NamespacedKey
 import org.bukkit.event.player.PlayerJoinEvent
 
@@ -55,6 +56,17 @@ class Veinminer : KPaper() {
 
         val enchantmentContainer = server.pluginManager.getPlugin("veinminer_enchantment")
         enchantmentActive = enchantmentContainer != null
+
+        listen<PlayerJoinEvent> {
+            if (PaperConfigManager.firstInstall && it.player.isOp) {
+                it.player.sendMessage(
+                    (cmp("\nVeinminer was installed for the first time.") +
+                        cmp("\n• By default only ores are veinmine-able") +
+                        cmp("\n• Click ") + cmp("here", cHighlight.color()) + cmp(" to see how to configure more"))
+                        .addUrl("https://modrinth.com/project/veinminer#config")
+                )
+            }
+        }
 
         UpdateManager.startUpdateChecker(
             modules = listOf(UpdateManager.Module.VEINMINER, UpdateManager.Module.VEINMINER_ENCHANTMENT),

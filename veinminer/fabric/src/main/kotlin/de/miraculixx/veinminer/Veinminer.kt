@@ -15,6 +15,7 @@ import de.miraculixx.veinminer.network.ServerCallbacksImpl
 import de.miraculixx.veinminer.networking.FabricPlatformNetwork
 import de.miraculixx.veinminer.utils.FabricHost
 import de.miraculixx.veinminer.utils.cGreen
+import de.miraculixx.veinminer.utils.cHighlight
 import de.miraculixx.veinminer.utils.cRed
 import de.miraculixx.veinminer.utils.mcServer
 import me.lucko.fabric.api.permissions.v0.Permissions
@@ -26,10 +27,12 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.api.ModContainer
 import net.fabricmc.loader.impl.FabricLoaderImpl
+import net.minecraft.network.chat.ClickEvent
 import net.minecraft.network.chat.Component
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.entity.player.Player
 import org.slf4j.Logger
+import java.net.URI
 import kotlin.jvm.optionals.getOrNull
 
 
@@ -88,9 +91,20 @@ class Veinminer : ModInitializer {
         // Update notification
         ServerPlayConnectionEvents.JOIN.register { packet, _, _ ->
             val player = packet.player
-            val info = updateInfo
             val permission = player.server.getProfilePermissions(player.nameAndId())
-            if (info != null && (permission.level().id() > 1 || !player.server.isDedicatedServer)) {
+            val canConfigure = permission.level().id() > 1 || !player.server.isDedicatedServer
+            if (ConfigManager.firstInstall && canConfigure) {
+                player.sendSystemMessage(
+                    Component.literal("\nVeinminer was installed for the first time.")
+                        .append("\n• By default only ores are veinmine-able")
+                        .append("\n• Click ").append(Component.literal("here").withColor(cHighlight))
+                        .append(" to see how to configure more")
+                        .withStyle { it.withClickEvent(ClickEvent.OpenUrl(URI("https://modrinth.com/project/veinminer#config"))) }
+                )
+            }
+
+            val info = updateInfo
+            if (info != null && canConfigure) {
                 player.sendSystemMessage(
                     Component.literal("${info.module.modID} is outdated! ")
                         .append(" (Current: ").append(Component.literal(info.currentVersion).withColor(cRed))

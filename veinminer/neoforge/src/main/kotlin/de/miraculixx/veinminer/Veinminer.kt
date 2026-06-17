@@ -13,9 +13,11 @@ import de.miraculixx.veinminer.network.ServerCallbacksImpl
 import de.miraculixx.veinminer.networking.NeoForgePlatformNetwork
 import de.miraculixx.veinminer.utils.NeoForgeHost
 import de.miraculixx.veinminer.utils.cGreen
+import de.miraculixx.veinminer.utils.cHighlight
 import de.miraculixx.veinminer.utils.cRed
 import de.miraculixx.veinminer.utils.mcServer
 import net.minecraft.DetectedVersion
+import net.minecraft.network.chat.ClickEvent
 import net.minecraft.network.chat.Component
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.entity.ExperienceOrb
@@ -33,6 +35,7 @@ import net.neoforged.neoforge.event.level.block.BreakBlockEvent
 import net.neoforged.neoforge.event.server.ServerStartingEvent
 import net.neoforged.neoforge.event.server.ServerStoppedEvent
 import org.slf4j.Logger
+import java.net.URI
 
 @Mod(Veinminer.MOD_ID)
 class Veinminer(modBus: IEventBus, container: ModContainer) {
@@ -115,10 +118,21 @@ class Veinminer(modBus: IEventBus, container: ModContainer) {
         // Update notification on join
         gameBus.addListener<PlayerEvent.PlayerLoggedInEvent> { event ->
             val player = event.entity as? ServerPlayer ?: return@addListener
-            val info = updateInfo ?: return@addListener
             val server = player.server
             val isOp = server.playerList.isOp(player.nameAndId())
-            if (isOp || !server.isDedicatedServer) {
+            val canConfigure = isOp || !server.isDedicatedServer
+            if (ConfigManager.firstInstall && canConfigure) {
+                player.sendSystemMessage(
+                    Component.literal("\nVeinminer was installed for the first time.")
+                        .append("\n• By default only ores are veinmine-able")
+                        .append("\n• Click ").append(Component.literal("here").withColor(cHighlight))
+                        .append(" to see how to configure more")
+                        .withStyle { it.withClickEvent(ClickEvent.OpenUrl(URI("https://modrinth.com/project/veinminer#config"))) }
+                )
+            }
+
+            val info = updateInfo ?: return@addListener
+            if (canConfigure) {
                 player.sendSystemMessage(
                     Component.literal("${info.module.modID} is outdated! ")
                         .append(" (Current: ").append(Component.literal(info.currentVersion).withColor(cRed))

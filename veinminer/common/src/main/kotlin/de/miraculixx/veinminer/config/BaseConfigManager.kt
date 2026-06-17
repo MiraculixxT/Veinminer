@@ -7,6 +7,7 @@ import de.miraculixx.veinminer.extensions.load
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import java.nio.file.Path
+import kotlin.io.path.exists
 import kotlin.io.path.writeText
 
 abstract class BaseConfigManager<T>(
@@ -25,6 +26,8 @@ abstract class BaseConfigManager<T>(
         encodeDefaults = true
         serializersModule = jsonModule
     }
+
+    val firstInstall: Boolean = !settingsFile.exists()
 
     final override var settings: VeinminerSettings = loadSettings()
         private set
