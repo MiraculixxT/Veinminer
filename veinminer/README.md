@@ -51,6 +51,7 @@ To check the current state, leave out the new value argument.
 |      `autoUpdate`      |  Check for updates and download new version if available   | `true`  |
 |  `durabilityDecrease`  |        If each mined block should reduce durability        | `true`  |
 | `miningSpeedModifier`  |     Increase block mining duration based on vein size      |  `0.0`  |
+|    `hungerPerBlock`    |    Drain saturation per veinmined block (vanilla 0.005)    |  `0.0`  |
 
 </details>
 <details><summary>Block Groups - Advanced Settings</summary>
