@@ -16,6 +16,7 @@ data class VeinminerSettings(
     var mergeItemDrops: Boolean = false,
     var autoUpdate: Boolean = false,
     var decreaseDurability: Boolean = true,
+    var useHunger: Boolean = false,
     var miningSpeedModifier: Double = 0.0,
     var debug: Boolean = false,
     val client: VeinminerClientSettings = VeinminerClientSettings()
@@ -40,6 +41,7 @@ data class VeinminerSettings(
             permissionRestricted = g?.permissionRestricted ?: (if (isClient) c.permissionRestricted ?: permissionRestricted else permissionRestricted),
             mergeItemDrops = mergeItemDrops,
             decreaseDurability = g?.decreaseDurability ?: (if (isClient) c.decreaseDurability ?: decreaseDurability else decreaseDurability),
+            useHunger = g?.useHunger ?: (if (isClient) c.useHunger ?: useHunger else useHunger),
             miningSpeedModifier = g?.miningSpeedModifier ?: (if (isClient) c.miningSpeedModifier ?: miningSpeedModifier else miningSpeedModifier),
             debug = debug,
             client = client
@@ -83,6 +85,7 @@ data class VeinminerSettingsOverride(
     var searchRadius: Int? = null,
     var permissionRestricted: Boolean? = null,
     var decreaseDurability: Boolean? = null,
+    var useHunger: Boolean? = null,
     var miningSpeedModifier: Double? = null
 ) {
     fun nonNullKeys(): List<String> =

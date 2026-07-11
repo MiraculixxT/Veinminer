@@ -236,6 +236,7 @@ object VeinMinerEvent {
             override fun breakBlock(pos: BlockPosition, ticks: Int): Boolean {
                 if (!shouldBreak) return false // safeguard
                 if (tool.remainingDurability() <= 1) return false // tool "broken"
+                if (settings.useHunger && iPlayer.foodLevel == 0 && iPlayer.saturation == 0f) return false // hunger depleted
                 val state = world.getBlockAt(pos.x, pos.y, pos.z)
                 scheduleBreak(state, ticks.toLong())
                 return true
@@ -273,6 +274,7 @@ object VeinMinerEvent {
         if (!veinminerEvent.callEvent()) return
         block.destroy()
         if (settings.decreaseDurability) damageItem(iTool, 1, iPlayer)
+        if (settings.useHunger) iPlayer.exhaustion += 0.005f
     }
 
     /**

@@ -111,6 +111,7 @@ object VeinminerCommand {
                 applySetting("permissionRestricted", { ActiveConfig.bridge.settings.permissionRestricted }) { x, _ -> ActiveConfig.bridge.settings.permissionRestricted = x }
                 applySetting("mergeItemDrops", { ActiveConfig.bridge.settings.mergeItemDrops }) { x, _ -> ActiveConfig.bridge.settings.mergeItemDrops = x }
                 applySetting("decreaseDurability", { ActiveConfig.bridge.settings.decreaseDurability }) { x, _ -> ActiveConfig.bridge.settings.decreaseDurability = x }
+                applySetting("useHunger", { ActiveConfig.bridge.settings.useHunger }) { x, _ -> ActiveConfig.bridge.settings.useHunger = x }
                 applySetting("miningSpeedModifier", { ActiveConfig.bridge.settings.miningSpeedModifier }) { x, _ -> ActiveConfig.bridge.settings.miningSpeedModifier = x }
                 applySetting("debug", { debug }) { x, _ -> ActiveConfig.bridge.settings.debug = x }
                 literal("client") {
@@ -392,6 +393,7 @@ object VeinminerCommand {
         applySetting("searchRadius", { args -> args.resolve().searchRadius }) { x, args -> args.resolve().searchRadius = x }
         applySetting("permissionRestricted", { args -> args.resolve().permissionRestricted }) { x, args -> args.resolve().permissionRestricted = x }
         applySetting("decreaseDurability", { args -> args.resolve().decreaseDurability }) { x, args -> args.resolve().decreaseDurability = x }
+        applySetting("useHunger", { args -> args.resolve().useHunger }) { x, args -> args.resolve().useHunger = x }
         applySetting("miningSpeedModifier", { args -> args.resolve().miningSpeedModifier }) { x, args -> args.resolve().miningSpeedModifier = x }
     }
 
