@@ -115,7 +115,7 @@ Permission constants live in `core/src/main/kotlin/de/miraculixx/veinminer/utils
 
 Use the constants, not inline strings. Paper checks Bukkit permissions/op state, Fabric uses `me.lucko:fabric-permissions-api` plus vanilla gamemaster fallback, and NeoForge command permissions use gamemaster command level. NeoForge veinmining itself currently treats the runtime permission hook as allowed because NeoForge has no matching server permission API here.
 
-Current settings include `cooldown`, `mustSneak`, `delay`, `maxChain`, `needCorrectTool`, `searchRadius`, `permissionRestricted`, `mergeItemDrops`, `autoUpdate`, `decreaseDurability`, `useHunger`, `miningSpeedModifier`, and `debug`. Client settings include `allow`, `require`, `translucentBlockHighlight`, `allBlocks`, and client overrides.
+Current settings include `cooldown`, `mustSneak`, `delay`, `maxChain`, `needCorrectTool`, `searchRadius`, `permissionRestricted`, `mergeItemDrops`, `autoUpdate`, `decreaseDurability`, `hungerPerBlock`, `miningSpeedModifier`, and `debug`. Client settings include `allow`, `require`, `translucentBlockHighlight`, `allBlocks`, and client overrides.
 
 ## Loader Notes
 

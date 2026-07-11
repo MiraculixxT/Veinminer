@@ -176,7 +176,7 @@ object VeinMinerEvent {
             override fun breakBlock(pos: BlockPosition, ticks: Int): Boolean {
                 if (!shouldBreak) return false // safeguard
                 if (tool.remainingDurability() <= 1) return false // tool "broken"
-                if (settings.useHunger && iPlayer.foodData.foodLevel == 0 && iPlayer.foodData.saturationLevel == 0f) return false // hunger depleted
+                if (settings.hungerPerBlock > 0.0 && iPlayer.foodData.foodLevel == 0 && iPlayer.foodData.saturationLevel == 0f) return false // hunger depleted
                 val blockPos = BlockPos(pos.x, pos.y, pos.z)
                 scheduleBreak(blockPos, ticks)
                 return true
@@ -201,7 +201,7 @@ object VeinMinerEvent {
             if (settings.decreaseDurability && iTool.remainingDurability() <= 1) return@mcCoroutineSync
             state.destroyBlock(iTool, world, pos, iPlayer, sourceLocation.toNMS())
             if (settings.decreaseDurability) damageItem(iTool, iPlayer)
-            if (settings.useHunger) iPlayer.causeFoodExhaustion(0.005f)
+            if (settings.hungerPerBlock > 0.0) iPlayer.causeFoodExhaustion(settings.hungerPerBlock.toFloat())
         }
     }
 
