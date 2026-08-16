@@ -53,7 +53,7 @@ class Veinminer : ModInitializer {
         fabricLoader = FabricLoader.getInstance()
         INSTANCE = fabricLoader.getModContainer(MOD_ID).get()
         LOGGER.info("Veinminer Version: ${INSTANCE.metadata.version} (fabric)")
-        val mcVersion = (FabricLoader.getInstance() as FabricLoaderImpl).gameProvider.rawGameVersion
+        val mcVersion = FabricLoader.getInstance().rawGameVersion
 
         // Check for Veinminer-Enchantment
         EventState.enchantmentActive = fabricLoader.getModContainer("veinminer_enchantment").getOrNull() != null
