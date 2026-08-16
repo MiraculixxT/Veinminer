@@ -20,7 +20,7 @@ public class MixinMouseHandler {
             cancellable = true
     )
     private void veinminerOnScroll(long window, double horizontal, double vertical, CallbackInfo ci) {
-        if (!KeyBindManager.INSTANCE.isPressed()) return;
+        if (!KeyBindManager.INSTANCE.isScrollAllowed()) return;
         if (!NetworkManager.INSTANCE.isVeinminerActive()) return;
         if (vertical == 0.0) return;
         Window w = Minecraft.getInstance().getWindow();

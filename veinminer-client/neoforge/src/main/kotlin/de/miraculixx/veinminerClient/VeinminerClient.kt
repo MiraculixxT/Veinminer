@@ -60,7 +60,7 @@ class VeinminerClient(modBus: IEventBus, container: ModContainer) {
         }
 
         gameBus.addListener<InputEvent.MouseScrollingEvent> { event ->
-            if (!KeyBindManager.isPressed) return@addListener
+            if (!KeyBindManager.isScrollAllowed) return@addListener
             if (!NetworkManager.isVeinminerActive) return@addListener
             val v = event.scrollDeltaY
             if (v == 0.0) return@addListener

@@ -34,6 +34,9 @@ object KeyBindManager {
     private var isToggled = false
     var notifiedOnce = false
 
+    val isScrollAllowed: Boolean
+        get() = isPressed && KeyBindings.hold?.isDown == true
+
     fun tick() {
         val toggleKey = KeyBindings.toggle ?: return
         val holdKey = KeyBindings.hold ?: return
