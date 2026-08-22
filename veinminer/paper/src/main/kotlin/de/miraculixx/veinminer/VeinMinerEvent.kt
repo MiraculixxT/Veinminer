@@ -106,37 +106,15 @@ object VeinMinerEvent {
     }
 
     @Suppress("unused")
-    private val onBlockBreak = listen<BlockBreakEvent>(priority = EventPriority.HIGH) {
+    private val onBlockBreak = listen<BlockBreakEvent>(priority = EventPriority.MONITOR) {
         it.player.removeAttribute() // Always remove
         if (it.isCancelled || !enabled) return@listen
 
         val player = it.player
         val block = it.block
 
-        // Check if the event is triggered by Veinminer
-        if (it is VeinminerEvent) {
-            if (!it.isDropItems) return@listen
-            var settings = PaperConfigManager.settings
-
-            // Invoke VeinminerDropEvent - allows other plugins to modify the items and exp dropped by Veinminer itself
-            // Veinminer will drop the items that are still in the list and the remaining amount of experience
-            val tool = player.inventory.itemInMainHand
-            val drops = block.getDrops(tool, player).toMutableList<ItemStack>()
-            val dropItemEvent = VeinminerDropEvent(block, block.state, player, drops, it.expToDrop).also(Event::callEvent)
-
-            // Use source location as drop pos if setting is enabled
-            val location = if (settings.mergeItemDrops) it.sourceLocation else block.location.toCenterLocation()
-
-            drops.forEach { drop ->
-                block.world.dropItem(location, drop)
-            }
-            if (dropItemEvent.exp > 0) block.world.spawn(location, ExperienceOrb::class.java).experience =
-                dropItemEvent.exp
-
-            it.isDropItems = false
-            it.expToDrop = 0
-            return@listen
-        }
+        // Veinminer's own break - drops are handled in triggerBreaking once every listener had its say
+        if (it is VeinminerEvent) return@listen
 
         val veinmineInfo = allowedToVeinmine(player, block) ?: return@listen
 
@@ -267,12 +245,27 @@ object VeinMinerEvent {
         val iTool = tool
         if (settings.decreaseDurability && iTool.remainingDurability() <= 1) return
 
-        // Check if other plugins cancel the event
+        // Check if other plugins cancel the event. Nothing may drop or break before this returns
         val iPlayer = player
         val sourceLoc = Location(iPlayer.world, sourceLocation.x.toDouble(), sourceLocation.y.toDouble(), sourceLocation.z.toDouble())
         val veinminerEvent = VeinminerEvent(block, iPlayer, sourceLoc, block.getXP(iTool))
         if (!veinminerEvent.callEvent()) return
+
+        // Capture while the block still exists
+        val blockState = block.state
+        val drops = if (veinminerEvent.isDropItems) block.getDrops(iTool, iPlayer).toMutableList<ItemStack>() else mutableListOf()
+        val world = block.world
+        val location = if (settings.mergeItemDrops) sourceLoc else block.location.toCenterLocation()
+
         block.destroy()
+
+        if (veinminerEvent.isDropItems) {
+            // Allows other plugins to modify the items and exp dropped by Veinminer itself
+            val dropItemEvent = VeinminerDropEvent(block, blockState, iPlayer, drops, veinminerEvent.expToDrop).also(Event::callEvent)
+            drops.forEach { drop -> world.dropItem(location, drop) }
+            if (dropItemEvent.exp > 0) world.spawn(location, ExperienceOrb::class.java).experience = dropItemEvent.exp
+        }
+
         if (settings.decreaseDurability) damageItem(iTool, 1, iPlayer)
         if (settings.hungerPerBlock > 0.0) iPlayer.exhaustion += settings.hungerPerBlock.toFloat()
     }
