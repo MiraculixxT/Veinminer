@@ -9,6 +9,7 @@ import de.miraculixx.veinminer.command.VeinminerCommand
 import de.miraculixx.veinminer.config.ConfigManager
 import de.miraculixx.veinminer.event.EventState
 import de.miraculixx.veinminer.event.VeinMinerEvent
+import de.miraculixx.veinminer.event.VeinminerBreakContext
 import de.miraculixx.veinminer.event.VeinMinerEvent.removeMiningSpeedModifier
 import de.miraculixx.veinminer.network.NetworkRouter
 import de.miraculixx.veinminer.network.ServerCallbacksImpl
@@ -20,6 +21,7 @@ import de.miraculixx.veinminer.utils.cRed
 import de.miraculixx.veinminer.utils.mcServer
 import me.lucko.fabric.api.permissions.v0.Permissions
 import net.fabricmc.api.ModInitializer
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents
@@ -74,6 +76,7 @@ class Veinminer : ModInitializer {
         PlayerBlockBreakEvents.BEFORE.register { world, player, pos, state, _ ->
             VeinMinerEvent.onBlockBreakBefore(world, player, pos, state)
         }
+        ServerEntityEvents.ENTITY_LOAD.register { entity, _ -> VeinminerBreakContext.relocateDrop(entity) }
 
         // Networking
         ServerLifecycleEvents.SERVER_STARTING.register { server ->
