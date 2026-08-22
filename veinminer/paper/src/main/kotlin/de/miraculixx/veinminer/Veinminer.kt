@@ -75,7 +75,7 @@ class Veinminer : KPaper() {
             moduleVersionLookup = { pluginManager.getPlugin(it.modID)?.pluginMeta?.version },
         ) { info ->
             listen<PlayerJoinEvent> {
-                if (it.player.isOp) {
+                if (it.player.isOp && !PaperConfigManager.settings.hideUpdates) {
                     it.player.sendMessage(
                         cmp("${info.module.modID} is outdated! Click here to download the latest version").addUrl("https://modrinth.com/project/${info.module.modID}") +
                         cmp(" (Current: ") + cmp(info.currentVersion, cRed.color()) + cmp(", Latest: ") + cmp(info.latestVersion, cGreen.color()) + cmp(")")

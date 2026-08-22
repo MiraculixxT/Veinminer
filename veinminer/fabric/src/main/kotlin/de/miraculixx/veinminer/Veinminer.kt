@@ -26,7 +26,6 @@ import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.api.ModContainer
-import net.fabricmc.loader.impl.FabricLoaderImpl
 import net.minecraft.network.chat.ClickEvent
 import net.minecraft.network.chat.Component
 import net.minecraft.world.InteractionResult
@@ -104,7 +103,7 @@ class Veinminer : ModInitializer {
             }
 
             val info = updateInfo
-            if (info != null && canConfigure) {
+            if (info != null && canConfigure && !ConfigManager.settings.hideUpdates) {
                 player.sendSystemMessage(
                     Component.literal("${info.module.modID} is outdated! ")
                         .append(" (Current: ").append(Component.literal(info.currentVersion).withColor(cRed))

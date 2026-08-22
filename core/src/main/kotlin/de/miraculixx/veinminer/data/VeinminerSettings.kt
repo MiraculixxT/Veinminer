@@ -1,5 +1,6 @@
 package de.miraculixx.veinminer.data
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.full.memberProperties
@@ -19,6 +20,7 @@ data class VeinminerSettings(
     var hungerPerBlock: Double = 0.0,
     var miningSpeedModifier: Double = 0.0,
     var separateGroupMining: Boolean = false,
+    @SerialName("dontDisplayUpdatesAndIWillNotAskForSupportBeforeUpdatingISwear") var hideUpdates: Boolean = false,
     var debug: Boolean = false,
     val client: VeinminerClientSettings = VeinminerClientSettings()
 ) {
@@ -45,6 +47,7 @@ data class VeinminerSettings(
             hungerPerBlock = g?.hungerPerBlock ?: (if (isClient) c.hungerPerBlock ?: hungerPerBlock else hungerPerBlock),
             miningSpeedModifier = g?.miningSpeedModifier ?: (if (isClient) c.miningSpeedModifier ?: miningSpeedModifier else miningSpeedModifier),
             separateGroupMining = g?.separateGroupMining ?: (if (isClient) c.separateGroupMining ?: separateGroupMining else separateGroupMining),
+            hideUpdates = hideUpdates,
             debug = debug,
             client = client
         )

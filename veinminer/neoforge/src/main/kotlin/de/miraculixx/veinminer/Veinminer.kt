@@ -132,7 +132,7 @@ class Veinminer(modBus: IEventBus, container: ModContainer) {
             }
 
             val info = updateInfo ?: return@addListener
-            if (canConfigure) {
+            if (canConfigure && !ConfigManager.settings.hideUpdates) {
                 player.sendSystemMessage(
                     Component.literal("${info.module.modID} is outdated! ")
                         .append(" (Current: ").append(Component.literal(info.currentVersion).withColor(cRed))
