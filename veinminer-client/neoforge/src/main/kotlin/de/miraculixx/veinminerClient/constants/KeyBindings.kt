@@ -11,9 +11,9 @@ object NeoForgeKeyBindings {
 
     fun register(event: RegisterKeyMappingsEvent) {
         event.registerCategory(category)
-        val h = KeyMapping("key.$MOD_ID.hold", InputConstants.Type.KEYSYM, InputConstants.KEY_Y, category)
-        val t = KeyMapping("key.$MOD_ID.toggle", InputConstants.Type.KEYSYM, InputConstants.UNKNOWN.value, category)
-        val c = KeyMapping("key.$MOD_ID.config", InputConstants.Type.KEYSYM, InputConstants.KEY_O, category)
+        val h = KeyMapping("key.$MOD_ID.hold", InputConstants.Type.KEYBOARD, InputConstants.KEY_Y, category)
+        val t = KeyMapping("key.$MOD_ID.toggle", InputConstants.Type.KEYBOARD, InputConstants.UNKNOWN.value, category)
+        val c = KeyMapping("key.$MOD_ID.config", InputConstants.Type.KEYBOARD, InputConstants.KEY_O, category)
         event.register(h)
         event.register(t)
         event.register(c)

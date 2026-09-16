@@ -1,12 +1,14 @@
 package de.miraculixx.veinminerClient.config
 
-import com.mojang.blaze3d.pipeline.RenderPipeline
+import com.mojang.blaze3d.Blaze3D
+import com.mojang.renderpearl.api.pipeline.RenderPipeline
 import com.mojang.blaze3d.vertex.VertexConsumer
 import de.miraculixx.veinminer.pattern.PatternConfig
 import de.miraculixx.veinminer.pattern.PatternType
 import de.miraculixx.veinminerClient.ClientLifecycle
 import de.miraculixx.veinminerClient.network.NetworkManager
 import de.miraculixx.veinminerClient.render.ShapeRouletteOverlay
+import java.net.URI
 import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
@@ -34,7 +36,6 @@ import net.minecraft.client.renderer.state.gui.GuiRenderState
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.TextColor
 import net.minecraft.resources.Identifier
-import net.minecraft.util.Util
 import org.joml.Matrix3x2f
 import org.joml.Matrix3x2fc
 
@@ -80,7 +81,7 @@ class PatternConfigScreen(private val parent: Screen?) : Screen(Component.litera
         )
         addRenderableWidget(
             Button.builder(Component.literal("HELP").withColor(TextColor.GOLD)) {
-                Util.getPlatform().openUri("https://modrinth.com/mod/veinminer-client")
+                Blaze3D.openUri(URI.create("https://modrinth.com/mod/veinminer-client"))
             }.bounds(center - 25, height - 28, 50, 20).build()
         )
         addRenderableWidget(

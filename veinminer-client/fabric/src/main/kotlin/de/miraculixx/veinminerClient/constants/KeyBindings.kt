@@ -18,7 +18,7 @@ object FabricKeyBindings {
     private fun registerKeyBinding(id: String, key: Int) = KeyMappingHelper.registerKeyMapping(
         KeyMapping(
             "key.$MOD_ID.$id",
-            InputConstants.Type.KEYSYM,
+            InputConstants.Type.KEYBOARD,
             key,
             category
         )
