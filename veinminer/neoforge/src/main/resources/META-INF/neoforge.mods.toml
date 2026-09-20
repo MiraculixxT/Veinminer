@@ -8,7 +8,7 @@ modId = "veinminer"
 version = "${version}"
 displayName = "${name}"
 displayURL = "https://modrinth.com/mod/veinminer"
-logoFile = "assets/veinminer/icon.png"
+iconFile = "assets/veinminer/icon.png"
 authors = "${author}"
 description = '''
 ${description}

@@ -30,7 +30,7 @@ tasks.named<JavaExec>("runServer") {
 }
 
 dependencies {
-    implementation("dev.nyon:KotlinLangForge:2.14.0-k2.4.20-3.1+neoforge")
+    implementation("dev.nyon:KotlinLangForge:2.14.1-k2.4.20-3.1+neoforge")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.+")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.+")
 }
