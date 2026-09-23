@@ -56,7 +56,9 @@ object ClientVeinSelector {
         if (settings.mustSneak && !player.isCrouching) return null
 
         val mainHandItem = player.mainHandItem
-        if (settings.needCorrectTool && state.requiresCorrectToolForDrops() && !mainHandItem.isCorrectToolForDrops(state)) return null
+        val emptyHand = mainHandItem.isEmpty
+        if (emptyHand && settings.needCorrectTool && !blockGroup.tools.contains(mainHandItem.key())) return null
+        if (!emptyHand && settings.needCorrectTool && state.requiresCorrectToolForDrops() && !mainHandItem.isCorrectToolForDrops(state)) return null
         if (!hasClientBypass && isGroupBlock && blockGroup.tools.isNotEmpty() && !blockGroup.tools.contains(mainHandItem.key())) return null
         if (settings.decreaseDurability && mainHandItem.remainingDurability() <= 1) return null
 
@@ -119,7 +121,7 @@ object ClientVeinSelector {
     private fun BlockState.key(): Identifier = BuiltInRegistries.BLOCK.getKey(block)
     private fun ItemStack.key(): Identifier = BuiltInRegistries.ITEM.getKey(item)
     private fun ItemStack.remainingDurability(): Int {
-        if (isEmpty) return 0
+        if (isEmpty) return Int.MAX_VALUE
         if (maxDamage <= 0) return Int.MAX_VALUE
         return maxDamage - damageValue
     }

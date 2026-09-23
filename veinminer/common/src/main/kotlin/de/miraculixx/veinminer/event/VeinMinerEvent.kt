@@ -136,7 +136,9 @@ object VeinMinerEvent {
         if (cooldown.contains(player.uuid)) return null
 
         val mainHandItem = player.mainHandItem
-        if (settings.needCorrectTool && (state.requiresCorrectToolForDrops() && !mainHandItem.isCorrectToolForDrops(state))) return null
+        val emptyHand = mainHandItem.isEmpty
+        if (emptyHand && settings.needCorrectTool && !blockGroup.tools.contains(mainHandItem.key())) return null
+        if (!emptyHand && settings.needCorrectTool && (state.requiresCorrectToolForDrops() && !mainHandItem.isCorrectToolForDrops(state))) return null
         if (!hasClientBypass && isGroupBlock && !blockGroup.tools.isEmpty() && !blockGroup.tools.contains(mainHandItem.key())) return null
         if (settings.decreaseDurability && mainHandItem.remainingDurability() <= 1) return null
 
@@ -153,11 +155,9 @@ object VeinMinerEvent {
      * @return the number of blocks broken
      */
     fun VeinmineAction<ItemStack, Player>.veinmine(shouldBreak: Boolean): Int {
-        val iTool = tool
         val iPlayer = player
         val world = iPlayer.level()
 
-        if (iTool.isEmpty) return 0
         val strategy = NetworkRouter.activeStrategy(iPlayer.uuid) ?: NormalStrategy
         val maxDepth = NetworkRouter.maxDepth(iPlayer.uuid)
 
@@ -217,7 +217,7 @@ object VeinMinerEvent {
     }
 
     private fun ItemStack.remainingDurability(): Int {
-        if (isEmpty) return 0
+        if (isEmpty) return Int.MAX_VALUE
         if (maxDamage <= 0) return Int.MAX_VALUE
         return maxDamage - damageValue
     }

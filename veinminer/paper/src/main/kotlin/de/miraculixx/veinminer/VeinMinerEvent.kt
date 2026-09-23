@@ -172,7 +172,9 @@ object VeinMinerEvent {
         // Check for correct tool (if block group tools are empty, it means all tools are allowed)
         val item = player.inventory.itemInMainHand
         if (debug) Veinminer.LOGGER.info(" - Tool: ${item.type.key}")
-        if (settings.needCorrectTool && (block.getDrops(item).isEmpty() || item.isEmpty)) return null
+        val emptyHand = item.isEmpty
+        if (emptyHand && settings.needCorrectTool && !blockGroup.tools.contains(item.type.key)) return null
+        if (!emptyHand && settings.needCorrectTool && block.getDrops(item).isEmpty()) return null
         if (isGroupBlock && !blockGroup.tools.isEmpty() && !blockGroup.tools.contains(item.type.key)) return null
         // Fall back to vanilla break on last durability point so one normal block can still be mined.
         if (settings.decreaseDurability && item.remainingDurability() <= 1) return null
@@ -194,11 +196,9 @@ object VeinMinerEvent {
      * @return the number of blocks broken
      */
     fun VeinmineAction<ItemStack, Player>.veinmine(shouldBreak: Boolean): Int {
-        val iTool = tool
         val iPlayer = player
         val world = iPlayer.world
 
-        if (iTool.isEmpty) return 0
         val strategy = NetworkRouter.activeStrategy(iPlayer.uniqueId) ?: NormalStrategy
         val maxDepth = NetworkRouter.maxDepth(iPlayer.uniqueId)
 
@@ -281,7 +281,7 @@ object VeinMinerEvent {
     }
 
     private fun ItemStack.remainingDurability(): Int {
-        if (isEmpty) return 0
+        if (isEmpty) return Int.MAX_VALUE
         val maxDurability = type.maxDurability.toInt()
         if (maxDurability <= 0) return Int.MAX_VALUE
         return maxDurability - (getData(DataComponentTypes.DAMAGE) ?: 0)
