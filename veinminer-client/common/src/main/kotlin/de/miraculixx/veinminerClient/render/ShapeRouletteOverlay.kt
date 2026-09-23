@@ -29,7 +29,7 @@ object ShapeRouletteOverlay {
     private const val BAR_CELL_W = 8
     private const val BAR_CELL_H = 4
     private const val BAR_GAP = 1
-    private const val DEFAULT_DEPTH = 6
+    private const val DEFAULT_DEPTH = KeyPress.UNLIMITED_DEPTH
 
     /** Selectable depth values shown in the bar. Last entry = unlimited. */
     private val DEPTH_VALUES: List<Int> = (2..10).toList() + KeyPress.UNLIMITED_DEPTH

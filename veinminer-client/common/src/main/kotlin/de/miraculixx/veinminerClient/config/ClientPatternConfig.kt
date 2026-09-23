@@ -1,6 +1,7 @@
 package de.miraculixx.veinminerClient.config
 
 import de.miraculixx.veinminer.extensions.load
+import de.miraculixx.veinminer.network.KeyPress
 import de.miraculixx.veinminer.pattern.DefaultPatterns
 import de.miraculixx.veinminer.pattern.PatternConfig
 import de.miraculixx.veinminer.pattern.PatternType
@@ -14,8 +15,9 @@ import kotlin.io.path.writeText
 data class ClientPatternSettings(
     val patterns: MutableList<PatternConfig> = DefaultPatterns.all(),
     var invertedScroll: Boolean = false,
+    var lockPatternScroll: Boolean = false,
     var selectedPatternId: String? = null,
-    var selectedDepth: Int = 6,
+    var selectedDepth: Int = KeyPress.UNLIMITED_DEPTH,
 )
 
 object ClientPatternConfig {

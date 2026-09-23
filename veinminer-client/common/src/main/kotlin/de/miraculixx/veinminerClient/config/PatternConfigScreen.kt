@@ -62,6 +62,13 @@ class PatternConfigScreen(private val parent: Screen?) : Screen(Component.litera
                 }
         )
         addRenderableWidget(
+            CycleButton.booleanBuilder(Component.literal("Locked"), Component.literal("Free"), ClientPatternConfig.settings.lockPatternScroll)
+                .create(122, 24, 120, 20, Component.literal("Pattern Scroll")) { _, value ->
+                    ClientPatternConfig.settings.lockPatternScroll = value
+                    ClientPatternConfig.save()
+                }
+        )
+        addRenderableWidget(
             Button.builder(Component.literal("+ Pattern")) {
                 ClientPatternConfig.add(addType)
                 syncSelection()
@@ -176,6 +183,17 @@ class PatternConfigScreen(private val parent: Screen?) : Screen(Component.litera
             patternListScrollAmount = patternList.scrollAmount()
         }
         rebuildWidgets()
+    }
+
+    private fun selectPattern(pattern: PatternConfig) {
+        NetworkManager.selectedPattern = pattern
+        syncSelection()
+    }
+
+    private fun isSelected(pattern: PatternConfig): Boolean = try {
+        NetworkManager.selectedPattern.id == pattern.id
+    } catch (_: UninitializedPropertyAccessException) {
+        false
     }
 
     private fun syncSelection() {
@@ -298,8 +316,15 @@ class PatternConfigScreen(private val parent: Screen?) : Screen(Component.litera
             val y = contentY
             val right = contentRight
             val accent = pattern.color and 0xFFFFFF
-            graphics.fill(x - 4, y - 3, right + 4, y + ROW_HEIGHT - 5, if (hovered) 0x80909090.toInt() else 0x70909090)
+            val selected = isSelected(pattern)
+            graphics.fill(x - 4, y - 3, right + 4, y + ROW_HEIGHT - 5, if (hovered || selected) 0x80909090.toInt() else 0x70909090)
             graphics.fill(x - 4, y - 3, x, y + ROW_HEIGHT - 5, 0xFF000000.toInt() or accent)
+            if (selected) {
+                val border = 0xFF000000.toInt() or accent
+                graphics.fill(x - 4, y - 3, right + 4, y - 2, border)
+                graphics.fill(x - 4, y + ROW_HEIGHT - 6, right + 4, y + ROW_HEIGHT - 5, border)
+                graphics.fill(right + 3, y - 3, right + 4, y + ROW_HEIGHT - 5, border)
+            }
             widgets.forEach { it.extractRenderState(graphics, mouseX, mouseY, partialTick) }
             graphics.text(font, ClientPatternConfig.displayName(pattern), x + ROW_HEIGHT, y + 4, -1)
         }
@@ -308,8 +333,12 @@ class PatternConfigScreen(private val parent: Screen?) : Screen(Component.litera
 
         override fun narratables(): List<NarratableEntry> = widgets
 
-        override fun mouseClicked(event: MouseButtonEvent, doubleClick: Boolean): Boolean =
-            super.mouseClicked(event, doubleClick)
+        override fun mouseClicked(event: MouseButtonEvent, doubleClick: Boolean): Boolean {
+            if (super.mouseClicked(event, doubleClick)) return true
+            if (event.button() != 0 || !pattern.enabled) return false
+            selectPattern(pattern)
+            return true
+        }
 
         override fun mouseReleased(event: MouseButtonEvent): Boolean =
             super.mouseReleased(event)
