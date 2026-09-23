@@ -1,6 +1,7 @@
 package de.miraculixx.veinminerClient.config
 
 import com.mojang.blaze3d.Blaze3D
+import com.mojang.blaze3d.platform.InputConstants
 import com.mojang.renderpearl.api.pipeline.RenderPipeline
 import com.mojang.blaze3d.vertex.VertexConsumer
 import de.miraculixx.veinminer.pattern.PatternConfig
@@ -23,6 +24,7 @@ import net.minecraft.client.gui.components.Button
 import net.minecraft.client.gui.components.ContainerObjectSelectionList
 import net.minecraft.client.gui.components.CycleButton
 import net.minecraft.client.gui.components.EditBox
+import net.minecraft.client.gui.components.Tooltip
 import net.minecraft.client.gui.components.events.GuiEventListener
 import net.minecraft.client.gui.narration.NarratableEntry
 import net.minecraft.client.gui.narration.NarrationElementOutput
@@ -30,6 +32,7 @@ import net.minecraft.client.input.CharacterEvent
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.input.KeyEvent
 import net.minecraft.client.input.MouseButtonEvent
+import net.minecraft.client.input.MouseButtonInfo
 import net.minecraft.client.renderer.RenderPipelines
 import net.minecraft.client.renderer.state.gui.GuiElementRenderState
 import net.minecraft.client.renderer.state.gui.GuiRenderState
@@ -232,15 +235,19 @@ class PatternConfigScreen(private val parent: Screen?) : Screen(Component.litera
     }
 
     private inner class PatternEntry(val pattern: PatternConfig) : ContainerObjectSelectionList.Entry<PatternEntry>() {
-        private val iconButton = PatternIconButton(pattern) {
-            if (!pattern.enabled || ClientPatternConfig.canDisable(pattern)) {
-                pattern.enabled = !pattern.enabled
-                ClientPatternConfig.save()
-                syncSelection()
-            } else {
-                rebuildPatternWidgets()
+        private val iconButton = PatternIconButton(
+            pattern,
+            onSelect = { if (pattern.enabled) selectPattern(pattern) },
+            onToggle = {
+                if (!pattern.enabled || ClientPatternConfig.canDisable(pattern)) {
+                    pattern.enabled = !pattern.enabled
+                    ClientPatternConfig.save()
+                    syncSelection()
+                } else {
+                    rebuildPatternWidgets()
+                }
             }
-        }
+        )
 
         private val typeButton = CycleButton.builder({ Component.literal("● Type") }, pattern.type)
             .withValues(PatternType.entries)
@@ -333,12 +340,8 @@ class PatternConfigScreen(private val parent: Screen?) : Screen(Component.litera
 
         override fun narratables(): List<NarratableEntry> = widgets
 
-        override fun mouseClicked(event: MouseButtonEvent, doubleClick: Boolean): Boolean {
-            if (super.mouseClicked(event, doubleClick)) return true
-            if (event.button() != 0 || !pattern.enabled) return false
-            selectPattern(pattern)
-            return true
-        }
+        override fun mouseClicked(event: MouseButtonEvent, doubleClick: Boolean): Boolean =
+            super.mouseClicked(event, doubleClick)
 
         override fun mouseReleased(event: MouseButtonEvent): Boolean =
             super.mouseReleased(event)
@@ -374,7 +377,6 @@ class PatternConfigScreen(private val parent: Screen?) : Screen(Component.litera
             removeButton.place(moveX, y + 12, 14, 14)
             downButton.place(moveX, y + 28, 14, 14)
 
-            iconButton.active = !pattern.enabled || ClientPatternConfig.canDisable(pattern)
             removeButton.active = ClientPatternConfig.canRemove(pattern)
             upButton.active = ClientPatternConfig.settings.patterns.indexOf(pattern) > 0
             downButton.active = ClientPatternConfig.settings.patterns.indexOf(pattern) < ClientPatternConfig.settings.patterns.lastIndex
@@ -389,8 +391,16 @@ class PatternConfigScreen(private val parent: Screen?) : Screen(Component.litera
 
 private class PatternIconButton(
     private val pattern: PatternConfig,
+    private val onSelect: () -> Unit,
     private val onToggle: () -> Unit,
-) : AbstractWidget(0, 0, ROW_HEIGHT, ROW_HEIGHT, Component.literal("Toggle pattern")) {
+) : AbstractWidget(0, 0, ROW_HEIGHT, ROW_HEIGHT, Component.literal("Select pattern")) {
+    init {
+        setTooltip(Tooltip.create(Component.literal("Left click - select\nRight click - enable/disable")))
+    }
+
+    override fun isValidClickButton(buttonInfo: MouseButtonInfo): Boolean =
+        buttonInfo.button() == InputConstants.MOUSE_BUTTON_LEFT || buttonInfo.button() == InputConstants.MOUSE_BUTTON_RIGHT
+
     override fun extractWidgetRenderState(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
         val bg = if (isHoveredOrFocused) 0xB0505050.toInt() else 0xB0404040.toInt()
         val tint = if (pattern.enabled) pattern.color and 0xFFFFFF else 0x7A7A7A
@@ -404,7 +414,7 @@ private class PatternIconButton(
     }
 
     override fun onClick(event: MouseButtonEvent, doubleClick: Boolean) {
-        onToggle()
+        if (event.button() == InputConstants.MOUSE_BUTTON_RIGHT) onToggle() else onSelect()
     }
 
     override fun updateWidgetNarration(output: NarrationElementOutput) {
