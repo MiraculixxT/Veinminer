@@ -12,6 +12,7 @@ import de.miraculixx.veinminerClient.KeyBindManager
 import de.miraculixx.veinminerClient.network.NetworkManager
 import net.minecraft.client.renderer.OrderedSubmitNodeCollector
 import net.minecraft.client.renderer.RenderPipelines
+import net.minecraft.client.renderer.oit.OitPipelineSet
 import net.minecraft.client.renderer.rendertype.RenderSetup
 import net.minecraft.client.renderer.rendertype.RenderType
 import net.minecraft.client.renderer.rendertype.RenderTypes
@@ -37,6 +38,13 @@ object BlockHighlightingRenderer {
                         .withCull(false)
                         .withColorTargetState(ColorTargetState(BlendFunction.TRANSLUCENT))
                         .build()
+                )
+            ).setOitPipelines(
+                RenderPipelines.register(
+                    OitPipelineSet.builder(
+                        "${ClientLifecycle.MOD_ID}_highlight_translucent",
+                        RenderPipeline.builder(RenderPipelines.OIT_LINES_SNIPPET)
+                    ).withoutDepthTest().build()
                 )
             ).createRenderSetup()
         )
