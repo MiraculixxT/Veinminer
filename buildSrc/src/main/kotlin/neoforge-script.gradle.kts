@@ -21,6 +21,7 @@ neoForge {
 
         register("client") {
             client()
+            programArguments.addAll("--username", "DevNeo")
         }
     }
 }
