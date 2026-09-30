@@ -208,7 +208,7 @@ object VeinMinerEvent {
 
             // Emits block break effect
             if (state.block is BaseFireBlock) world.levelEvent(LevelEvent.SOUND_EXTINGUISH_FIRE, pos, 0)
-            else world.levelEvent(LevelEvent.PARTICLES_DESTROY_BLOCK, pos, Block.getId(state))
+            else world.levelEvent(LevelEvent.PARTICLES_AND_SOUND_DESTROY_BLOCK, pos, Block.getId(state))
 
             if (settings.hungerPerBlock > 0.0) iPlayer.causeFoodExhaustion(settings.hungerPerBlock.toFloat())
         }
