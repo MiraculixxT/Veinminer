@@ -136,9 +136,7 @@ object VeinMinerEvent {
         if (cooldown.contains(player.uuid)) return null
 
         val mainHandItem = player.mainHandItem
-        val emptyHand = mainHandItem.isEmpty
-        if (emptyHand && settings.needCorrectTool && !blockGroup.tools.contains(mainHandItem.key())) return null
-        if (!emptyHand && settings.needCorrectTool && (state.requiresCorrectToolForDrops() && !mainHandItem.isCorrectToolForDrops(state))) return null
+        if (settings.needCorrectTool && (state.requiresCorrectToolForDrops() && !mainHandItem.isCorrectToolForDrops(state))) return null
         if (!hasClientBypass && isGroupBlock && !blockGroup.tools.isEmpty() && !blockGroup.tools.contains(mainHandItem.key())) return null
         if (settings.decreaseDurability && mainHandItem.remainingDurability() <= 1) return null
 

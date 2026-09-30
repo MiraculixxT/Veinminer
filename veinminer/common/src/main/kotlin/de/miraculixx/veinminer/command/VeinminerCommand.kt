@@ -235,7 +235,7 @@ object VeinminerCommand {
                         executesAsync {
                             val name = StringArgumentType.getString(this, "group").lowercase()
                             val group = groupExists(name) ?: return@executesAsync source.sendSystemMessage(error("Group ") + value(name) + error(" does not exist"))
-                            ActiveConfig.bridge.groupsRaw.remove(group)
+                            ActiveConfig.bridge.groupsRaw.removeIf { it === group } // data class hash changes on edit, set.remove would miss it
                             source.sendSystemMessage(success("Removed group ") + value(name))
                             ActiveConfig.bridge.save()
                         }

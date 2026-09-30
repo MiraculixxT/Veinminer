@@ -172,9 +172,7 @@ object VeinMinerEvent {
         // Check for correct tool (if block group tools are empty, it means all tools are allowed)
         val item = player.inventory.itemInMainHand
         if (debug) Veinminer.LOGGER.info(" - Tool: ${item.type.key}")
-        val emptyHand = item.isEmpty
-        if (emptyHand && settings.needCorrectTool && !blockGroup.tools.contains(item.type.key)) return null
-        if (!emptyHand && settings.needCorrectTool && block.getDrops(item).isEmpty()) return null
+        if (settings.needCorrectTool && block.getDrops(item).isEmpty()) return null
         if (isGroupBlock && !blockGroup.tools.isEmpty() && !blockGroup.tools.contains(item.type.key)) return null
         // Fall back to vanilla break on last durability point so one normal block can still be mined.
         if (settings.decreaseDurability && item.remainingDurability() <= 1) return null

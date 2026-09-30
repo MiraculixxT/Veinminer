@@ -16,7 +16,6 @@ import net.minecraft.client.gui.components.toasts.SystemToast
 import net.minecraft.core.BlockPos
 import net.minecraft.network.chat.Component
 import net.minecraft.world.item.ItemStack
-import net.minecraft.world.item.Items
 import net.minecraft.world.phys.BlockHitResult
 import net.minecraft.world.phys.HitResult
 
@@ -77,7 +76,6 @@ object KeyBindManager {
         val target = instance.hitResult as? BlockHitResult ?: return
         val pos = target.blockPos
         val holding = player.inventory.selectedItem
-        if (holding.item == Items.AIR) return resetTarget(true)
 
         if (target.type != HitResult.Type.BLOCK) {
             resetTarget()
