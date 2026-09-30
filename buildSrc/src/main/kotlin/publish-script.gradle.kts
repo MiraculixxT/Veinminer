@@ -31,6 +31,12 @@ modrinth {
     syncBodyFrom = rootProject.file("README.md").readText()
 }
 
+tasks.register("modPublish") {
+    group = "publishing"
+    description = "Publishes this project to Modrinth and CurseForge (if available)"
+    dependsOn("modrinth", tasks.matching { it.name == "curseforge" })
+}
+
 afterEvaluate {
     if (curseForgePublish.projectId.orNull.isNullOrBlank()) {
         return@afterEvaluate

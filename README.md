@@ -35,11 +35,7 @@ Task shortcuts for easier testing.
 
 ### Publishing
 ```shell
-./gradlew :veinminer:veinminer-paper:modrinth :veinminer:veinminer-fabric:modrinth :veinminer:veinminer-neoforge:modrinth
-./gradlew :veinminer-client:veinminer-client-fabric:modrinth :veinminer-client:veinminer-client-neoforge:modrinth
-./gradlew :veinminer-enchant:modrinth
-
-./gradlew :veinminer:veinminer-fabric:curseforge :veinminer:veinminer-neoforge:curseforge
-./gradlew :veinminer-client:veinminer-client-fabric:curseforge :veinminer-client:veinminer-client-neoforge:curseforge
-./gradlew :veinminer-enchant:curseforge
+./gradlew :veinminer:veinminer-paper:modPublish :veinminer:veinminer-fabric:modPublish :veinminer:veinminer-neoforge:modPublish
+./gradlew :veinminer-client:veinminer-client-fabric:modPublish :veinminer-client:veinminer-client-neoforge:modPublish
+./gradlew :veinminer-enchant:modPublish
 ```
