@@ -20,6 +20,7 @@ data class VeinminerSettings(
     var hungerPerBlock: Double = 0.0,
     var miningSpeedModifier: Double = 0.0,
     var separateGroupMining: Boolean = false,
+    var minEnchantLevel: Int = 1,
     @SerialName("dontDisplayUpdatesAndIWillNotAskForSupportBeforeUpdatingISwear") var hideUpdates: Boolean = false,
     var debug: Boolean = false,
     val client: VeinminerClientSettings = VeinminerClientSettings()
@@ -47,6 +48,7 @@ data class VeinminerSettings(
             hungerPerBlock = g?.hungerPerBlock ?: (if (isClient) c.hungerPerBlock ?: hungerPerBlock else hungerPerBlock),
             miningSpeedModifier = g?.miningSpeedModifier ?: (if (isClient) c.miningSpeedModifier ?: miningSpeedModifier else miningSpeedModifier),
             separateGroupMining = g?.separateGroupMining ?: (if (isClient) c.separateGroupMining ?: separateGroupMining else separateGroupMining),
+            minEnchantLevel = g?.minEnchantLevel ?: (if (isClient) c.minEnchantLevel ?: minEnchantLevel else minEnchantLevel),
             hideUpdates = hideUpdates,
             debug = debug,
             client = client
@@ -92,7 +94,8 @@ data class VeinminerSettingsOverride(
     var decreaseDurability: Boolean? = null,
     var hungerPerBlock: Double? = null,
     var miningSpeedModifier: Double? = null,
-    var separateGroupMining: Boolean? = null
+    var separateGroupMining: Boolean? = null,
+    var minEnchantLevel: Int? = null
 ) {
     fun nonNullKeys(): List<String> =
         VeinminerSettingsOverride::class.memberProperties.mapNotNull { prop -> prop.get(this)?.let { prop.name } }

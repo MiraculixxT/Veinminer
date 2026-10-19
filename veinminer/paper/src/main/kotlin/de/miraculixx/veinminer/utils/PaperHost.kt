@@ -18,4 +18,7 @@ object PaperHost : VeinminerHost {
         set(value) {
             VeinMinerEvent.enabled = value
         }
+
+    override val enchantmentActive: Boolean
+        get() = Veinminer.enchantmentActive
 }

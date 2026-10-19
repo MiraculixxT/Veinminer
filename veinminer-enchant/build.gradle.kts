@@ -24,6 +24,7 @@ dependencies {
     compileOnly("io.papermc.paper:paper-api:$paperVersion")
     compileOnly("net.fabricmc:fabric-loader:${outlet.loaderVersion()}")
     compileOnly("net.neoforged.fancymodloader:loader:$fancyModLoaderVersion")
+    compileOnly(project(":core")) // EnchantmentPack generator, provided by Veinminer at runtime
 }
 
 tasks.processResources {
@@ -53,6 +54,12 @@ paper {
     apiVersion = "1.21"
     load = BukkitPluginDescription.PluginLoadOrder.STARTUP
 
+    bootstrapDependencies {
+        register("Veinminer") {
+            load = PaperPluginDescription.RelativeLoadOrder.BEFORE
+            joinClasspath = true
+        }
+    }
     serverDependencies {
         register("Veinminer") {
             load = PaperPluginDescription.RelativeLoadOrder.BEFORE

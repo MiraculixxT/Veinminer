@@ -5,6 +5,7 @@ import de.miraculixx.veinminer.command.ActiveHost
 import de.miraculixx.veinminer.command.NeoForgeVeinminerCommand
 import de.miraculixx.veinminer.command.VeinminerCommand
 import de.miraculixx.veinminer.config.ConfigManager
+import de.miraculixx.veinminer.config.EnchantmentPackSource
 import de.miraculixx.veinminer.event.EventState
 import de.miraculixx.veinminer.event.VeinMinerEvent
 import de.miraculixx.veinminer.event.VeinminerBreakContext
@@ -21,11 +22,13 @@ import net.minecraft.DetectedVersion
 import net.minecraft.network.chat.ClickEvent
 import net.minecraft.network.chat.Component
 import net.minecraft.server.level.ServerPlayer
+import net.minecraft.server.packs.PackType
 import net.neoforged.bus.api.IEventBus
 import net.neoforged.fml.ModContainer
 import net.neoforged.fml.ModList
 import net.neoforged.fml.common.Mod
 import net.neoforged.neoforge.common.NeoForge
+import net.neoforged.neoforge.event.AddPackFindersEvent
 import net.neoforged.neoforge.event.RegisterCommandsEvent
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent
 import net.neoforged.neoforge.event.entity.player.PlayerEvent
@@ -98,6 +101,11 @@ class Veinminer(modBus: IEventBus, container: ModContainer) {
 
         // Network registrar (mod bus event)
         modBus.addListener(NeoForgePlatformNetwork::onRegisterPayloadHandlers)
+
+        // Generated enchantment datapack
+        modBus.addListener<AddPackFindersEvent> { event ->
+            if (event.packType == PackType.SERVER_DATA) event.addRepositorySource(EnchantmentPackSource)
+        }
 
         NetworkRouter.init(NeoForgePlatformNetwork, ServerCallbacksImpl)
 

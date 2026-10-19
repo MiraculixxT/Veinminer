@@ -140,7 +140,10 @@ object VeinMinerEvent {
         if (!hasClientBypass && isGroupBlock && !blockGroup.tools.isEmpty() && !blockGroup.tools.contains(mainHandItem.key())) return null
         if (settings.decreaseDurability && mainHandItem.remainingDurability() <= 1) return null
 
-        if (EventState.enchantmentActive && !mainHandItem.enchantments.keySet().any { it.`is`(EventState.enchantmentKey) }) return null
+        if (EventState.enchantmentActive) {
+            val level = mainHandItem.enchantments.entrySet().firstOrNull { it.key.`is`(EventState.enchantmentKey) }?.intValue ?: 0
+            if (level < settings.minEnchantLevel.coerceAtLeast(1)) return null
+        }
 
         val blocks = if (isGroupBlock && !settings.separateGroupMining) blockGroup.blocks else setOf(material)
         val face = NetworkRouter.lastSurface[player.uuid] ?: Surface.UP

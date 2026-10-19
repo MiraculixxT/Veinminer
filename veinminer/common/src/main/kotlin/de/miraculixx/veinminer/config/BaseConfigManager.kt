@@ -1,7 +1,10 @@
 package de.miraculixx.veinminer.config
 
 import de.miraculixx.veinminer.ConfigBridge
+import de.miraculixx.veinminer.EnchantmentPack
+import de.miraculixx.veinminer.command.ActiveHost
 import de.miraculixx.veinminer.data.BlockGroup
+import de.miraculixx.veinminer.data.VeinminerEnchantSettings
 import de.miraculixx.veinminer.data.VeinminerSettings
 import de.miraculixx.veinminer.extensions.load
 import kotlinx.serialization.json.Json
@@ -11,13 +14,14 @@ import kotlin.io.path.exists
 import kotlin.io.path.writeText
 
 abstract class BaseConfigManager<T>(
-    configDir: Path,
+    val configDir: Path,
     private val serializer: ConfigSerializer<T>,
     jsonModule: SerializersModule,
 ) : ConfigBridge {
     private val settingsFile = configDir.resolve("settings.json")
     private val blocksFile = configDir.resolve("blocks.json")
     private val groupsFile = configDir.resolve("groups.json")
+    private val enchantFile = configDir.resolve(EnchantmentPack.SETTINGS_FILE)
 
     protected val json: Json = Json {
         prettyPrint = true
@@ -30,6 +34,9 @@ abstract class BaseConfigManager<T>(
     val firstInstall: Boolean = !settingsFile.exists()
 
     final override var settings: VeinminerSettings = loadSettings()
+        private set
+
+    final override var enchantSettings: VeinminerEnchantSettings = EnchantmentPack.loadSettings(configDir)
         private set
 
     final override var veinBlocksRaw: MutableSet<String> = mutableSetOf()
@@ -51,7 +58,10 @@ abstract class BaseConfigManager<T>(
      * If `fromDisc` is true, it will also reload the raw data from the disc first.
      */
     final override fun reload(fromDisc: Boolean) {
-        if (fromDisc) settings = loadSettings()
+        if (fromDisc) {
+            settings = loadSettings()
+            enchantSettings = EnchantmentPack.loadSettings(configDir)
+        }
         if (loadBlocks(fromDisc)) saveBlocks()
         if (loadGroups(fromDisc)) saveGroups()
         refreshNetworkCache()
@@ -83,6 +93,7 @@ abstract class BaseConfigManager<T>(
         loadGroups(false)
 
         saveSettings()
+        if (ActiveHost.host.enchantmentActive) saveEnchantSettings()
         saveBlocks()
         saveGroups()
         refreshNetworkCache()
@@ -129,4 +140,5 @@ abstract class BaseConfigManager<T>(
     private fun saveBlocks() = blocksFile.writeText(json.encodeToString(veinBlocksRaw))
     private fun saveGroups() = groupsFile.writeText(json.encodeToString(groupsRaw))
     private fun saveSettings() = settingsFile.writeText(json.encodeToString(settings))
+    private fun saveEnchantSettings() = enchantFile.writeText(json.encodeToString(enchantSettings))
 }

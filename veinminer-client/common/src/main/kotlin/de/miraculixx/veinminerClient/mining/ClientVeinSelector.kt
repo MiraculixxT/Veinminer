@@ -62,8 +62,8 @@ object ClientVeinSelector {
 
         val enchantKey = NetworkManager.enchantmentKey
         if (NetworkManager.enchantmentActive && enchantKey != null) {
-            val hasEnchant = mainHandItem.enchantments.keySet().any { it.`is`(enchantKey) }
-            if (!hasEnchant) return null
+            val level = mainHandItem.enchantments.entrySet().firstOrNull { it.key.`is`(enchantKey) }?.intValue ?: 0
+            if (level < settings.minEnchantLevel.coerceAtLeast(1)) return null
         }
 
         val targets = if (isGroupBlock && !settings.separateGroupMining) blockGroup.blocks else setOf(material)

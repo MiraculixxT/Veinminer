@@ -60,6 +60,7 @@ To check the current state, leave out the new value argument.
 | `miningSpeedModifier`  |      Increase block mining duration based on vein size      |  `0.0`  |
 |    `hungerPerBlock`    |    Drain saturation per veinmined block (vanilla 0.005)     |  `0.0`  |
 | `separateGroupMining`  | Groups only veinmine the exact mined block, not all of them | `false` |
+|   `minEnchantLevel`    |  Min Veinmine enchantment level (only with enchant addon)   |   `1`   |
 
 </details>
 <details><summary>Block Groups - Advanced Settings</summary>
@@ -114,6 +115,10 @@ Each group can have a different override, if a block is in multiple groups, only
 E.g. you dont want that your sand & dirt group consumes durability:
 - `/veinminer settings decreaseDurability true` - True for all blocks
 - `/veinminer groups shovel edit override decreaseDurability false` - False override for this group
+
+With the enchantment addon, groups can require a higher enchantment level, e.g. ores only at level 2+:
+- `/veinminer enchant maxLevel 3` - Allow enchantment levels up to 3 (applies after restart/rejoin)
+- `/veinminer groups edit Ores override minEnchantLevel 2` - Ores need at least level 2
 
 --- 
 

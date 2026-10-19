@@ -1,0 +1,11 @@
+{
+  "required": true,
+  "package": "de.miraculixx.veinminer.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "MixinPackRepository"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

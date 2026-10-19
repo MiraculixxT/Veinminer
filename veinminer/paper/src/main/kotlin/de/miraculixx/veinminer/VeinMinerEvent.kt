@@ -177,8 +177,11 @@ object VeinMinerEvent {
         // Fall back to vanilla break on last durability point so one normal block can still be mined.
         if (settings.decreaseDurability && item.remainingDurability() <= 1) return null
 
-        // Check for enchantment if active
-        if (Veinminer.enchantmentActive && !item.enchantments.any { it.key.key == VEINMINE }) return null
+        // Check for enchantment level if active
+        if (Veinminer.enchantmentActive) {
+            val level = item.enchantments.entries.firstOrNull { it.key.key == VEINMINE }?.value ?: 0
+            if (level < settings.minEnchantLevel.coerceAtLeast(1)) return null
+        }
 
         // Perform veinminer
         val blocks = if (isGroupBlock && !settings.separateGroupMining) blockGroup.blocks else setOf(material)
