@@ -144,8 +144,13 @@ object VeinminerCommand {
             }
 
             literal("enchant") {
-                requires { src -> ActiveHost.host.enchantmentActive && Permissions.check(src, permissionSettings) }
                 executesAsync {
+                    if (!ActiveHost.host.enchantmentActive) return@executesAsync source.sendSystemMessage(
+                        header("Enchantment") +
+                            cmp("\nThe Veinminer Enchantment addon is not installed. Download: ", cBase) +
+                            link("Modrinth", "https://modrinth.com/mod/veinminer-enchantment") +
+                            cmp(" | ") + link("CurseForge", "https://www.curseforge.com/minecraft/mc-mods/veinminer-enchant")
+                    )
                     source.sendSystemMessage(
                         header("Enchantment") +
                             cmp("\nModify the Veinmine enchantment with ", cBase) + command("/veinminer enchant <setting> [<new-value>]") +
@@ -154,27 +159,29 @@ object VeinminerCommand {
                     )
                 }
 
-                val enchant = { ActiveConfig.bridge.enchantSettings }
-                applySetting("maxLevel", { enchant().maxLevel }, restart = true) { x, _ -> enchant().maxLevel = x }
-                applySetting("weight", { enchant().weight }, restart = true) { x, _ -> enchant().weight = x }
-                applySetting("minCost", { enchant().minCost }, restart = true) { x, _ -> enchant().minCost = x }
-                applySetting("minCostPerLevel", { enchant().minCostPerLevel }, restart = true) { x, _ -> enchant().minCostPerLevel = x }
-                applySetting("maxCost", { enchant().maxCost }, restart = true) { x, _ -> enchant().maxCost = x }
-                applySetting("maxCostPerLevel", { enchant().maxCostPerLevel }, restart = true) { x, _ -> enchant().maxCostPerLevel = x }
-                applySetting("anvilCost", { enchant().anvilCost }, restart = true) { x, _ -> enchant().anvilCost = x }
-                applySetting("inEnchantingTable", { enchant().inEnchantingTable }, restart = true) { x, _ -> enchant().inEnchantingTable = x }
-                applySetting("tradeable", { enchant().tradeable }, restart = true) { x, _ -> enchant().tradeable = x }
-                applySetting("lootable", { enchant().lootable }, restart = true) { x, _ -> enchant().lootable = x }
-                applySetting("treasure", { enchant().treasure }, restart = true) { x, _ -> enchant().treasure = x }
-                literal("supportedItems") {
-                    executesAsync { source.sendSystemMessage(setting("supportedItems", enchant().supportedItems)) }
-                    argument("supportedItems-new", ItemPredicateArgument.itemPredicate(ctx)) {
-                        executesAsync {
-                            val raw = getRaw(3)
-                            if (raw == null || !source.isValidItemTarget(raw)) return@executesAsync source.sendSystemMessage(error("Only plain item IDs or item tags are allowed"))
-                            enchant().supportedItems = raw
-                            ActiveConfig.bridge.save()
-                            source.sendSystemMessage(settingChanged("supportedItems", raw) + restartNote())
+                requiresAll({ ActiveHost.host.enchantmentActive && Permissions.check(it, permissionSettings) }) {
+                    val enchant = { ActiveConfig.bridge.enchantSettings }
+                    applySetting("maxLevel", { enchant().maxLevel }, restart = true) { x, _ -> enchant().maxLevel = x }
+                    applySetting("weight", { enchant().weight }, restart = true) { x, _ -> enchant().weight = x }
+                    applySetting("minCost", { enchant().minCost }, restart = true) { x, _ -> enchant().minCost = x }
+                    applySetting("minCostPerLevel", { enchant().minCostPerLevel }, restart = true) { x, _ -> enchant().minCostPerLevel = x }
+                    applySetting("maxCost", { enchant().maxCost }, restart = true) { x, _ -> enchant().maxCost = x }
+                    applySetting("maxCostPerLevel", { enchant().maxCostPerLevel }, restart = true) { x, _ -> enchant().maxCostPerLevel = x }
+                    applySetting("anvilCost", { enchant().anvilCost }, restart = true) { x, _ -> enchant().anvilCost = x }
+                    applySetting("inEnchantingTable", { enchant().inEnchantingTable }, restart = true) { x, _ -> enchant().inEnchantingTable = x }
+                    applySetting("tradeable", { enchant().tradeable }, restart = true) { x, _ -> enchant().tradeable = x }
+                    applySetting("lootable", { enchant().lootable }, restart = true) { x, _ -> enchant().lootable = x }
+                    applySetting("treasure", { enchant().treasure }, restart = true) { x, _ -> enchant().treasure = x }
+                    literal("supportedItems") {
+                        executesAsync { source.sendSystemMessage(setting("supportedItems", enchant().supportedItems)) }
+                        argument("supportedItems-new", ItemPredicateArgument.itemPredicate(ctx)) {
+                            executesAsync {
+                                val raw = getRaw(3)
+                                if (raw == null || !source.isValidItemTarget(raw)) return@executesAsync source.sendSystemMessage(error("Only plain item IDs or item tags are allowed"))
+                                enchant().supportedItems = raw
+                                ActiveConfig.bridge.save()
+                                source.sendSystemMessage(settingChanged("supportedItems", raw) + restartNote())
+                            }
                         }
                     }
                 }
