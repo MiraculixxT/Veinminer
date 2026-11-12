@@ -26,6 +26,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.resources.Identifier
 import org.bukkit.*
 import org.bukkit.attribute.Attribute
@@ -188,8 +189,21 @@ object VeinMinerEvent {
         if (debug) Veinminer.LOGGER.info(" - Allowed with $blocks")
         val face = NetworkRouter.lastSurface[player.uniqueId] ?: Surface.UP
         val currentPos = block.location.toVeinminer()
-        val blocksNMS = blocks.map { it.toVeinminer() }.toSet()
+        val nmsTool = CraftItemStack.asNMSCopy(item)
+        val blocksNMS = NetworkRouter.filterTargets(uuid, material.toVeinminer(), blocks.map { it.toVeinminer() }.toSet(), settings.client.allowClientGroups) {
+            canCombine(it, hasClientBypass, item, nmsTool, settings.needCorrectTool)
+        } ?: return null
         return VeinmineAction(currentPos, blocksNMS, item, player, currentPos, settings, face)
+    }
+
+    /** If a block may join a client group: server whitelisted, group tools and harvestable with [tool] */
+    private fun canCombine(id: Identifier, hasClientBypass: Boolean, tool: ItemStack, nmsTool: net.minecraft.world.item.ItemStack, needCorrectTool: Boolean): Boolean {
+        val key = NamespacedKey(id.namespace, id.path)
+        val group = key.groupedBlocks()
+        if (!hasClientBypass && group.blocks.isEmpty() && !PaperConfigManager.veinBlocks.contains(key)) return false
+        if (group.tools.isNotEmpty() && !group.tools.contains(tool.type.key)) return false
+        val state = BuiltInRegistries.BLOCK.getValue(id).defaultBlockState()
+        return !needCorrectTool || !state.requiresCorrectToolForDrops() || nmsTool.isCorrectToolForDrops(state)
     }
 
     /**

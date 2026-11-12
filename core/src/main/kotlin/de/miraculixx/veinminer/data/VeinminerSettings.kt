@@ -79,6 +79,7 @@ data class VeinminerClientSettings(
     var require: Boolean = false,
     var translucentBlockHighlight: Boolean = true,
     var allBlocks: Boolean = false,
+    var allowClientGroups: Boolean = true,
     val overrides: VeinminerSettingsOverride = VeinminerSettingsOverride()
 )
 

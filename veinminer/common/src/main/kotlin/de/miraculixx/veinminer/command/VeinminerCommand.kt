@@ -137,6 +137,7 @@ object VeinminerCommand {
                     applySetting("require", { ActiveConfig.bridge.settings.client.require }) { x, _ -> ActiveConfig.bridge.settings.client.require = x }
                     applySetting("translucentBlockHighlight", { ActiveConfig.bridge.settings.client.translucentBlockHighlight }) { x, _ -> ActiveConfig.bridge.settings.client.translucentBlockHighlight = x }
                     applySetting("allowAllBlocks", { ActiveConfig.bridge.settings.client.allBlocks }) { x, _ -> ActiveConfig.bridge.settings.client.allBlocks = x }
+                    applySetting("allowClientGroups", { ActiveConfig.bridge.settings.client.allowClientGroups }) { x, _ -> ActiveConfig.bridge.settings.client.allowClientGroups = x }
                     literal("override") {
                         overrides { _ -> ActiveConfig.bridge.settings.client.overrides }
                     }

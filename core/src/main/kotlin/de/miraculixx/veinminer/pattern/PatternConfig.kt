@@ -20,6 +20,8 @@ data class PatternConfig(
     var width: Int = 1,
     var height: Int = 1,
     var stairsUp: Boolean = true,
+    val whitelist: MutableList<String> = mutableListOf(),
+    var combine: Boolean = false,
 ) {
     fun strategy(): ShapeStrategy = when (type) {
         PatternType.NORMAL -> NormalStrategy

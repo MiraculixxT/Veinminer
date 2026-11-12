@@ -12,6 +12,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.renderer.RenderPipelines
 import net.minecraft.client.resources.sounds.SimpleSoundInstance
 import net.minecraft.network.chat.Component
+import net.minecraft.resources.Identifier
 import net.minecraft.sounds.SoundEvents
 import kotlin.math.abs
 import kotlin.math.max
@@ -75,7 +76,7 @@ object ShapeRouletteOverlay {
     fun render(graphics: GuiGraphicsExtractor, deltaTracker: DeltaTracker) {
         val elapsed = System.currentTimeMillis() - lastInteractionMs
         if (lastInteractionMs == 0L || elapsed > FADE_DELAY_MS + FADE_DURATION_MS) {
-            if (KeyBindManager.isScrollAllowed) drawHint(graphics)
+            if (KeyBindManager.isScrollAllowed && ClientPatternConfig.settings.showShortcutHint) drawHint(graphics)
             return
         }
         advance(deltaTracker.realtimeDeltaTicks)
@@ -143,9 +144,10 @@ object ShapeRouletteOverlay {
             val iconX = x1 + PAD_X + 4
             val iconY = rowY + (ROW_HEIGHT - ICON_SIZE) / 2 - 1
             val rowAlpha = if (rel == 0) alpha else (alpha * 0.55).toInt().coerceAtLeast(0)
-            val iconTint = if (rel == 0) mixAlpha(rowAlpha, 0xFF, accent) else mixAlpha(rowAlpha, 0xFF, 0xFFFFFF)
+            val customTexture = customIconTexture(pattern)
+            val iconTint = if (rel == 0 && customTexture == null) mixAlpha(rowAlpha, 0xFF, accent) else mixAlpha(rowAlpha, 0xFF, 0xFFFFFF)
             g.blit(
-                RenderPipelines.GUI_TEXTURED, pattern.icon(),
+                RenderPipelines.GUI_TEXTURED, customTexture ?: pattern.icon(),
                 iconX, iconY, 0f, 0f,
                 ICON_SIZE, ICON_SIZE, ICON_TEX_SIZE, ICON_TEX_SIZE,
                 iconTint
@@ -155,6 +157,23 @@ object ShapeRouletteOverlay {
             val rgb = if (rel == 0) accent else 0xC8C8C8
             g.text(font, Component.literal(ClientPatternConfig.displayName(pattern)), textX, textY, mixAlpha(rowAlpha, 0xFF, rgb))
         }
+    }
+
+    private val iconTextures = HashMap<String, Identifier?>()
+
+    /**
+     * Raw texture of the custom icon item (item renderer doesnt care about alpha, thanks mojang).
+     * Tries the item texture, then a same named block texture, otherwise null (default icon)
+     */
+    private fun customIconTexture(pattern: PatternConfig): Identifier? {
+        val raw = ClientPatternConfig.settings.icons[pattern.id] ?: return null
+        if (raw in iconTextures) return iconTextures[raw]
+        val id = Identifier.tryParse(raw)
+        val resources = Minecraft.getInstance().resourceManager
+        val texture = id?.let { listOf("item", "block").map { folder -> id.withPath("textures/$folder/${id.path}.png") } }
+            ?.firstOrNull { resources.getResource(it).isPresent }
+        iconTextures[raw] = texture
+        return texture
     }
 
     private fun drawDepthBar(g: GuiGraphicsExtractor, font: Font, selectedPattern: PatternConfig, x1: Int, y1: Int, alpha: Int) {

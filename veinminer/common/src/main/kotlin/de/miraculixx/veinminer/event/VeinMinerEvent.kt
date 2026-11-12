@@ -145,10 +145,22 @@ object VeinMinerEvent {
             if (level < settings.minEnchantLevel.coerceAtLeast(1)) return null
         }
 
-        val blocks = if (isGroupBlock && !settings.separateGroupMining) blockGroup.blocks else setOf(material)
+        val serverTargets = if (isGroupBlock && !settings.separateGroupMining) blockGroup.blocks else setOf(material)
+        val blocks = NetworkRouter.filterTargets(uuid, material, serverTargets, settings.client.allowClientGroups) {
+            canCombine(it, hasClientBypass, mainHandItem, settings.needCorrectTool)
+        } ?: return null
         val face = NetworkRouter.lastSurface[player.uuid] ?: Surface.UP
         val sourceLocation = pos.toVeinminer()
         return VeinmineAction(sourceLocation, blocks, mainHandItem, player, sourceLocation, settings, face)
+    }
+
+    /** If a block may join a client group: server whitelisted, group tools and harvestable with [tool] */
+    private fun canCombine(id: Identifier, hasClientBypass: Boolean, tool: ItemStack, needCorrectTool: Boolean): Boolean {
+        val group = id.groupedBlocks()
+        if (!hasClientBypass && group.blocks.isEmpty() && !EventState.configManager.veinBlocks.contains(id)) return false
+        if (!hasClientBypass && group.tools.isNotEmpty() && !group.tools.contains(tool.key())) return false
+        val state = BuiltInRegistries.BLOCK.getValue(id).defaultBlockState()
+        return !needCorrectTool || !state.requiresCorrectToolForDrops() || tool.isCorrectToolForDrops(state)
     }
 
     /**

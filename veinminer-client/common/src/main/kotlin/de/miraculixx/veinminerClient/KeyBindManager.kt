@@ -37,6 +37,7 @@ object KeyBindManager {
         get() = !ClientPatternConfig.settings.lockPatternScroll && isPressed && KeyBindings.hold?.isDown == true
 
     fun tick() {
+        NetworkManager.tickJoinCheck()
         val toggleKey = KeyBindings.toggle ?: return
         val holdKey = KeyBindings.hold ?: return
         if (KeyBindings.config?.consumeClick() == true) {

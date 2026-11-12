@@ -37,5 +37,6 @@ The server can configure client behavior with the following options. The client 
 |           `allow`           |               If the use of the client mod is allowed               |  true   |
 | `translucentBlockHighlight` |       If block highlighting should be visible through blocks        |  true   |
 |      `allowAllBlocks`       | If hotkey user can veinmine every block (respecting other settings) |  false  |
+|    `allowClientGroups`      | If patterns can combine their block filter into an own group (still limited to allowed blocks) |  true   |
 
 Platform Notice: No reuploads or forks are allowed on Modrinth & CurseForge
