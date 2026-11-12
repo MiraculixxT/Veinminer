@@ -2,7 +2,9 @@ package de.miraculixx.veinminerClient.render
 
 import de.miraculixx.veinminer.network.KeyPress
 import de.miraculixx.veinminer.pattern.PatternConfig
+import de.miraculixx.veinminerClient.KeyBindManager
 import de.miraculixx.veinminerClient.config.ClientPatternConfig
+import de.miraculixx.veinminerClient.constants.KeyBindings
 import net.minecraft.client.DeltaTracker
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.Font
@@ -72,7 +74,10 @@ object ShapeRouletteOverlay {
 
     fun render(graphics: GuiGraphicsExtractor, deltaTracker: DeltaTracker) {
         val elapsed = System.currentTimeMillis() - lastInteractionMs
-        if (lastInteractionMs == 0L || elapsed > FADE_DELAY_MS + FADE_DURATION_MS) return
+        if (lastInteractionMs == 0L || elapsed > FADE_DELAY_MS + FADE_DURATION_MS) {
+            if (KeyBindManager.isScrollAllowed) drawHint(graphics)
+            return
+        }
         advance(deltaTracker.realtimeDeltaTicks)
         val alpha = computeAlpha(elapsed)
         if (alpha <= 0) return
@@ -91,6 +96,19 @@ object ShapeRouletteOverlay {
         drawPanel(graphics, x1, y1, x2, y2, alpha)
         drawCarousel(graphics, font, entries, size, centerIdx, x1, x2, y1, alpha)
         drawDepthBar(graphics, font, entries[centerIdx], x1, y1, alpha)
+    }
+
+    private fun drawHint(g: GuiGraphicsExtractor) {
+        val font = Minecraft.getInstance().font
+        val configKey = KeyBindings.config?.takeUnless { it.isUnbound }
+        val lines = listOfNotNull(
+            configKey?.let { Component.translatable("veinminer.hint.menu", it.translatedKeyMessage) },
+            Component.translatable("veinminer.hint.pattern"),
+            Component.translatable("veinminer.hint.depth"),
+        )
+        lines.forEachIndexed { i, line ->
+            g.text(font, line, PANEL_X + 2, PANEL_Y + 2 + i * (font.lineHeight + 1), 0xD0E0E0E0.toInt())
+        }
     }
 
     private fun drawPanel(g: GuiGraphicsExtractor, x1: Int, y1: Int, x2: Int, y2: Int, alpha: Int) {

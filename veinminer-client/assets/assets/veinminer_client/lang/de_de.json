@@ -9,6 +9,10 @@
   "key.veinminer_client.toggle": "Veinmining (Umschalten)",
   "key.veinminer_client.config": "Client-Einstellungen öffnen",
 
+  "veinminer.hint.menu": "%s §7» Mustermenü öffnen",
+  "veinminer.hint.pattern": "Scroll §7» Muster wechseln",
+  "veinminer.hint.depth": "Shift + Scroll §7» Tiefe ändern",
+
   "veinminer.shape.normal": "Normal",
   "veinminer.shape.tunnel_1x1": "Tunnel 1x1",
   "veinminer.shape.tunnel_2x2": "Tunnel 2x2",

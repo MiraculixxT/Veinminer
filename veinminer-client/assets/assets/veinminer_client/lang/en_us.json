@@ -9,6 +9,10 @@
   "key.veinminer_client.toggle": "Veinmining (Toggle)",
   "key.veinminer_client.config": "Open Client Settings",
 
+  "veinminer.hint.menu": "%s §7» Open pattern menu",
+  "veinminer.hint.pattern": "Scroll §7» Change pattern",
+  "veinminer.hint.depth": "Shift + Scroll §7» Change depth",
+
   "veinminer.shape.normal": "Normal",
   "veinminer.shape.tunnel_1x1": "Tunnel 1x1",
   "veinminer.shape.tunnel_2x2": "Tunnel 2x2",
