@@ -1,7 +1,10 @@
-[![dono-badge](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/donate/kofi-singular_vector.svg)](https://ko-fi.com/miraculixx/donate)
-[![veinminer-badge](https://cdn.modrinth.com/data/cached_images/625146681182f85ef448f5c910e4cd28ec6cf604.png)](https://modrinth.com/mod/veinminer)
-[![enchant-badge](https://cdn.modrinth.com/data/cached_images/ea836ed1714c4f065aca5466c99c9e7d8f5baeff.png)](https://modrinth.com/project/veinminer-enchantment)
+![banner](https://cdn.modrinth.com/data/cached_images/1aca4c6d88e1b7701c06596e78e51b229eea2395.png)
 
+<p align="center">
+  <a href="https://ko-fi.com/miraculixx/donate"><img src="https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/donate/kofi-singular_vector.svg" alt="Modrinth" style=""></a>
+  <a href="https://modrinth.com/project/veinminer-enchantment"><img src="https://cdn.modrinth.com/data/cached_images/ea836ed1714c4f065aca5466c99c9e7d8f5baeff.png" alt="Ko-fi" style=""></a>
+  <a href="https://modrinth.com/project/veinminer"><img src="https://cdn.modrinth.com/data/cached_images/625146681182f85ef448f5c910e4cd28ec6cf604.png" alt="Curseforge" style=""></a>
+</p>
 
 ## ⛏️ Veinminer Hotkey
 
@@ -25,12 +28,6 @@ Additionally holding **shift** allows changing the mining depth/width.
 
 ---
 
-> **Affordable** Servers? In this time?! Clicking below **supports me** and saves you **10%** + 2 Days **free** ♥️
-> [<img src="https://cdn.modrinth.com/data/cached_images/d594c32a9208540624e534d88ff2e428fed4c6d2.png" width=95%>](https://voltra.gg/r/miraculixx) <br>
-> #AD - Your support helps to keep this project alive :)
-
----
-
 The server can configure client behavior with the following options. The client mod will automatically disable itself if the server does not have Veinminer installed.
 
 **Command**: `/veinminer settings client ...`
@@ -40,3 +37,5 @@ The server can configure client behavior with the following options. The client 
 |           `allow`           |               If the use of the client mod is allowed               |  true   |
 | `translucentBlockHighlight` |       If block highlighting should be visible through blocks        |  true   |
 |      `allowAllBlocks`       | If hotkey user can veinmine every block (respecting other settings) |  false  |
+
+Platform Notice: No reuploads or forks are allowed on Modrinth & CurseForge

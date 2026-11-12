@@ -1,4 +1,5 @@
-## ⛏️ Veinminer
+![banner](https://cdn.modrinth.com/data/cached_images/1aca4c6d88e1b7701c06596e78e51b229eea2395.png)
+
 Mine a single block to mine the whole vein!
 Highly configurable and works everywhere, even on your vanilla server.
 Make the tedious mining experience to something satisfying and fun!<br>

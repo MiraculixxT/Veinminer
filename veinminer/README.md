@@ -1,8 +1,11 @@
-[![dono-badge](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/donate/kofi-singular_vector.svg)](https://ko-fi.com/miraculixx/donate)
-[![enchant-badge](https://cdn.modrinth.com/data/cached_images/ea836ed1714c4f065aca5466c99c9e7d8f5baeff.png)](https://modrinth.com/project/veinminer-enchantment)
-[![client-badge](https://cdn.modrinth.com/data/cached_images/9badc43c5a3708f90d24088df4f37c03acc943b8.png)](https://modrinth.com/project/veinminer-client)
+![banner](https://cdn.modrinth.com/data/cached_images/1aca4c6d88e1b7701c06596e78e51b229eea2395.png)
 
-## ⛏️ Veinminer
+<p align="center">
+  <a href="https://ko-fi.com/miraculixx/donate"><img src="https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/donate/kofi-singular_vector.svg" alt="Modrinth" style=""></a>
+  <a href="https://modrinth.com/project/veinminer-enchantment"><img src="https://cdn.modrinth.com/data/cached_images/ea836ed1714c4f065aca5466c99c9e7d8f5baeff.png" alt="Ko-fi" style=""></a>
+  <a href="https://modrinth.com/project/veinminer-client"><img src="https://cdn.modrinth.com/data/cached_images/9badc43c5a3708f90d24088df4f37c03acc943b8.png" alt="Curseforge" style=""></a>
+</p>
+
 Mine a single block to mine the whole vein!
 Highly configurable and works everywhere, even on your vanilla server.
 Make the tedious mining experience to something satisfying and fun!<br>
