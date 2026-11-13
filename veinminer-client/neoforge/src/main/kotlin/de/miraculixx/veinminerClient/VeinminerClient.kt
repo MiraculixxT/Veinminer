@@ -4,7 +4,6 @@ import com.mojang.blaze3d.platform.InputConstants
 import de.miraculixx.veinminer.extensions.mcCoroutineAsync
 import de.miraculixx.veinminer.extensions.ticks
 import de.miraculixx.veinminerClient.ClientLifecycle.MOD_ID
-import de.miraculixx.veinminerClient.config.ClientPatternConfig
 import de.miraculixx.veinminerClient.config.PatternConfigScreen
 import de.miraculixx.veinminerClient.constants.NeoForgeKeyBindings
 import de.miraculixx.veinminerClient.network.NeoForgeClientPlatformNetwork
@@ -38,9 +37,7 @@ class VeinminerClient(modBus: IEventBus, container: ModContainer) {
         ClientLifecycle.veinminerAvailable = ModList.get().isLoaded("veinminer")
 
         HUDProvider.instance = NeoHUDRenderer
-        ClientPatternConfig.configure(FMLPaths.CONFIGDIR.get())
-        ClientPatternConfig.load()
-        NetworkManager.selectedPattern = ClientPatternConfig.enabledPatterns().first()
+        ClientLifecycle.initConfig(FMLPaths.CONFIGDIR.get())
 
         container.registerExtensionPoint(IConfigScreenFactory::class.java) {
             IConfigScreenFactory { _, parent -> PatternConfigScreen(parent) }
@@ -63,7 +60,7 @@ class VeinminerClient(modBus: IEventBus, container: ModContainer) {
         }
 
         gameBus.addListener<InputEvent.MouseScrollingEvent> { event ->
-            if (!KeyBindManager.isPressed) return@addListener
+            if (!KeyBindManager.isScrollAllowed) return@addListener
             if (!NetworkManager.isVeinminerActive) return@addListener
             val v = event.scrollDeltaY
             if (v == 0.0) return@addListener

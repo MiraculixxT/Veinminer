@@ -14,9 +14,14 @@ import de.miraculixx.veinminer.pattern.PatternConfig
 import de.miraculixx.veinminer.pattern.Surface
 import de.miraculixx.veinminerClient.ClientLifecycle
 import de.miraculixx.veinminerClient.config.ClientPatternConfig
+import de.miraculixx.veinminerClient.config.WhitelistStatus
+import de.miraculixx.veinminerClient.constants.KeyBindings
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.toasts.SystemToast
 import net.minecraft.network.chat.Component
+import de.miraculixx.veinminer.utils.cBase
+import de.miraculixx.veinminer.utils.cGold
+import de.miraculixx.veinminer.utils.cYellow
 import net.minecraft.resources.Identifier
 
 object NetworkManager : ClientCallbacks {
@@ -31,6 +36,9 @@ object NetworkManager : ClientCallbacks {
         private set
     var veinBlocks: Set<Identifier> = emptySet()
         private set
+    /** All blocks the server allows to veinmine (global + groups) */
+    var allowedBlocks: Set<Identifier> = emptySet()
+        private set
     var enchantmentActive: Boolean = false
         private set
     var enchantmentKey: Identifier? = null
@@ -41,6 +49,7 @@ object NetworkManager : ClientCallbacks {
         private set
 
     private var initialized = false
+    private var joinCheckState = 0 // 0 = idle, 1 = pending, 2 = done for this connection
 
     fun init(platform: ClientPlatformNetwork) {
         if (initialized) return
@@ -63,6 +72,8 @@ object NetworkManager : ClientCallbacks {
             )
         }
         isVeinminerActive = true
+        WhitelistStatus.clearCache()
+        if (joinCheckState == 0) joinCheckState = 1
         settings = packet.settings
         groups = packet.groups.map {
             BlockGroup(
@@ -73,6 +84,7 @@ object NetworkManager : ClientCallbacks {
             )
         }
         veinBlocks = packet.veinBlocks.mapNotNullTo(mutableSetOf(), ::parseId)
+        allowedBlocks = veinBlocks + groups.flatMap { it.blocks }
         enchantmentActive = packet.enchantmentActive
         enchantmentKey = packet.enchantmentKey?.let(::parseId)
         hostActive = packet.hostActive
@@ -85,7 +97,26 @@ object NetworkManager : ClientCallbacks {
         null
     }
 
+    /** Warns once per connection about pattern filters containing blocks the server does not allow */
+    fun tickJoinCheck() {
+        if (joinCheckState != 1) return
+        val player = Minecraft.getInstance().player ?: return
+        joinCheckState = 2
+        val count = ClientPatternConfig.settings.patterns.count { it.enabled && WhitelistStatus.worst(it.whitelist) != null }
+        if (count == 0) return
+        val key = KeyBindings.config?.takeUnless { it.isUnbound }
+        val inspect = key?.let { Component.translatable("veinminer.filter.inspect", it.translatedKeyMessage) } ?: Component.translatable("veinminer.filter.inspect_menu")
+        player.displayClientMessage(
+            Component.literal("[Veinminer] ").withColor(cGold)
+                .append(Component.translatable(if (count == 1) "veinminer.filter.warning.one" else "veinminer.filter.warning.many", count).withColor(cYellow))
+                .append(" ").append(inspect.withColor(cBase)),
+            false
+        )
+    }
+
     fun onDisconnect() {
+        joinCheckState = 0
+        WhitelistStatus.clearCache()
         isVeinminerActive = false
         ClientNetworkRouter.onDisconnect()
     }

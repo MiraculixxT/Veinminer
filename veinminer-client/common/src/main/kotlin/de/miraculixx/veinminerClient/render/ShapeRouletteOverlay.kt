@@ -2,7 +2,9 @@ package de.miraculixx.veinminerClient.render
 
 import de.miraculixx.veinminer.network.KeyPress
 import de.miraculixx.veinminer.pattern.PatternConfig
+import de.miraculixx.veinminerClient.KeyBindManager
 import de.miraculixx.veinminerClient.config.ClientPatternConfig
+import de.miraculixx.veinminerClient.constants.KeyBindings
 import net.minecraft.client.DeltaTracker
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.Font
@@ -10,6 +12,7 @@ import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.renderer.RenderPipelines
 import net.minecraft.client.resources.sounds.SimpleSoundInstance
 import net.minecraft.network.chat.Component
+import net.minecraft.resources.Identifier
 import net.minecraft.sounds.SoundEvents
 import kotlin.math.abs
 import kotlin.math.max
@@ -29,7 +32,7 @@ object ShapeRouletteOverlay {
     private const val BAR_CELL_W = 8
     private const val BAR_CELL_H = 4
     private const val BAR_GAP = 1
-    private const val DEFAULT_DEPTH = 6
+    private const val DEFAULT_DEPTH = KeyPress.UNLIMITED_DEPTH
 
     /** Selectable depth values shown in the bar. Last entry = unlimited. */
     private val DEPTH_VALUES: List<Int> = (2..10).toList() + KeyPress.UNLIMITED_DEPTH
@@ -72,7 +75,10 @@ object ShapeRouletteOverlay {
 
     fun render(graphics: GuiGraphics, deltaTracker: DeltaTracker) {
         val elapsed = System.currentTimeMillis() - lastInteractionMs
-        if (lastInteractionMs == 0L || elapsed > FADE_DELAY_MS + FADE_DURATION_MS) return
+        if (lastInteractionMs == 0L || elapsed > FADE_DELAY_MS + FADE_DURATION_MS) {
+            if (KeyBindManager.isScrollAllowed && ClientPatternConfig.settings.showShortcutHint) drawHint(graphics)
+            return
+        }
         advance(deltaTracker.realtimeDeltaTicks)
         val alpha = computeAlpha(elapsed)
         if (alpha <= 0) return
@@ -91,6 +97,19 @@ object ShapeRouletteOverlay {
         drawPanel(graphics, x1, y1, x2, y2, alpha)
         drawCarousel(graphics, font, entries, size, centerIdx, x1, x2, y1, alpha)
         drawDepthBar(graphics, font, entries[centerIdx], x1, y1, alpha)
+    }
+
+    private fun drawHint(g: GuiGraphics) {
+        val font = Minecraft.getInstance().font
+        val configKey = KeyBindings.config?.takeUnless { it.isUnbound }
+        val lines = listOfNotNull(
+            configKey?.let { Component.translatable("veinminer.hint.menu", it.translatedKeyMessage) },
+            Component.translatable("veinminer.hint.pattern"),
+            Component.translatable("veinminer.hint.depth"),
+        )
+        lines.forEachIndexed { i, line ->
+            g.drawString(font, line, PANEL_X + 2, PANEL_Y + 2 + i * (font.lineHeight + 1), 0xD0E0E0E0.toInt())
+        }
     }
 
     private fun drawPanel(g: GuiGraphics, x1: Int, y1: Int, x2: Int, y2: Int, alpha: Int) {
@@ -125,9 +144,10 @@ object ShapeRouletteOverlay {
             val iconX = x1 + PAD_X + 4
             val iconY = rowY + (ROW_HEIGHT - ICON_SIZE) / 2 - 1
             val rowAlpha = if (rel == 0) alpha else (alpha * 0.55).toInt().coerceAtLeast(0)
-            val iconTint = if (rel == 0) mixAlpha(rowAlpha, 0xFF, accent) else mixAlpha(rowAlpha, 0xFF, 0xFFFFFF)
+            val customTexture = customIconTexture(pattern)
+            val iconTint = if (rel == 0 && customTexture == null) mixAlpha(rowAlpha, 0xFF, accent) else mixAlpha(rowAlpha, 0xFF, 0xFFFFFF)
             g.blit(
-                RenderPipelines.GUI_TEXTURED, pattern.icon(),
+                RenderPipelines.GUI_TEXTURED, customTexture ?: pattern.icon(),
                 iconX, iconY, 0f, 0f,
                 ICON_SIZE, ICON_SIZE, ICON_TEX_SIZE, ICON_TEX_SIZE,
                 iconTint
@@ -137,6 +157,23 @@ object ShapeRouletteOverlay {
             val rgb = if (rel == 0) accent else 0xC8C8C8
             g.drawString(font, Component.literal(ClientPatternConfig.displayName(pattern)), textX, textY, mixAlpha(rowAlpha, 0xFF, rgb))
         }
+    }
+
+    private val iconTextures = HashMap<String, Identifier?>()
+
+    /**
+     * Raw texture of the custom icon item (item renderer doesnt care about alpha, thanks mojang).
+     * Tries the item texture, then a same named block texture, otherwise null (default icon)
+     */
+    private fun customIconTexture(pattern: PatternConfig): Identifier? {
+        val raw = ClientPatternConfig.settings.icons[pattern.id] ?: return null
+        if (raw in iconTextures) return iconTextures[raw]
+        val id = Identifier.tryParse(raw)
+        val resources = Minecraft.getInstance().resourceManager
+        val texture = id?.let { listOf("item", "block").map { folder -> id.withPath("textures/$folder/${id.path}.png") } }
+            ?.firstOrNull { resources.getResource(it).isPresent }
+        iconTextures[raw] = texture
+        return texture
     }
 
     private fun drawDepthBar(g: GuiGraphics, font: Font, selectedPattern: PatternConfig, x1: Int, y1: Int, alpha: Int) {

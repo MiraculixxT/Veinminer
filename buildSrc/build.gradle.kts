@@ -1,6 +1,6 @@
 plugins {
     `kotlin-dsl`
-    kotlin("plugin.serialization") version "2.3.0"
+    kotlin("plugin.serialization") version "2.4.20"
 }
 
 repositories {
@@ -14,7 +14,7 @@ repositories {
 
 dependencies {
     fun pluginDep(id: String, version: String) = "${id}:${id}.gradle.plugin:${version}"
-    val kotlinVersion = "2.3.0"
+    val kotlinVersion = "2.4.20"
 
     compileOnly(kotlin("gradle-plugin", kotlinVersion))
     runtimeOnly(kotlin("gradle-plugin", kotlinVersion))
@@ -23,19 +23,19 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.+")
 
     // Fabric implementation
-    implementation("net.fabricmc:fabric-loom:1.15-SNAPSHOT")
+    implementation("net.fabricmc:fabric-loom:1.18.1")
 
     // Paper implementation
-    implementation(pluginDep("io.papermc.paperweight.userdev", "2.0.0-beta.21"))
-    implementation(pluginDep("xyz.jpenilla.run-paper", "3.0.2"))
+    implementation(pluginDep("io.papermc.paperweight.userdev", "2.0.0-beta.23"))
+    implementation(pluginDep("xyz.jpenilla.run-paper", "3.1.0"))
     implementation(pluginDep("de.eldoria.plugin-yml.paper", "0.7.+"))
 
     // NeoForge implementation
-    implementation(pluginDep("net.neoforged.moddev", "2.0.141"))
+    implementation(pluginDep("net.neoforged.moddev", "2.0.147"))
 
     // Project configuration
-    implementation(pluginDep("com.gradleup.shadow", "9.0.0"))
+    implementation(pluginDep("com.gradleup.shadow", "9.6.1"))
     implementation(pluginDep("com.modrinth.minotaur", "2.+"))
-    implementation(pluginDep("net.darkhax.curseforgegradle", "1.3.32"))
+    implementation(pluginDep("net.darkhax.curseforgegradle", "1.3.33"))
     implementation(pluginDep("io.github.dexman545.outlet", "1.8.+"))
 }

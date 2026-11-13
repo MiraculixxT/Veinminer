@@ -8,6 +8,7 @@ interface VeinminerHost {
     val platform: String
     val logger: Logger
     var active: Boolean
+    val enchantmentActive: Boolean
 }
 
 object ActiveHost {

@@ -2,7 +2,10 @@ package de.miraculixx.veinminerClient
 
 import com.mojang.logging.LogUtils
 import de.miraculixx.veinminer.UpdateManager
+import de.miraculixx.veinminerClient.config.ClientPatternConfig
 import de.miraculixx.veinminerClient.network.NetworkManager
+import de.miraculixx.veinminerClient.render.ShapeRouletteOverlay
+import java.nio.file.Path
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.toasts.SystemToast
 import net.minecraft.network.chat.Component
@@ -13,6 +16,16 @@ object ClientLifecycle {
     val LOGGER: Logger = LogUtils.getLogger()
     var veinminerAvailable = false
     var isSinglePlayer = false
+
+    fun initConfig(configDir: Path) {
+        ClientPatternConfig.configure(configDir)
+        ClientPatternConfig.load()
+        val selected = ClientPatternConfig.selectedPattern()
+        ShapeRouletteOverlay.syncTo(selected, ClientPatternConfig.settings.selectedDepth)
+        NetworkManager.selectedPattern = selected
+        NetworkManager.selectedDepth = ShapeRouletteOverlay.currentDepth
+        ClientPatternConfig.setSelection(selected, NetworkManager.selectedDepth)
+    }
 
     fun onJoin(mc: Minecraft, version: String) {
         isSinglePlayer = mc.singleplayerServer != null

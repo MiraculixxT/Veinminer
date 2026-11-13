@@ -2,6 +2,7 @@ package de.miraculixx.veinminer.utils
 
 import de.miraculixx.veinminer.Veinminer
 import de.miraculixx.veinminer.command.VeinminerHost
+import de.miraculixx.veinminer.event.EventState
 import net.minecraft.DetectedVersion
 import org.slf4j.Logger
 
@@ -16,4 +17,7 @@ object NeoForgeHost : VeinminerHost {
         set(value) {
             Veinminer.active = value
         }
+
+    override val enchantmentActive: Boolean
+        get() = EventState.enchantmentActive
 }

@@ -42,7 +42,7 @@ object IdentifierConfigSerializer : ConfigSerializer<Identifier> {
                 MaterialType.ITEM -> {
                     val tag = TagKey.create(Registries.ITEM, key)
                     val reg = mcServer?.registryAccess()?.lookupOrThrow(Registries.ITEM) ?: return null
-                    reg.getTagOrEmpty(tag).map { BuiltInRegistries.ITEM.getKey(it.value().defaultInstance.item) }.toSet()
+                    reg.getTagOrEmpty(tag).map { BuiltInRegistries.ITEM.getKey(it.value()) }.toSet()
                 }
 
                 MaterialType.BLOCK -> {

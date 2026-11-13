@@ -5,8 +5,10 @@ import de.miraculixx.veinminer.command.ActiveHost
 import de.miraculixx.veinminer.command.NeoForgeVeinminerCommand
 import de.miraculixx.veinminer.command.VeinminerCommand
 import de.miraculixx.veinminer.config.ConfigManager
+import de.miraculixx.veinminer.config.EnchantmentPackSource
 import de.miraculixx.veinminer.event.EventState
 import de.miraculixx.veinminer.event.VeinMinerEvent
+import de.miraculixx.veinminer.event.VeinminerBreakContext
 import de.miraculixx.veinminer.event.VeinMinerEvent.removeMiningSpeedModifier
 import de.miraculixx.veinminer.network.NetworkRouter
 import de.miraculixx.veinminer.network.ServerCallbacksImpl
@@ -20,15 +22,15 @@ import net.minecraft.DetectedVersion
 import net.minecraft.network.chat.ClickEvent
 import net.minecraft.network.chat.Component
 import net.minecraft.server.level.ServerPlayer
-import net.minecraft.world.entity.ExperienceOrb
-import net.minecraft.world.item.enchantment.EnchantmentHelper
-import net.minecraft.world.phys.Vec3
+import net.minecraft.server.packs.PackType
 import net.neoforged.bus.api.IEventBus
 import net.neoforged.fml.ModContainer
 import net.neoforged.fml.ModList
 import net.neoforged.fml.common.Mod
 import net.neoforged.neoforge.common.NeoForge
+import net.neoforged.neoforge.event.AddPackFindersEvent
 import net.neoforged.neoforge.event.RegisterCommandsEvent
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent
 import net.neoforged.neoforge.event.entity.player.PlayerEvent
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent
 import net.neoforged.neoforge.event.level.BlockEvent
@@ -59,14 +61,6 @@ class Veinminer(modBus: IEventBus, container: ModContainer) {
         ActiveHost.host = NeoForgeHost
         EventState.configManager = ConfigManager
         EventState.checkPermission = { _, _ -> true } // NeoForge has no permissions API; op-level checks live in command layer
-        EventState.dropBlockExperience = { state, level, blockPos, blockEntity, breaker, tool, dropPos ->
-            state.spawnAfterBreak(level, dropPos, tool, false)
-            val experience = EnchantmentHelper.processBlockExperience(
-                level, tool,
-                state.getExpDrop(level, blockPos, blockEntity, breaker, tool)
-            )
-            if (experience > 0) ExperienceOrb.award(level, Vec3.atCenterOf(dropPos), experience)
-        }
 
         val gameBus = NeoForge.EVENT_BUS
 
@@ -79,6 +73,8 @@ class Veinminer(modBus: IEventBus, container: ModContainer) {
                 VeinMinerEvent.applySpeedModifierOnAttack(world, event.entity, pos, state)
             }
         }
+
+        gameBus.addListener<EntityJoinLevelEvent> { event -> VeinminerBreakContext.relocateDrop(event.entity) }
 
         // Block break
         gameBus.addListener<BlockEvent.BreakEvent> { event ->
@@ -106,6 +102,11 @@ class Veinminer(modBus: IEventBus, container: ModContainer) {
         // Network registrar (mod bus event)
         modBus.addListener(NeoForgePlatformNetwork::onRegisterPayloadHandlers)
 
+        // Generated enchantment datapack
+        modBus.addListener<AddPackFindersEvent> { event ->
+            if (event.packType == PackType.SERVER_DATA) event.addRepositorySource(EnchantmentPackSource)
+        }
+
         NetworkRouter.init(NeoForgePlatformNetwork, ServerCallbacksImpl)
 
         // Disconnect cleanup
@@ -132,7 +133,7 @@ class Veinminer(modBus: IEventBus, container: ModContainer) {
             }
 
             val info = updateInfo ?: return@addListener
-            if (canConfigure) {
+            if (canConfigure && !ConfigManager.settings.hideUpdates) {
                 player.sendSystemMessage(
                     Component.literal("${info.module.modID} is outdated! ")
                         .append(" (Current: ").append(Component.literal(info.currentVersion).withColor(cRed))

@@ -1,11 +1,13 @@
 package de.miraculixx.veinminer.network
 
 import de.miraculixx.veinminer.command.ActiveHost
+import de.miraculixx.veinminer.pattern.BlockFilter
 import de.miraculixx.veinminer.pattern.PatternConfig
 import de.miraculixx.veinminer.pattern.PatternType
 import de.miraculixx.veinminer.pattern.ShapeStrategy
 import de.miraculixx.veinminer.pattern.Surface
 import de.miraculixx.veinminer.utils.mcServer
+import net.minecraft.resources.Identifier
 import org.slf4j.Logger
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
@@ -15,12 +17,17 @@ object NetworkRouter {
     private val readyToVeinmine: MutableSet<UUID> = ConcurrentHashMap.newKeySet()
     private val activeStrategies: MutableMap<UUID, ShapeStrategy> = ConcurrentHashMap()
     private val clientPatterns: MutableMap<UUID, Map<String, PatternConfig>> = ConcurrentHashMap()
+    private val activeFilters: MutableMap<UUID, BlockFilter.ClientFilter> = ConcurrentHashMap()
     val lastSurface: MutableMap<UUID, Surface> = ConcurrentHashMap()
     val activeDepth: MutableMap<UUID, Int> = ConcurrentHashMap()
 
     fun activeStrategy(uuid: UUID): ShapeStrategy? = activeStrategies[uuid]
     fun maxDepth(uuid: UUID): Int = activeDepth[uuid] ?: Int.MAX_VALUE
     fun isReady(uuid: UUID): Boolean = readyToVeinmine.contains(uuid)
+
+    /** Restricts [targets] by the active client pattern whitelist. Null = origin not whitelisted */
+    fun filterTargets(uuid: UUID, origin: Identifier, targets: Set<Identifier>, allowCombine: Boolean, canCombine: (Identifier) -> Boolean): Set<Identifier>? =
+        BlockFilter.apply(activeFilters[uuid], origin, targets, allowCombine, canCombine)
 
     @Volatile
     private var platform: PlatformNetwork? = null
@@ -44,13 +51,15 @@ object NetworkRouter {
         registerC2S(platform, NetworkManager.PACKET_KEY_PRESS_ID) { uuid, bytes ->
             val packet = PacketCodecs.KEY.decode(bytes)
             if (packet.pressed) {
-                val strategy = resolveStrategy(uuid, packet)
-                if (strategy == null) {
+                val pattern = resolvePattern(uuid, packet)
+                if (pattern == null) {
                     clearReadyState(uuid)
                     return@registerC2S
                 }
                 readyToVeinmine.add(uuid)
-                activeStrategies[uuid] = strategy
+                activeStrategies[uuid] = pattern.strategy()
+                if (pattern.whitelist.isEmpty()) activeFilters.remove(uuid)
+                else activeFilters[uuid] = BlockFilter.ClientFilter(BlockFilter.resolve(pattern.whitelist), pattern.combine)
                 activeDepth[uuid] = packet.maxDepth.coerceIn(2..Int.MAX_VALUE)
             } else {
                 clearReadyState(uuid)
@@ -107,11 +116,12 @@ object NetworkRouter {
         readyToVeinmine.remove(uuid)
         activeStrategies.remove(uuid)
         activeDepth.remove(uuid)
+        activeFilters.remove(uuid)
     }
 
-    private fun resolveStrategy(uuid: UUID, packet: KeyPress): ShapeStrategy? {
+    private fun resolvePattern(uuid: UUID, packet: KeyPress): PatternConfig? {
         val patternId = packet.patternId ?: return null
-        return clientPatterns[uuid]?.get(patternId)?.strategy()
+        return clientPatterns[uuid]?.get(patternId)
     }
 
     private fun validatePatterns(patterns: List<PatternConfig>): Map<String, PatternConfig> {
@@ -128,6 +138,8 @@ object NetworkRouter {
                 width = sanitizeDimension(raw.type, raw.width),
                 height = sanitizeDimension(raw.type, raw.height),
                 stairsUp = raw.stairsUp,
+                combine = raw.combine,
+                whitelist = raw.whitelist.asSequence().map { it.trim() }.filter(BlockFilter::isValidEntry).distinct().take(BlockFilter.MAX_ENTRIES).toMutableList(),
             )
         }
         return valid
