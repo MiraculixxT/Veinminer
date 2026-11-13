@@ -23,6 +23,7 @@ neoForge {
         register("client") {
             client()
             gameDirectory.set(layout.projectDirectory.dir("run-21"))
+            programArguments.addAll("--username", "DevNeo")
         }
     }
 }
@@ -32,7 +33,7 @@ tasks.named<JavaExec>("runServer") {
 }
 
 dependencies {
-    implementation("dev.nyon:KotlinLangForge:2.11.2-k2.3.0-3.0+neoforge")
+    implementation("dev.nyon:KotlinLangForge:2.14.1-k2.4.20-3.0+neoforge")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.+")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.+")
 }

@@ -4,6 +4,7 @@ import de.miraculixx.veinminer.data.BlockPosition
 import de.miraculixx.veinminer.data.FixedBlockGroup
 import de.miraculixx.veinminer.data.VeinminerSettingsOverride
 import de.miraculixx.veinminer.pattern.BlockAwareness
+import de.miraculixx.veinminer.pattern.BlockFilter
 import de.miraculixx.veinminer.pattern.PatternConfig
 import de.miraculixx.veinminer.pattern.Surface
 import de.miraculixx.veinminer.pattern.VeinmineAction
@@ -27,6 +28,9 @@ import net.minecraft.world.level.block.state.BlockState
 object ClientVeinSelector {
 
     data class Result(val positions: List<BlockPosition>, val toolIcon: String)
+
+    private var filterKey: Triple<List<String>, Boolean, Level>? = null
+    private var filter: BlockFilter.ClientFilter? = null
 
     // Future me, don't try to unify with server check. Not worth it
     fun resolve(
@@ -62,11 +66,14 @@ object ClientVeinSelector {
 
         val enchantKey = NetworkManager.enchantmentKey
         if (NetworkManager.enchantmentActive && enchantKey != null) {
-            val hasEnchant = mainHandItem.enchantments.keySet().any { it.`is`(enchantKey) }
-            if (!hasEnchant) return null
+            val level = mainHandItem.enchantments.entrySet().firstOrNull { it.key.`is`(enchantKey) }?.intValue ?: 0
+            if (level < settings.minEnchantLevel.coerceAtLeast(1)) return null
         }
 
-        val targets = if (isGroupBlock) blockGroup.blocks else setOf(material)
+        val serverTargets = if (isGroupBlock && !settings.separateGroupMining) blockGroup.blocks else setOf(material)
+        val targets = BlockFilter.apply(resolveFilter(pattern, level), material, serverTargets, settings.client.allowClientGroups) {
+            canCombine(it, hasClientBypass, mainHandItem, settings.needCorrectTool)
+        } ?: return null
         val originPos = BlockPosition(origin.x, origin.y, origin.z)
         val blockAwareness = object : BlockAwareness {
             override fun getBlockType(pos: BlockPosition): ResourceLocation {
@@ -95,6 +102,24 @@ object ClientVeinSelector {
         return Result(hits.map { it.pos }, preferredToolIcon(state))
     }
 
+    private fun resolveFilter(pattern: PatternConfig, level: Level): BlockFilter.ClientFilter? {
+        if (pattern.whitelist.isEmpty()) return null
+        val key = Triple(pattern.whitelist.toList(), pattern.combine, level)
+        if (key != filterKey) {
+            filterKey = key
+            filter = BlockFilter.ClientFilter(BlockFilter.resolve(key.first), pattern.combine)
+        }
+        return filter
+    }
+
+    private fun canCombine(id: ResourceLocation, hasClientBypass: Boolean, tool: ItemStack, needCorrectTool: Boolean): Boolean {
+        val group = groupedBlocks(id)
+        if (!hasClientBypass && id !in NetworkManager.allowedBlocks) return false
+        if (!hasClientBypass && group.tools.isNotEmpty() && !group.tools.contains(tool.key())) return false
+        val state = BuiltInRegistries.BLOCK.get(id).defaultBlockState()
+        return !needCorrectTool || !state.requiresCorrectToolForDrops() || tool.isCorrectToolForDrops(state)
+    }
+
     private fun groupedBlocks(material: ResourceLocation): FixedBlockGroup<ResourceLocation> {
         val blocks = mutableSetOf<ResourceLocation>()
         val tools = mutableSetOf<ResourceLocation>()
@@ -119,7 +144,7 @@ object ClientVeinSelector {
     private fun BlockState.key(): ResourceLocation = BuiltInRegistries.BLOCK.getKey(block)
     private fun ItemStack.key(): ResourceLocation = BuiltInRegistries.ITEM.getKey(item)
     private fun ItemStack.remainingDurability(): Int {
-        if (isEmpty) return 0
+        if (isEmpty) return Int.MAX_VALUE
         if (maxDamage <= 0) return Int.MAX_VALUE
         return maxDamage - damageValue
     }

@@ -4,7 +4,6 @@ import com.mojang.blaze3d.vertex.PoseStack
 import de.miraculixx.veinminer.extensions.mcCoroutineAsync
 import de.miraculixx.veinminer.extensions.ticks
 import de.miraculixx.veinminerClient.ClientLifecycle.MOD_ID
-import de.miraculixx.veinminerClient.config.ClientPatternConfig
 import de.miraculixx.veinminerClient.constants.FabricKeyBindings
 import de.miraculixx.veinminerClient.network.FabricClientPlatformNetwork
 import de.miraculixx.veinminerClient.network.NetworkManager
@@ -33,9 +32,7 @@ class VeinminerClient : ClientModInitializer {
         ClientLifecycle.veinminerAvailable = fabricLoader.getModContainer("veinminer").getOrNull() != null
 
         HUDProvider.instance = FabricHUDRenderer
-        ClientPatternConfig.configure(fabricLoader.configDir)
-        ClientPatternConfig.load()
-        NetworkManager.selectedPattern = ClientPatternConfig.enabledPatterns().first()
+        ClientLifecycle.initConfig(fabricLoader.configDir)
         FabricKeyBindings.register()
         NetworkManager.init(FabricClientPlatformNetwork)
 

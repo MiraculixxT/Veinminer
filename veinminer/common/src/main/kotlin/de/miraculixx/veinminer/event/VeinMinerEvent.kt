@@ -23,10 +23,7 @@ import de.miraculixx.veinminer.utils.toVeinminer
 import net.minecraft.core.BlockPos
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.resources.ResourceLocation
-import net.minecraft.server.level.ServerLevel
-import net.minecraft.stats.Stats
-import net.minecraft.world.entity.Entity
-import net.minecraft.world.entity.EquipmentSlot
+import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.entity.ai.attributes.AttributeModifier
 import net.minecraft.world.entity.ai.attributes.Attributes
 import net.minecraft.world.entity.player.Player
@@ -34,9 +31,9 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.BaseFireBlock
 import net.minecraft.world.level.block.Block
-import net.minecraft.world.level.block.Blocks
-import net.minecraft.world.level.block.entity.BlockEntity
+import net.minecraft.world.level.block.LevelEvent
 import net.minecraft.world.level.block.state.BlockState
+import net.minecraft.world.phys.Vec3
 import java.util.UUID
 
 /**
@@ -74,7 +71,7 @@ object VeinMinerEvent {
      * inspect to decide further behavior).
      */
     fun applySpeedModifierOnAttack(world: Level, player: Player, pos: BlockPos, state: BlockState) {
-        if (world.isClientSide) return
+        if (world.isClientSide || VeinminerBreakContext.isSelfInflicted) return
         player.removeMiningSpeedModifier()
 
         val info = allowedToVeinmine(world, player, pos, state) ?: return
@@ -95,11 +92,11 @@ object VeinMinerEvent {
      * should proceed, false to cancel.
      */
     fun onBlockBreakBefore(world: Level, player: Player, pos: BlockPos, state: BlockState): Boolean {
+        if (VeinminerBreakContext.isSelfInflicted) return true // Ignore our own events
         player.removeMiningSpeedModifier()
         val info = allowedToVeinmine(world, player, pos, state) ?: return true
 
-        val amount = info.veinmine(true)
-        player.awardStat(Stats.BLOCK_MINED.get(state.block), (amount - 1).coerceAtLeast(0))
+        info.veinmine(true)
 
         val cooldownTime = info.settings.cooldown
         if (cooldownTime > 0) {
@@ -142,12 +139,27 @@ object VeinMinerEvent {
         if (!hasClientBypass && isGroupBlock && !blockGroup.tools.isEmpty() && !blockGroup.tools.contains(mainHandItem.key())) return null
         if (settings.decreaseDurability && mainHandItem.remainingDurability() <= 1) return null
 
-        if (EventState.enchantmentActive && !mainHandItem.enchantments.keySet().any { it.`is`(EventState.enchantmentKey) }) return null
+        if (EventState.enchantmentActive) {
+            val level = mainHandItem.enchantments.entrySet().firstOrNull { it.key.`is`(EventState.enchantmentKey) }?.intValue ?: 0
+            if (level < settings.minEnchantLevel.coerceAtLeast(1)) return null
+        }
 
-        val blocks = if (isGroupBlock) blockGroup.blocks else setOf(material)
+        val serverTargets = if (isGroupBlock && !settings.separateGroupMining) blockGroup.blocks else setOf(material)
+        val blocks = NetworkRouter.filterTargets(uuid, material, serverTargets, settings.client.allowClientGroups) {
+            canCombine(it, hasClientBypass, mainHandItem, settings.needCorrectTool)
+        } ?: return null
         val face = NetworkRouter.lastSurface[player.uuid] ?: Surface.UP
         val sourceLocation = pos.toVeinminer()
         return VeinmineAction(sourceLocation, blocks, mainHandItem, player, sourceLocation, settings, face)
+    }
+
+    /** If a block may join a client group: server whitelisted, group tools and harvestable with [tool] */
+    private fun canCombine(id: ResourceLocation, hasClientBypass: Boolean, tool: ItemStack, needCorrectTool: Boolean): Boolean {
+        val group = id.groupedBlocks()
+        if (!hasClientBypass && group.blocks.isEmpty() && !EventState.configManager.veinBlocks.contains(id)) return false
+        if (!hasClientBypass && group.tools.isNotEmpty() && !group.tools.contains(tool.key())) return false
+        val state = BuiltInRegistries.BLOCK.get(id).defaultBlockState()
+        return !needCorrectTool || !state.requiresCorrectToolForDrops() || tool.isCorrectToolForDrops(state)
     }
 
     /**
@@ -155,11 +167,9 @@ object VeinMinerEvent {
      * @return the number of blocks broken
      */
     fun VeinmineAction<ItemStack, Player>.veinmine(shouldBreak: Boolean): Int {
-        val iTool = tool
         val iPlayer = player
         val world = iPlayer.level()
 
-        if (iTool.isEmpty) return 0
         val strategy = NetworkRouter.activeStrategy(iPlayer.uuid) ?: NormalStrategy
         val maxDepth = NetworkRouter.maxDepth(iPlayer.uuid)
 
@@ -191,67 +201,35 @@ object VeinMinerEvent {
         delay: Int
     ) {
         mcCoroutineSync(mcServer!!, delay) {
-            val iPlayer = player
+            val iPlayer = player as? ServerPlayer ?: return@mcCoroutineSync
             val world = iPlayer.level()
             val state = world.getBlockState(pos)
             if (!targetTypes.contains(state.key())) return@mcCoroutineSync
             if (!state.isMatureAgeTarget()) return@mcCoroutineSync
-            val iTool = tool
+            val iTool = iPlayer.mainHandItem
             if (settings.decreaseDurability && iTool.remainingDurability() <= 1) return@mcCoroutineSync
-            state.destroyBlock(iTool, world, pos, iPlayer, sourceLocation.toNMS())
-            if (settings.decreaseDurability) damageItem(iTool, iPlayer)
+
+            // Vanilla always damages the tool. Zero the damage across the call so it cannot break, then restore
+            val protectTool = !settings.decreaseDurability && !iTool.isEmpty && iTool.maxDamage > 0
+            val damageBefore = iTool.damageValue
+            if (protectTool) iTool.damageValue = 0
+
+            val dropTarget = if (settings.mergeItemDrops) Vec3.atCenterOf(sourceLocation.toNMS()) else null
+            val broken = VeinminerBreakContext.breaking(dropTarget) { iPlayer.gameMode.destroyBlock(pos) }
+
+            if (protectTool && !iTool.isEmpty) iTool.damageValue = damageBefore
+            if (!broken) return@mcCoroutineSync
+
+            // Emits block break effect
+            if (state.block is BaseFireBlock) world.levelEvent(LevelEvent.SOUND_EXTINGUISH_FIRE, pos, 0)
+            else world.levelEvent(LevelEvent.PARTICLES_DESTROY_BLOCK, pos, Block.getId(state))
+
             if (settings.hungerPerBlock > 0.0) iPlayer.causeFoodExhaustion(settings.hungerPerBlock.toFloat())
         }
     }
 
-    private fun BlockState.destroyBlock(
-        item: ItemStack,
-        world: Level,
-        position: BlockPos,
-        player: Player,
-        initialSource: BlockPos
-    ) {
-        val block = block
-        if (block !== Blocks.AIR && (!requiresCorrectToolForDrops() || item.isCorrectToolForDrops(this))) {
-            improvedDropResources(this, world, position, world.getBlockEntity(position), player, item, initialSource)
-
-            if (block is BaseFireBlock) {
-                world.levelEvent(1009, position, 0)
-            } else {
-                world.levelEvent(2001, position, Block.getId(this))
-            }
-        }
-
-        val destroyed = world.removeBlock(position, false)
-        if (destroyed) {
-            block.destroy(world, position, this)
-        }
-    }
-
-    private fun improvedDropResources(
-        blockState: BlockState,
-        world: Level,
-        blockPos: BlockPos,
-        blockEntity: BlockEntity?,
-        breaker: Entity,
-        tool: ItemStack,
-        initialSource: BlockPos
-    ) {
-        val serverLevel = world as? ServerLevel ?: return
-        val dropPos = if (EventState.configManager.settings.mergeItemDrops) initialSource else blockPos
-        Block.getDrops(blockState, serverLevel, blockPos, blockEntity, breaker, tool).forEach { drop: ItemStack ->
-            Block.popResource(world, dropPos, drop)
-        }
-        EventState.dropBlockExperience(blockState, serverLevel, blockPos, blockEntity, breaker, tool, dropPos)
-    }
-
-    private fun damageItem(item: ItemStack, player: Player) {
-        if (item.isEmpty) return
-        item.hurtAndBreak(1, player, EquipmentSlot.MAINHAND)
-    }
-
     private fun ItemStack.remainingDurability(): Int {
-        if (isEmpty) return 0
+        if (isEmpty) return Int.MAX_VALUE
         if (maxDamage <= 0) return Int.MAX_VALUE
         return maxDamage - damageValue
     }

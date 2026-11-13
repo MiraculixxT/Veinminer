@@ -1,8 +1,11 @@
-[![dono-badge](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/donate/kofi-singular_vector.svg)](https://ko-fi.com/miraculixx/donate)
-[![enchant-badge](https://cdn.modrinth.com/data/cached_images/ea836ed1714c4f065aca5466c99c9e7d8f5baeff.png)](https://modrinth.com/project/veinminer-enchantment)
-[![client-badge](https://cdn.modrinth.com/data/cached_images/9badc43c5a3708f90d24088df4f37c03acc943b8.png)](https://modrinth.com/project/veinminer-client)
+![banner](https://cdn.modrinth.com/data/cached_images/1aca4c6d88e1b7701c06596e78e51b229eea2395.png)
 
-## ⛏️ Veinminer
+<p align="center">
+  <a href="https://ko-fi.com/miraculixx/donate"><img src="https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/donate/kofi-singular_vector.svg" alt="Modrinth" style=""></a>
+  <a href="https://modrinth.com/project/veinminer-enchantment"><img src="https://cdn.modrinth.com/data/cached_images/ea836ed1714c4f065aca5466c99c9e7d8f5baeff.png" alt="Ko-fi" style=""></a>
+  <a href="https://modrinth.com/project/veinminer-client"><img src="https://cdn.modrinth.com/data/cached_images/9badc43c5a3708f90d24088df4f37c03acc943b8.png" alt="Curseforge" style=""></a>
+</p>
+
 Mine a single block to mine the whole vein!
 Highly configurable and works everywhere, even on your vanilla server.
 Make the tedious mining experience to something satisfying and fun!<br>
@@ -45,20 +48,22 @@ The advanced (V2) version is a more powerful version that is only usable with Fa
 To change a setting, enter `/veinminer settings ... [<new-value>]`. 
 To check the current state, leave out the new value argument.
 
-|        Setting         |                        Description                         | Default |
-|:----------------------:|:----------------------------------------------------------:|:-------:|
-|      `mustSneak`       |               Players must sneak to veinmine               | `false` |
-|       `cooldown`       |    Time between players are able to veinmine (in ticks)    |  `20`   |
-|        `delay`         |   Time between each automated block breaking (in ticks)    |   `1`   |
-|       `maxChain`       | Max amount of blocks that can break from one source block  |  `100`  |
-|   `needCorrectTool`    |     If blocks have a required tool, this must be used      | `true`  |
-|     `searchRadius`     | Amount of blocks around connected blocks to search (max 5) |   `1`   |
-| `permissionRestricted` | Only players with `veinminer.use` permission can veinmine  | `false` |
-|    `mergeItemDrops`    |       All item drops are merged to the source block        | `false` |
-|      `autoUpdate`      |  Check for updates and download new version if available   | `true`  |
-|  `durabilityDecrease`  |        If each mined block should reduce durability        | `true`  |
-| `miningSpeedModifier`  |     Increase block mining duration based on vein size      |  `0.0`  |
-|    `hungerPerBlock`    |    Drain saturation per veinmined block (vanilla 0.005)    |  `0.0`  |
+|        Setting         |                         Description                         | Default |
+|:----------------------:|:-----------------------------------------------------------:|:-------:|
+|      `mustSneak`       |               Players must sneak to veinmine                | `false` |
+|       `cooldown`       |    Time between players are able to veinmine (in ticks)     |  `20`   |
+|        `delay`         |    Time between each automated block breaking (in ticks)    |   `1`   |
+|       `maxChain`       |  Max amount of blocks that can break from one source block  |  `100`  |
+|   `needCorrectTool`    |      If blocks have a required tool, this must be used      | `true`  |
+|     `searchRadius`     | Amount of blocks around connected blocks to search (max 5)  |   `1`   |
+| `permissionRestricted` |  Only players with `veinminer.use` permission can veinmine  | `false` |
+|    `mergeItemDrops`    |        All item drops are merged to the source block        | `false` |
+|      `autoUpdate`      |   Check for updates and download new version if available   | `true`  |
+|  `durabilityDecrease`  |        If each mined block should reduce durability         | `true`  |
+| `miningSpeedModifier`  |      Increase block mining duration based on vein size      |  `0.0`  |
+|    `hungerPerBlock`    |    Drain saturation per veinmined block (vanilla 0.005)     |  `0.0`  |
+| `separateGroupMining`  | Groups only veinmine the exact mined block, not all of them | `false` |
+|   `minEnchantLevel`    |  Min Veinmine enchantment level (only with enchant addon)   |   `1`   |
 
 </details>
 <details><summary>Block Groups - Advanced Settings</summary>
@@ -66,7 +71,8 @@ To check the current state, leave out the new value argument.
 Block groups can hold multiple blocks together that will be treated like the same block.<br>
 `/veinminer groups create <name> [<block1>] [<block2>]`
 
-All blocks inside one group will be mined together. 
+All blocks inside one group will be mined together, unless `separateGroupMining` is enabled. 
+With that setting only the exact mined block type chains, while all other group rules (tools, overrides) still apply. 
 A block can be in multiple groups. New blocks can be added or removed from groups with the following commands:<br>
 `/veinminer groups edit <name> add-block <block>`<br>
 `/veinminer groups edit <name> remove-block <block>`
@@ -112,6 +118,10 @@ Each group can have a different override, if a block is in multiple groups, only
 E.g. you dont want that your sand & dirt group consumes durability:
 - `/veinminer settings decreaseDurability true` - True for all blocks
 - `/veinminer groups shovel edit override decreaseDurability false` - False override for this group
+
+With the enchantment addon, groups can require a higher enchantment level, e.g. ores only at level 2+:
+- `/veinminer enchant maxLevel 3` - Allow enchantment levels up to 3 (applies after restart/rejoin)
+- `/veinminer groups edit Ores override minEnchantLevel 2` - Ores need at least level 2
 
 --- 
 

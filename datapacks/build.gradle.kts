@@ -3,8 +3,8 @@ plugins {
 }
 
 val packs = listOf(
-    Datapack("veinminer", "1.3.5", "veinminer"),
-    Datapack("enchantment", "1.2.6", "veinminer-enchantment")
+    Datapack("veinminer", "1.3.6", "veinminer"),
+    Datapack("enchantment", "1.3.6", "veinminer-enchantment")
 )
 
 // Create a zip task for each datapack

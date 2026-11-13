@@ -1,5 +1,6 @@
 package de.miraculixx.veinminer.data
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.full.memberProperties
@@ -18,6 +19,9 @@ data class VeinminerSettings(
     var decreaseDurability: Boolean = true,
     var hungerPerBlock: Double = 0.0,
     var miningSpeedModifier: Double = 0.0,
+    var separateGroupMining: Boolean = false,
+    var minEnchantLevel: Int = 1,
+    @SerialName("dontDisplayUpdatesAndIWillNotAskForSupportBeforeUpdatingISwear") var hideUpdates: Boolean = false,
     var debug: Boolean = false,
     val client: VeinminerClientSettings = VeinminerClientSettings()
 ) {
@@ -43,6 +47,9 @@ data class VeinminerSettings(
             decreaseDurability = g?.decreaseDurability ?: (if (isClient) c.decreaseDurability ?: decreaseDurability else decreaseDurability),
             hungerPerBlock = g?.hungerPerBlock ?: (if (isClient) c.hungerPerBlock ?: hungerPerBlock else hungerPerBlock),
             miningSpeedModifier = g?.miningSpeedModifier ?: (if (isClient) c.miningSpeedModifier ?: miningSpeedModifier else miningSpeedModifier),
+            separateGroupMining = g?.separateGroupMining ?: (if (isClient) c.separateGroupMining ?: separateGroupMining else separateGroupMining),
+            minEnchantLevel = g?.minEnchantLevel ?: (if (isClient) c.minEnchantLevel ?: minEnchantLevel else minEnchantLevel),
+            hideUpdates = hideUpdates,
             debug = debug,
             client = client
         )
@@ -57,7 +64,7 @@ data class VeinminerSettings(
         multiplicator: Double
     ): Double {
         val n = veinSize.coerceAtLeast(1)
-        val m = multiplicator.coerceIn(0.0, 1.0)
+        val m = if (multiplicator.isNaN()) 0.0 else multiplicator.coerceIn(0.0, 1.0)
 
         val timeFactor = 1.0 + m * (n - 1) // 0->1x, 1->nx time
         val speedFactor = (1.0 / timeFactor).coerceAtLeast(0.01) // 100x max decrease
@@ -72,6 +79,7 @@ data class VeinminerClientSettings(
     var require: Boolean = false,
     var translucentBlockHighlight: Boolean = true,
     var allBlocks: Boolean = false,
+    var allowClientGroups: Boolean = true,
     val overrides: VeinminerSettingsOverride = VeinminerSettingsOverride()
 )
 
@@ -86,7 +94,9 @@ data class VeinminerSettingsOverride(
     var permissionRestricted: Boolean? = null,
     var decreaseDurability: Boolean? = null,
     var hungerPerBlock: Double? = null,
-    var miningSpeedModifier: Double? = null
+    var miningSpeedModifier: Double? = null,
+    var separateGroupMining: Boolean? = null,
+    var minEnchantLevel: Int? = null
 ) {
     fun nonNullKeys(): List<String> =
         VeinminerSettingsOverride::class.memberProperties.mapNotNull { prop -> prop.get(this)?.let { prop.name } }

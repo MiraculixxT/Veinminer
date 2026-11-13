@@ -26,10 +26,13 @@ import net.minecraft.commands.CommandBuildContext
 import net.minecraft.commands.CommandSourceStack
 import net.minecraft.commands.arguments.blocks.BlockPredicateArgument
 import net.minecraft.commands.arguments.item.ItemPredicateArgument
+import net.minecraft.core.registries.Registries
 import net.minecraft.network.chat.ClickEvent
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.HoverEvent
 import net.minecraft.network.chat.MutableComponent
+import net.minecraft.resources.ResourceLocation
+import net.minecraft.tags.TagKey
 import kotlin.reflect.typeOf
 
 object VeinminerCommand {
@@ -125,14 +128,61 @@ object VeinminerCommand {
                 applySetting("decreaseDurability", { ActiveConfig.bridge.settings.decreaseDurability }) { x, _ -> ActiveConfig.bridge.settings.decreaseDurability = x }
                 applySetting("hungerPerBlock", { ActiveConfig.bridge.settings.hungerPerBlock }) { x, _ -> ActiveConfig.bridge.settings.hungerPerBlock = x }
                 applySetting("miningSpeedModifier", { ActiveConfig.bridge.settings.miningSpeedModifier }) { x, _ -> ActiveConfig.bridge.settings.miningSpeedModifier = x }
+                applySetting("separateGroupMining", { ActiveConfig.bridge.settings.separateGroupMining }) { x, _ -> ActiveConfig.bridge.settings.separateGroupMining = x }
+                applySetting("minEnchantLevel", { ActiveConfig.bridge.settings.minEnchantLevel }) { x, _ -> ActiveConfig.bridge.settings.minEnchantLevel = x }
                 applySetting("debug", { debug }) { x, _ -> ActiveConfig.bridge.settings.debug = x }
                 literal("client") {
                     applySetting("allow", { ActiveConfig.bridge.settings.client.allow }) { x, _ -> ActiveConfig.bridge.settings.client.allow = x }
                     applySetting("require", { ActiveConfig.bridge.settings.client.require }) { x, _ -> ActiveConfig.bridge.settings.client.require = x }
                     applySetting("translucentBlockHighlight", { ActiveConfig.bridge.settings.client.translucentBlockHighlight }) { x, _ -> ActiveConfig.bridge.settings.client.translucentBlockHighlight = x }
                     applySetting("allowAllBlocks", { ActiveConfig.bridge.settings.client.allBlocks }) { x, _ -> ActiveConfig.bridge.settings.client.allBlocks = x }
+                    applySetting("allowClientGroups", { ActiveConfig.bridge.settings.client.allowClientGroups }) { x, _ -> ActiveConfig.bridge.settings.client.allowClientGroups = x }
                     literal("override") {
                         overrides { _ -> ActiveConfig.bridge.settings.client.overrides }
+                    }
+                }
+            }
+
+            literal("enchant") {
+                executesAsync {
+                    if (!ActiveHost.host.enchantmentActive) return@executesAsync source.sendSystemMessage(
+                        header("Enchantment") +
+                            cmp("\nThe Veinminer Enchantment addon is not installed. Download: ", cBase) +
+                            link("Modrinth", "https://modrinth.com/mod/veinminer-enchantment") +
+                            cmp(" | ") + link("CurseForge", "https://www.curseforge.com/minecraft/mc-mods/veinminer-enchant")
+                    )
+                    source.sendSystemMessage(
+                        header("Enchantment") +
+                            cmp("\nModify the Veinmine enchantment with ", cBase) + command("/veinminer enchant <setting> [<new-value>]") +
+                            cmp("\nChanges apply after a server restart or world rejoin (click here for help)", cBase)
+                                .link("https://modrinth.com/mod/veinminer-enchantment#settings")
+                    )
+                }
+
+                requiresAll({ ActiveHost.host.enchantmentActive && Permissions.check(it, permissionSettings) }) {
+                    val enchant = { ActiveConfig.bridge.enchantSettings }
+                    applySetting("maxLevel", { enchant().maxLevel }, restart = true) { x, _ -> enchant().maxLevel = x }
+                    applySetting("weight", { enchant().weight }, restart = true) { x, _ -> enchant().weight = x }
+                    applySetting("minCost", { enchant().minCost }, restart = true) { x, _ -> enchant().minCost = x }
+                    applySetting("minCostPerLevel", { enchant().minCostPerLevel }, restart = true) { x, _ -> enchant().minCostPerLevel = x }
+                    applySetting("maxCost", { enchant().maxCost }, restart = true) { x, _ -> enchant().maxCost = x }
+                    applySetting("maxCostPerLevel", { enchant().maxCostPerLevel }, restart = true) { x, _ -> enchant().maxCostPerLevel = x }
+                    applySetting("anvilCost", { enchant().anvilCost }, restart = true) { x, _ -> enchant().anvilCost = x }
+                    applySetting("inEnchantingTable", { enchant().inEnchantingTable }, restart = true) { x, _ -> enchant().inEnchantingTable = x }
+                    applySetting("tradeable", { enchant().tradeable }, restart = true) { x, _ -> enchant().tradeable = x }
+                    applySetting("lootable", { enchant().lootable }, restart = true) { x, _ -> enchant().lootable = x }
+                    applySetting("treasure", { enchant().treasure }, restart = true) { x, _ -> enchant().treasure = x }
+                    literal("supportedItems") {
+                        executesAsync { source.sendSystemMessage(setting("supportedItems", enchant().supportedItems)) }
+                        argument("supportedItems-new", ItemPredicateArgument.itemPredicate(ctx)) {
+                            executesAsync {
+                                val raw = getRaw(3)
+                                if (raw == null || !source.isValidItemTarget(raw)) return@executesAsync source.sendSystemMessage(error("Only plain item IDs or item tags are allowed"))
+                                enchant().supportedItems = raw
+                                ActiveConfig.bridge.save()
+                                source.sendSystemMessage(settingChanged("supportedItems", raw) + restartNote())
+                            }
+                        }
                     }
                 }
             }
@@ -233,7 +283,7 @@ object VeinminerCommand {
                         executesAsync {
                             val name = StringArgumentType.getString(this, "group").lowercase()
                             val group = groupExists(name) ?: return@executesAsync source.sendSystemMessage(error("Group ") + value(name) + error(" does not exist"))
-                            ActiveConfig.bridge.groupsRaw.remove(group)
+                            ActiveConfig.bridge.groupsRaw.removeIf { it === group } // data class hash changes on edit, set.remove would miss it
                             source.sendSystemMessage(success("Removed group ") + value(name))
                             ActiveConfig.bridge.save()
                         }
@@ -324,6 +374,7 @@ object VeinminerCommand {
     private inline fun <reified T> CommandNodeBuilder<CommandSourceStack>.applySetting(
         name: String,
         noinline currentConsumer: (CommandContext<CommandSourceStack>) -> T,
+        restart: Boolean = false,
         noinline consumer: (T, CommandContext<CommandSourceStack>) -> Unit,
     ) {
         literal(name) {
@@ -338,7 +389,7 @@ object VeinminerCommand {
                         val value = BoolArgumentType.getBool(this, "$name-new") as T
                         consumer.invoke(value, this)
                         ActiveConfig.bridge.save()
-                        source.sendSystemMessage(settingChanged(name, value))
+                        source.sendSystemMessage(if (restart) settingChanged(name, value) + restartNote() else settingChanged(name, value))
                     }
                 }
 
@@ -347,7 +398,7 @@ object VeinminerCommand {
                         val value = IntegerArgumentType.getInteger(this, "$name-new") as T
                         consumer.invoke(value, this)
                         ActiveConfig.bridge.save()
-                        source.sendSystemMessage(settingChanged(name, value))
+                        source.sendSystemMessage(if (restart) settingChanged(name, value) + restartNote() else settingChanged(name, value))
                     }
                 }
 
@@ -356,7 +407,7 @@ object VeinminerCommand {
                         val value = DoubleArgumentType.getDouble(this, "$name-new") as T
                         consumer.invoke(value, this)
                         ActiveConfig.bridge.save()
-                        source.sendSystemMessage(settingChanged(name, value))
+                        source.sendSystemMessage(if (restart) settingChanged(name, value) + restartNote() else settingChanged(name, value))
                     }
                 }
             }
@@ -369,6 +420,12 @@ object VeinminerCommand {
     }
 
     private fun CommandContext<CommandSourceStack>.getRaw(idx: Int) = input.split(' ').getOrNull(idx)
+
+    private fun CommandSourceStack.isValidItemTarget(raw: String): Boolean {
+        val id = ResourceLocation.tryParse(raw.removePrefix("#")) ?: return false
+        val items = server.registryAccess().registryOrThrow(Registries.ITEM)
+        return if (raw.startsWith("#")) items.getTag(TagKey.create(Registries.ITEM, id)).isPresent else items.containsKey(id)
+    }
 
     private fun CommandNodeBuilder<CommandSourceStack>.overrides(
         resolver: (String) -> VeinminerSettingsOverride?,
@@ -407,6 +464,8 @@ object VeinminerCommand {
         applySetting("decreaseDurability", { args -> args.resolve().decreaseDurability }) { x, args -> args.resolve().decreaseDurability = x }
         applySetting("hungerPerBlock", { args -> args.resolve().hungerPerBlock }) { x, args -> args.resolve().hungerPerBlock = x }
         applySetting("miningSpeedModifier", { args -> args.resolve().miningSpeedModifier }) { x, args -> args.resolve().miningSpeedModifier = x }
+        applySetting("separateGroupMining", { args -> args.resolve().separateGroupMining }) { x, args -> args.resolve().separateGroupMining = x }
+        applySetting("minEnchantLevel", { args -> args.resolve().minEnchantLevel }) { x, args -> args.resolve().minEnchantLevel = x }
     }
 
     private fun header(text: String) = cmp(text, cGreen, bold = true)
@@ -418,6 +477,7 @@ object VeinminerCommand {
     private fun usage(syntax: String) = error("Correct Syntax: ") + command(syntax).withColor(cBase)
     private fun setting(name: String, current: String) = cmp(name) + cmp(" is currently set to ", cBase) + value(current)
     private fun settingChanged(name: String, newValue: Any?) = success(name) + success(" set to ") + value(newValue)
+    private fun restartNote() = cmp(" (applies after restart/rejoin)", cBase)
 
     private fun list(values: Collection<String>, empty: String = "none"): MutableComponent {
         if (values.isEmpty()) return value(empty)

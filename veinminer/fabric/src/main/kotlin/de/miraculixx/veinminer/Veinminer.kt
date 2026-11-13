@@ -9,6 +9,7 @@ import de.miraculixx.veinminer.command.VeinminerCommand
 import de.miraculixx.veinminer.config.ConfigManager
 import de.miraculixx.veinminer.event.EventState
 import de.miraculixx.veinminer.event.VeinMinerEvent
+import de.miraculixx.veinminer.event.VeinminerBreakContext
 import de.miraculixx.veinminer.event.VeinMinerEvent.removeMiningSpeedModifier
 import de.miraculixx.veinminer.network.NetworkRouter
 import de.miraculixx.veinminer.network.ServerCallbacksImpl
@@ -20,13 +21,13 @@ import de.miraculixx.veinminer.utils.cRed
 import de.miraculixx.veinminer.utils.mcServer
 import me.lucko.fabric.api.permissions.v0.Permissions
 import net.fabricmc.api.ModInitializer
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.api.ModContainer
-import net.fabricmc.loader.impl.FabricLoaderImpl
 import net.minecraft.network.chat.ClickEvent
 import net.minecraft.network.chat.Component
 import net.minecraft.world.InteractionResult
@@ -52,7 +53,7 @@ class Veinminer : ModInitializer {
         fabricLoader = FabricLoader.getInstance()
         INSTANCE = fabricLoader.getModContainer(MOD_ID).get()
         LOGGER.info("Veinminer Version: ${INSTANCE.metadata.version} (fabric)")
-        val mcVersion = (FabricLoader.getInstance() as FabricLoaderImpl).gameProvider.rawGameVersion
+        val mcVersion = FabricLoader.getInstance().rawGameVersion
 
         // Check for Veinminer-Enchantment
         EventState.enchantmentActive = fabricLoader.getModContainer("veinminer_enchantment").getOrNull() != null
@@ -74,6 +75,7 @@ class Veinminer : ModInitializer {
         PlayerBlockBreakEvents.BEFORE.register { world, player, pos, state, _ ->
             VeinMinerEvent.onBlockBreakBefore(world, player, pos, state)
         }
+        ServerEntityEvents.ENTITY_LOAD.register { entity, _ -> VeinminerBreakContext.relocateDrop(entity) }
 
         // Networking
         ServerLifecycleEvents.SERVER_STARTING.register { server ->
@@ -103,7 +105,7 @@ class Veinminer : ModInitializer {
             }
 
             val info = updateInfo
-            if (info != null && canConfigure) {
+            if (info != null && canConfigure && !ConfigManager.settings.hideUpdates) {
                 player.sendSystemMessage(
                     Component.literal("${info.module.modID} is outdated! ")
                         .append(" (Current: ").append(Component.literal(info.currentVersion).withColor(cRed))

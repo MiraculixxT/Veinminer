@@ -20,7 +20,9 @@
       "de.miraculixx.veinminer.Veinminer"
     ]
   },
-  "mixins": [],
+  "mixins": [
+    "veinminer.mixins.json"
+  ],
   "depends": {
     "fabricloader": ">=0.19.0",
     "minecraft": "${mcversion}",

@@ -25,6 +25,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.resources.ResourceLocation
 import org.bukkit.*
 import org.bukkit.attribute.Attribute
@@ -92,7 +93,7 @@ object VeinMinerEvent {
         val amount = veinmineInfo.veinmine(false)
         if (amount <= 1) return@listen
 
-        val speed = veinmineInfo.settings.calculateBreakSpeedModifier(amount, multiplicator).coerceAtLeast(0.0)
+        val speed = veinmineInfo.settings.calculateBreakSpeedModifier(amount, multiplicator)
         val modifier = AttributeModifier(attributeNamespace, speed, AttributeModifier.Operation.MULTIPLY_SCALAR_1)
         val attribute = player.getAttribute(Attribute.PLAYER_BLOCK_BREAK_SPEED) ?: return@listen
         attribute.removeModifier(attributeNamespace)
@@ -106,37 +107,15 @@ object VeinMinerEvent {
     }
 
     @Suppress("unused")
-    private val onBlockBreak = listen<BlockBreakEvent>(priority = EventPriority.HIGH) {
+    private val onBlockBreak = listen<BlockBreakEvent>(priority = EventPriority.MONITOR) {
         it.player.removeAttribute() // Always remove
         if (it.isCancelled || !enabled) return@listen
 
         val player = it.player
         val block = it.block
 
-        // Check if the event is triggered by Veinminer
-        if (it is VeinminerEvent) {
-            if (!it.isDropItems) return@listen
-            var settings = PaperConfigManager.settings
-
-            // Invoke VeinminerDropEvent - allows other plugins to modify the items and exp dropped by Veinminer itself
-            // Veinminer will drop the items that are still in the list and the remaining amount of experience
-            val tool = player.inventory.itemInMainHand
-            val drops = block.getDrops(tool, player).toMutableList<ItemStack>()
-            val dropItemEvent = VeinminerDropEvent(block, block.state, player, drops, it.expToDrop).also(Event::callEvent)
-
-            // Use source location as drop pos if setting is enabled
-            val location = if (settings.mergeItemDrops) it.sourceLocation else block.location.toCenterLocation()
-
-            drops.forEach { drop ->
-                block.world.dropItem(location, drop)
-            }
-            if (dropItemEvent.exp > 0) block.world.spawn(location, ExperienceOrb::class.java).experience =
-                dropItemEvent.exp
-
-            it.isDropItems = false
-            it.expToDrop = 0
-            return@listen
-        }
+        // Veinminer's own break - drops are handled in triggerBreaking once every listener had its say
+        if (it is VeinminerEvent) return@listen
 
         val veinmineInfo = allowedToVeinmine(player, block) ?: return@listen
 
@@ -194,21 +173,37 @@ object VeinMinerEvent {
         // Check for correct tool (if block group tools are empty, it means all tools are allowed)
         val item = player.inventory.itemInMainHand
         if (debug) Veinminer.LOGGER.info(" - Tool: ${item.type.key}")
-        if (settings.needCorrectTool && (block.getDrops(item).isEmpty() || item.isEmpty)) return null
+        if (settings.needCorrectTool && block.getDrops(item).isEmpty()) return null
         if (isGroupBlock && !blockGroup.tools.isEmpty() && !blockGroup.tools.contains(item.type.key)) return null
         // Fall back to vanilla break on last durability point so one normal block can still be mined.
         if (settings.decreaseDurability && item.remainingDurability() <= 1) return null
 
-        // Check for enchantment if active
-        if (Veinminer.enchantmentActive && !item.enchantments.any { it.key.key == VEINMINE }) return null
+        // Check for enchantment level if active
+        if (Veinminer.enchantmentActive) {
+            val level = item.enchantments.entries.firstOrNull { it.key.key == VEINMINE }?.value ?: 0
+            if (level < settings.minEnchantLevel.coerceAtLeast(1)) return null
+        }
 
         // Perform veinminer
-        val blocks = if (isGroupBlock) blockGroup.blocks else setOf(material)
+        val blocks = if (isGroupBlock && !settings.separateGroupMining) blockGroup.blocks else setOf(material)
         if (debug) Veinminer.LOGGER.info(" - Allowed with $blocks")
         val face = NetworkRouter.lastSurface[player.uniqueId] ?: Surface.UP
         val currentPos = block.location.toVeinminer()
-        val blocksNMS = blocks.map { it.toVeinminer() }.toSet()
+        val nmsTool = CraftItemStack.asNMSCopy(item)
+        val blocksNMS = NetworkRouter.filterTargets(uuid, material.toVeinminer(), blocks.map { it.toVeinminer() }.toSet(), settings.client.allowClientGroups) {
+            canCombine(it, hasClientBypass, item, nmsTool, settings.needCorrectTool)
+        } ?: return null
         return VeinmineAction(currentPos, blocksNMS, item, player, currentPos, settings, face)
+    }
+
+    /** If a block may join a client group: server whitelisted, group tools and harvestable with [tool] */
+    private fun canCombine(id: ResourceLocation, hasClientBypass: Boolean, tool: ItemStack, nmsTool: net.minecraft.world.item.ItemStack, needCorrectTool: Boolean): Boolean {
+        val key = NamespacedKey(id.namespace, id.path)
+        val group = key.groupedBlocks()
+        if (!hasClientBypass && group.blocks.isEmpty() && !PaperConfigManager.veinBlocks.contains(key)) return false
+        if (group.tools.isNotEmpty() && !group.tools.contains(tool.type.key)) return false
+        val state = BuiltInRegistries.BLOCK.get(id).defaultBlockState()
+        return !needCorrectTool || !state.requiresCorrectToolForDrops() || nmsTool.isCorrectToolForDrops(state)
     }
 
     /**
@@ -216,11 +211,9 @@ object VeinMinerEvent {
      * @return the number of blocks broken
      */
     fun VeinmineAction<ItemStack, Player>.veinmine(shouldBreak: Boolean): Int {
-        val iTool = tool
         val iPlayer = player
         val world = iPlayer.world
 
-        if (iTool.isEmpty) return 0
         val strategy = NetworkRouter.activeStrategy(iPlayer.uniqueId) ?: NormalStrategy
         val maxDepth = NetworkRouter.maxDepth(iPlayer.uniqueId)
 
@@ -267,12 +260,27 @@ object VeinMinerEvent {
         val iTool = tool
         if (settings.decreaseDurability && iTool.remainingDurability() <= 1) return
 
-        // Check if other plugins cancel the event
+        // Check if other plugins cancel the event. Nothing may drop or break before this returns
         val iPlayer = player
         val sourceLoc = Location(iPlayer.world, sourceLocation.x.toDouble(), sourceLocation.y.toDouble(), sourceLocation.z.toDouble())
         val veinminerEvent = VeinminerEvent(block, iPlayer, sourceLoc, block.getXP(iTool))
         if (!veinminerEvent.callEvent()) return
+
+        // Capture while the block still exists
+        val blockState = block.state
+        val drops = if (veinminerEvent.isDropItems) block.getDrops(iTool, iPlayer).toMutableList<ItemStack>() else mutableListOf()
+        val world = block.world
+        val location = if (settings.mergeItemDrops) sourceLoc else block.location.toCenterLocation()
+
         block.destroy()
+
+        if (veinminerEvent.isDropItems) {
+            // Allows other plugins to modify the items and exp dropped by Veinminer itself
+            val dropItemEvent = VeinminerDropEvent(block, blockState, iPlayer, drops, veinminerEvent.expToDrop).also(Event::callEvent)
+            drops.forEach { drop -> world.dropItem(location, drop) }
+            if (dropItemEvent.exp > 0) world.spawn(location, ExperienceOrb::class.java).experience = dropItemEvent.exp
+        }
+
         if (settings.decreaseDurability) damageItem(iTool, 1, iPlayer)
         if (settings.hungerPerBlock > 0.0) iPlayer.exhaustion += settings.hungerPerBlock.toFloat()
     }
@@ -288,7 +296,7 @@ object VeinMinerEvent {
     }
 
     private fun ItemStack.remainingDurability(): Int {
-        if (isEmpty) return 0
+        if (isEmpty) return Int.MAX_VALUE
         val maxDurability = type.maxDurability.toInt()
         if (maxDurability <= 0) return Int.MAX_VALUE
         return maxDurability - ((itemMeta as? Damageable)?.damage ?: 0)

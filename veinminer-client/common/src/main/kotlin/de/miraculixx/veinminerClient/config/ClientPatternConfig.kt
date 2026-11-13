@@ -1,12 +1,18 @@
 package de.miraculixx.veinminerClient.config
 
 import de.miraculixx.veinminer.extensions.load
+import de.miraculixx.veinminer.network.KeyPress
 import de.miraculixx.veinminer.pattern.DefaultPatterns
 import de.miraculixx.veinminer.pattern.PatternConfig
 import de.miraculixx.veinminer.pattern.PatternType
 import de.miraculixx.veinminer.utils.json
 import kotlinx.serialization.Serializable
 import java.nio.file.Path
+import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.resources.ResourceLocation
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Items
 import kotlin.io.path.createParentDirectories
 import kotlin.io.path.writeText
 
@@ -14,6 +20,12 @@ import kotlin.io.path.writeText
 data class ClientPatternSettings(
     val patterns: MutableList<PatternConfig> = DefaultPatterns.all(),
     var invertedScroll: Boolean = false,
+    var lockPatternScroll: Boolean = false,
+    var showShortcutHint: Boolean = true,
+    var selectedPatternId: String? = null,
+    var selectedDepth: Int = KeyPress.UNLIMITED_DEPTH,
+    val names: MutableMap<String, String> = mutableMapOf(),
+    val icons: MutableMap<String, String> = mutableMapOf(),
 )
 
 object ClientPatternConfig {
@@ -41,12 +53,28 @@ object ClientPatternConfig {
         return settings.patterns.filter { it.enabled }
     }
 
+    fun selectedPattern(): PatternConfig {
+        val enabled = enabledPatterns()
+        return enabled.firstOrNull { it.id == settings.selectedPatternId } ?: enabled.first()
+    }
+
+    fun setSelection(pattern: PatternConfig, depth: Int) {
+        if (settings.selectedPatternId == pattern.id && settings.selectedDepth == depth) return
+        settings.selectedPatternId = pattern.id
+        settings.selectedDepth = depth
+        save()
+    }
+
     fun canRemove(pattern: PatternConfig): Boolean = settings.patterns.size > 1 && settings.patterns.contains(pattern)
 
     fun remove(pattern: PatternConfig): Boolean {
         if (!canRemove(pattern)) return false
         val removed = settings.patterns.remove(pattern)
-        if (removed) save()
+        if (removed) {
+            settings.names.remove(pattern.id)
+            settings.icons.remove(pattern.id)
+            save()
+        }
         return removed
     }
 
@@ -73,7 +101,39 @@ object ClientPatternConfig {
         return true
     }
 
-    fun displayName(pattern: PatternConfig): String = when (pattern.type) {
+    const val MAX_NAME_LENGTH = 32
+    private val iconStacks = HashMap<String, ItemStack>()
+
+    fun parseItem(raw: String): Item? {
+        if (raw.isBlank()) return null
+        val id = ResourceLocation.tryParse(raw.trim().lowercase()) ?: return null
+        return BuiltInRegistries.ITEM.getOptional(id).orElse(null)?.takeIf { it !== Items.AIR }
+    }
+
+    fun iconStack(pattern: PatternConfig): ItemStack? = settings.icons[pattern.id]
+        ?.let { raw -> iconStacks.getOrPut(raw) { parseItem(raw)?.let(::ItemStack) ?: ItemStack.EMPTY } }
+        ?.takeUnless { it.isEmpty }
+
+    /** Invalid or blank input removes the custom icon (default shape icon) */
+    fun setIcon(pattern: PatternConfig, raw: String): Boolean {
+        val item = parseItem(raw)
+        if (item == null) settings.icons.remove(pattern.id)
+        else settings.icons[pattern.id] = BuiltInRegistries.ITEM.getKey(item).toString()
+        save()
+        return item != null
+    }
+
+    fun displayName(pattern: PatternConfig): String = settings.names[pattern.id] ?: defaultName(pattern)
+
+    /** Blank or default name removes the custom name */
+    fun rename(pattern: PatternConfig, name: String) {
+        val clean = name.trim().take(MAX_NAME_LENGTH)
+        if (clean.isEmpty() || clean == defaultName(pattern)) settings.names.remove(pattern.id)
+        else settings.names[pattern.id] = clean
+        save()
+    }
+
+    fun defaultName(pattern: PatternConfig): String = when (pattern.type) {
         PatternType.NORMAL -> "Normal"
         PatternType.FLAT -> "Flat"
         PatternType.TUNNEL -> "Tunnel ${pattern.width.coerceAtLeast(1)}x${pattern.height.coerceAtLeast(1)}"
@@ -111,6 +171,11 @@ object ClientPatternConfig {
         }
         if (patterns.none { it.enabled }) {
             patterns.first().enabled = true
+            dirty = true
+        }
+        val selectedId = settings.selectedPatternId
+        if (selectedId != null && patterns.none { it.enabled && it.id == selectedId }) {
+            settings.selectedPatternId = null
             dirty = true
         }
         if (save && dirty) write(settings)

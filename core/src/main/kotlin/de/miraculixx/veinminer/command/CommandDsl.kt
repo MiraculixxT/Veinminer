@@ -64,6 +64,17 @@ class CommandNodeBuilder<S>(val builder: ArgumentBuilder<S, *>) {
         builder.requires { src -> Permissions.check(src as Any?, node) }
     }
 
+    /** Registers all children of [block] with an additional [predicate] requirement */
+    fun requiresAll(predicate: (S) -> Boolean, block: CommandNodeBuilder<S>.() -> Unit) {
+        val temp = LiteralArgumentBuilder.literal<S>("")
+        CommandNodeBuilder(temp).apply(block)
+        temp.arguments.forEach { node ->
+            val child = node.createBuilder().requires { src -> predicate(src) && node.requirement.test(src) }
+            node.children.forEach { child.then(it) }
+            builder.then(child)
+        }
+    }
+
     fun executes(block: CommandContext<S>.() -> Unit) {
         builder.executes(Command<S> { ctx ->
             try {

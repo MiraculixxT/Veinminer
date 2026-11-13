@@ -16,7 +16,6 @@ import net.minecraft.client.gui.components.toasts.SystemToast
 import net.minecraft.core.BlockPos
 import net.minecraft.network.chat.Component
 import net.minecraft.world.item.ItemStack
-import net.minecraft.world.item.Items
 import net.minecraft.world.phys.BlockHitResult
 import net.minecraft.world.phys.HitResult
 
@@ -34,7 +33,11 @@ object KeyBindManager {
     private var isToggled = false
     var notifiedOnce = false
 
+    val isScrollAllowed: Boolean
+        get() = !ClientPatternConfig.settings.lockPatternScroll && isPressed && KeyBindings.hold?.isDown == true
+
     fun tick() {
+        NetworkManager.tickJoinCheck()
         val toggleKey = KeyBindings.toggle ?: return
         val holdKey = KeyBindings.hold ?: return
         if (KeyBindings.config?.consumeClick() == true) {
@@ -76,7 +79,6 @@ object KeyBindManager {
         val target = instance.hitResult as? BlockHitResult ?: return
         val pos = target.blockPos
         val holding = player.inventory.getSelected()
-        if (holding.item == Items.AIR) return resetTarget(true)
 
         if (target.type != HitResult.Type.BLOCK) {
             resetTarget()
@@ -142,6 +144,7 @@ object KeyBindManager {
             }
         }
         if (dirty) {
+            ClientPatternConfig.setSelection(NetworkManager.selectedPattern, NetworkManager.selectedDepth)
             NetworkManager.resendKeyPress(lastFace)
             lastTarget = null
         }

@@ -9,6 +9,14 @@
   "key.veinminer_client.toggle": "Veinmining (Toggle)",
   "key.veinminer_client.config": "Open Client Settings",
 
+  "veinminer.hint.menu": "%s §7» Open pattern menu",
+  "veinminer.hint.pattern": "Scroll §7» Change pattern",
+  "veinminer.hint.depth": "Shift + Scroll §7» Change depth",
+  "veinminer.filter.warning.one": "1 pattern filter contains blocks that are not allowed on this server.",
+  "veinminer.filter.warning.many": "%s pattern filters contain blocks that are not allowed on this server.",
+  "veinminer.filter.inspect": "Press %s to inspect.",
+  "veinminer.filter.inspect_menu": "Open the pattern menu to inspect.",
+
   "veinminer.shape.normal": "Normal",
   "veinminer.shape.tunnel_1x1": "Tunnel 1x1",
   "veinminer.shape.tunnel_2x2": "Tunnel 2x2",

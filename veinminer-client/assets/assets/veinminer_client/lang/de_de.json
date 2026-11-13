@@ -9,6 +9,14 @@
   "key.veinminer_client.toggle": "Veinmining (Umschalten)",
   "key.veinminer_client.config": "Client-Einstellungen öffnen",
 
+  "veinminer.hint.menu": "%s §7» Mustermenü öffnen",
+  "veinminer.hint.pattern": "Scroll §7» Muster wechseln",
+  "veinminer.hint.depth": "Shift + Scroll §7» Tiefe ändern",
+  "veinminer.filter.warning.one": "1 Musterfilter enthält Blöcke, die auf diesem Server nicht erlaubt sind.",
+  "veinminer.filter.warning.many": "%s Musterfilter enthalten Blöcke, die auf diesem Server nicht erlaubt sind.",
+  "veinminer.filter.inspect": "Drücke %s zum Überprüfen.",
+  "veinminer.filter.inspect_menu": "Öffne das Mustermenü zum Überprüfen.",
+
   "veinminer.shape.normal": "Normal",
   "veinminer.shape.tunnel_1x1": "Tunnel 1x1",
   "veinminer.shape.tunnel_2x2": "Tunnel 2x2",

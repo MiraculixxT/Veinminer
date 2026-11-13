@@ -1,4 +1,5 @@
-## ⛏️ Veinminer
+![banner](https://cdn.modrinth.com/data/cached_images/1aca4c6d88e1b7701c06596e78e51b229eea2395.png)
+
 Mine a single block to mine the whole vein!
 Highly configurable and works everywhere, even on your vanilla server.
 Make the tedious mining experience to something satisfying and fun!<br>
@@ -35,11 +36,7 @@ Task shortcuts for easier testing.
 
 ### Publishing
 ```shell
-./gradlew :veinminer:veinminer-paper:modrinth :veinminer:veinminer-fabric:modrinth :veinminer:veinminer-neoforge:modrinth
-./gradlew :veinminer-client:veinminer-client-fabric:modrinth :veinminer-client:veinminer-client-neoforge:modrinth
-./gradlew :veinminer-enchant:modrinth
-
-./gradlew :veinminer:veinminer-fabric:curseforge :veinminer:veinminer-neoforge:curseforge
-./gradlew :veinminer-client:veinminer-client-fabric:curseforge :veinminer-client:veinminer-client-neoforge:curseforge
-./gradlew :veinminer-enchant:curseforge
+./gradlew :veinminer:veinminer-paper:modPublish :veinminer:veinminer-fabric:modPublish :veinminer:veinminer-neoforge:modPublish
+./gradlew :veinminer-client:veinminer-client-fabric:modPublish :veinminer-client:veinminer-client-neoforge:modPublish
+./gradlew :veinminer-enchant:modPublish
 ```
