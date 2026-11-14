@@ -9,6 +9,7 @@ import kotlin.reflect.full.memberProperties
 data class VeinminerSettings(
     var cooldown: Int = 20,
     var mustSneak: Boolean = false,
+    var invertSneak: Boolean = false,
     var delay: Int = 0,
     var maxChain: Int = 100,
     var needCorrectTool: Boolean = true,
@@ -38,6 +39,7 @@ data class VeinminerSettings(
         return VeinminerSettings(
             cooldown = g?.cooldown ?: (if (isClient) c.cooldown ?: cooldown else cooldown),
             mustSneak = g?.mustSneak ?: (if (isClient) c.mustSneak ?: mustSneak else mustSneak),
+            invertSneak = g?.invertSneak ?: (if (isClient) c.invertSneak ?: invertSneak else invertSneak),
             delay = g?.delay ?: (if (isClient) c.delay ?: delay else delay),
             maxChain = g?.maxChain ?: (if (isClient) c.maxChain ?: maxChain else maxChain),
             needCorrectTool = g?.needCorrectTool ?: (if (isClient) c.needCorrectTool ?: needCorrectTool else needCorrectTool),
@@ -87,6 +89,7 @@ data class VeinminerClientSettings(
 data class VeinminerSettingsOverride(
     var cooldown: Int? = null,
     var mustSneak: Boolean? = null,
+    var invertSneak: Boolean? = null,
     var delay: Int? = null,
     var maxChain: Int? = null,
     var needCorrectTool: Boolean? = null,

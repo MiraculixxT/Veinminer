@@ -119,6 +119,7 @@ object VeinminerCommand {
                 executesAsync { source.sendSystemMessage(usage("/veinminer settings <setting> [<new-value>]")) }
 
                 applySetting("mustSneak", { ActiveConfig.bridge.settings.mustSneak }) { x, _ -> ActiveConfig.bridge.settings.mustSneak = x }
+                applySetting("invertSneak", { ActiveConfig.bridge.settings.invertSneak }) { x, _ -> ActiveConfig.bridge.settings.invertSneak = x }
                 applySetting("cooldown", { ActiveConfig.bridge.settings.cooldown }) { x, _ -> ActiveConfig.bridge.settings.cooldown = x }
                 applySetting("delay", { ActiveConfig.bridge.settings.delay }) { x, _ -> ActiveConfig.bridge.settings.delay = x }
                 applySetting("maxChain", { ActiveConfig.bridge.settings.maxChain }) { x, _ -> ActiveConfig.bridge.settings.maxChain = x }
@@ -457,6 +458,7 @@ object VeinminerCommand {
 
         applySetting("cooldown", { args -> args.resolve().cooldown }) { x, args -> args.resolve().cooldown = x }
         applySetting("mustSneak", { args -> args.resolve().mustSneak }) { x, args -> args.resolve().mustSneak = x }
+        applySetting("invertSneak", { args -> args.resolve().invertSneak }) { x, args -> args.resolve().invertSneak = x }
         applySetting("delay", { args -> args.resolve().delay }) { x, args -> args.resolve().delay = x }
         applySetting("maxChain", { args -> args.resolve().maxChain }) { x, args -> args.resolve().maxChain = x }
         applySetting("needCorrectTool", { args -> args.resolve().needCorrectTool }) { x, args -> args.resolve().needCorrectTool = x }
