@@ -132,7 +132,11 @@ object VeinMinerEvent {
 
         if (settings.client.require && !hasClient) return null
         if (!isWhitelisted && !hasClientBypass) return null
-        if (settings.mustSneak && !player.isCrouching) return null
+        when {
+            settings.invertSneak && player.isCrouching -> return null
+            !settings.invertSneak && settings.mustSneak &&
+                !player.isCrouching -> return null
+        }
         if (cooldown.contains(player.uuid)) return null
 
         val mainHandItem = player.mainHandItem

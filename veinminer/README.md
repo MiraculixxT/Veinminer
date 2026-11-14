@@ -51,6 +51,7 @@ To check the current state, leave out the new value argument.
 |        Setting         |                         Description                         | Default |
 |:----------------------:|:-----------------------------------------------------------:|:-------:|
 |      `mustSneak`       |               Players must sneak to veinmine                | `false` |
+|      `invertSneak`     |           Players may sneak to prevent veinmine             | `false` |
 |       `cooldown`       |    Time between players are able to veinmine (in ticks)     |  `20`   |
 |        `delay`         |    Time between each automated block breaking (in ticks)    |   `1`   |
 |       `maxChain`       |  Max amount of blocks that can break from one source block  |  `100`  |
