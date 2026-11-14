@@ -393,7 +393,7 @@ class PatternConfigScreen(private val parent: Screen?) : Screen(Component.litera
 
         override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
             val entry = entryAt(mouseX, mouseY)
-            if (entry != null && isValidMouseClick(button) && entry.mouseClicked(mouseX, mouseY, button)) {
+            if (entry != null && entry.mouseClicked(mouseX, mouseY, button)) {
                 val current = getFocused()
                 if (current !== entry && current is ContainerEventHandler) current.setFocused(null)
                 setFocused(entry)
